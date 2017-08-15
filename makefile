@@ -1,4 +1,4 @@
-P=buffy
+P=buffdog
 OBJECTS=device.c
 CFLAGS=-g -Wall -O3
 LDLIBS=

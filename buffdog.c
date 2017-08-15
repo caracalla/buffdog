@@ -7,7 +7,11 @@
 #include <unistd.h>
 
 int main () {
-  set_up_device();
+  int setup_status = set_up_device();
+
+  if (setup_status != 0) {
+    return setup_status;
+  }
 
   clear_screen();
 
@@ -33,4 +37,6 @@ int main () {
   set_pixel(7, 7, 0xFFFF);
 
   close_fbfd();
+
+  return 0;
 }
