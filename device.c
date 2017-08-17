@@ -22,17 +22,11 @@ short int     *fb_map_pointer;
 
 void set_pixel(int x, int y, int color) {
   // start the y coordinate axis at the bottom of the screen
-  fb_map_pointer[x + (479 - y) * m_VarInfo.xres] = color;
+  fb_map_pointer[x + ((m_VarInfo.yres - 1) - y) * m_VarInfo.xres] = color;
 }
 
 void clear_screen() {
-  int x, y = 0;
-
-  for (y = 0; y < 480; y++) {
-    for (x = 0; x < 640; x++) {
-      set_pixel(x, y, 0);
-    }
-  }
+  memset(fb_map_pointer, 0, (m_VarInfo.yres * m_VarInfo.xres) * 2);
 }
 
 int set_up_device() {
