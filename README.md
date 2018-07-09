@@ -2,11 +2,14 @@
 
 ## Setup
 
-1. Install Debian linux on a virtualbox VM
-2. ??? (fill this in later when I remember what I did)
-  * v86d and uvesafb were involved
-3. Make sure you have /dev/fb0
-4. make
+1. Install Debian **jessie** on a virtualbox VM
+    * Tried and failed on stretch, probably due to user error
+2. `apt-get install -y v86d`
+3. `modprobe uvesafb`
+    * The display on the VM should change to blockier text.  If this fails, check the syslog.
+4. Make sure you have /dev/fb0
+    * `ls /dev | grep fb`
+5. make
 
 ## Namesake
 
