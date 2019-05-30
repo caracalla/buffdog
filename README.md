@@ -12,6 +12,16 @@
     * `ls /dev | grep fb`
 5. `make`
 
+## Troubleshooting
+
+#### "cannot reserve video memory at <address>"
+
+Edit `/etc/modprobe.d/fbdev-blacklist.conf` and comment out any lines with "86" in them.
+
+## Targets
+* `spinner` - A simple spinning line, usually used to test that everything works.
+* `buffdog` - Whatever I'm working on.  Currently, a ray tracer.
+
 ## Namesake
 
 https://www.youtube.com/user/buffcorrell
