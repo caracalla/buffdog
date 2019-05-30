@@ -67,6 +67,13 @@ void close_fbfd() {
 	close(m_FBFD);
 }
 
+int color(double red, double green, double blue) {
+	unsigned char red_value = 255 * red;
+	unsigned char green_value = 255 * green;
+	unsigned char blue_value = 255 * blue;
+	return (red_value << 16) + (green_value << 8) + blue_value;
+}
+
 void draw_pixel(int x, int y, int color) {
 	// start the y coordinate axis at the bottom of the screen
 	fb_map_pointer[x + ((variable_info.yres - 1) - y) * variable_info.xres] = color;
