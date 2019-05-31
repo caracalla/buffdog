@@ -13,6 +13,7 @@
 #include "line.h"
 #include "vec3.h"
 
+// semi-graceful signal handling
 void signal_handler(int signal_number) {
 	if (signal_number == SIGINT) {
 		printf("\nreceived SIGINT\n");
@@ -27,10 +28,12 @@ void set_up_signal_handling() {
 	}
 }
 
-// this is initialized to all zeroes
-vec3 origin;
+// necessary constants
+vec3 origin; // this is initialized to all zeroes
 unsigned int xres, yres;
+int BACKGROUND_COLOR = 0xFFFFFF;
 
+// populate scene with spheres
 struct sphere {
 	vec3 center;
 	double radius;
@@ -42,16 +45,36 @@ typedef struct sphere sphere;
 sphere spheres[3];
 
 void make_spheres() {
-	spheres[0].center.x = 1;
-	spheres[0].center.y = -1;
-	spheres[0].center.z = 6;
-	spheres[0].radius = 1.0;
-	spheres[0].color.x = 1.0;
-
-	spheres[1].radius = 0.1;
-	spheres[2].radius = 0.1;
+	spheres[0] = (sphere){(vec3){2, 0, 5}, 1.0, (vec3){1.0, 0.0, 1.0}};
+	spheres[1] = (sphere){(vec3){0, -1, 4}, 1.2, (vec3){1.0, 0.0, 0.0}};
+	spheres[2] = (sphere){(vec3){-3, 2, 6}, 1.0, (vec3){0.0, 0.0, 1.0}};
 }
 
+// set up lighting
+enum light_source_type {
+	ambient,
+	point,
+	directional
+};
+
+struct light_source {
+	enum light_source_type type;
+	double intensity;
+	vec3 position;
+	vec3 direction;
+};
+
+typedef struct light_source light_source;
+
+light_source light_sources[3];
+
+void make_light_sources() {
+	light_sources[0] = (light_source){ambient, 0.2, (vec3){0, 0, 0}, (vec3){0, 0, 0}};
+	light_sources[1] = (light_source){point, 0.6, (vec3){1, 2, 2}, (vec3){0, 0, 0}};
+	light_sources[2] = (light_source){directional, 0.2, (vec3){0, 0, 0}, (vec3){1, 4, 4}};
+}
+
+// do the work
 vec3 pixel_to_viewport(int x, int y, vec3 viewport) {
 	if (xres <= 0 || yres <= 0) {
 		printf("what the hell are you doing\n");
@@ -70,8 +93,36 @@ int vec3_to_color(vec3 vec) {
 	return color(vec.x, vec.y, vec.z);
 }
 
-// returns an int color, kind of stupid for now.  Maybe introduce a new color
-// struct?  Like a vec3 but with validation that it's correct
+double compute_lighting(vec3 destination, vec3 unit_normal) {
+	double intensity = 0.0;
+	int i;
+
+	for (i = 0; i < 3; i++) {
+		if (light_sources[i].type == ambient) {
+			intensity += light_sources[i].intensity;
+		} else {
+			vec3 light_direction;
+			if (light_sources[i].type == point) {
+				light_direction = subtract_vec3(light_sources[i].position, destination);
+			} else {
+				light_direction = light_sources[i].direction;
+			}
+
+			double normal_dot_direction = dot_product(unit_normal, light_direction);
+
+			if (normal_dot_direction > 0) {
+				// isn't length(unit_normal) 1? is that still necessary? how does it
+				// being a unit vector change the math in this function?
+				intensity += light_sources[i].intensity * normal_dot_direction / (length(unit_normal) * length(light_direction));
+			}
+		}
+	}
+
+	return intensity;
+}
+
+// returns an int color, kind of stupid for now. Maybe introduce a new color
+// struct? Like a vec3 but with validation that it's correct
 int trace_ray(vec3 origin, vec3 direction, double t_min, double t_max) {
 	double closest_t = t_max;
 	int found_sphere = -1;
@@ -105,9 +156,12 @@ int trace_ray(vec3 origin, vec3 direction, double t_min, double t_max) {
 
 	if (found_sphere == -1) {
 		// found nothing, return background color
-		return 0xFFFFFF;
+		return BACKGROUND_COLOR;
 	} else {
-		return vec3_to_color(spheres[found_sphere].color);
+		vec3 destination = scalar_multiply(direction, closest_t);
+		vec3 normal = subtract_vec3(destination, spheres[found_sphere].center);
+		double light_intensity = compute_lighting(destination, unit_vector(normal));
+		return vec3_to_color(scalar_multiply(spheres[found_sphere].color, light_intensity));
 	}
 }
 
@@ -122,12 +176,10 @@ int main() {
 
 	print_fb_info();
 
-	vec3 viewport;
-	viewport.x = 4;
-	viewport.y = 3;
-	viewport.z = 2;
+	vec3 viewport = {4, 3, 2};
 
 	make_spheres();
+	make_light_sources();
 
 	xres = get_xres();
 	yres = get_yres();

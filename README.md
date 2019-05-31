@@ -1,5 +1,12 @@
 # Buffdog
 
+## TODO
+* wrap header files in header guards
+* extract init logic out of main function
+* extract globals into logic
+* implement dynamic lists
+* turn origin and viewport into camera object
+
 ## Setup
 
 1. Install Debian **jessie** on a virtualbox VM
