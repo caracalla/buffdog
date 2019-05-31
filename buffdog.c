@@ -12,6 +12,8 @@
 #include "device.h"
 #include "line.h"
 #include "vec3.h"
+#include "sphere.h"
+#include "light.h"
 
 // semi-graceful signal handling
 void signal_handler(int signal_number) {
@@ -33,45 +35,37 @@ vec3 origin; // this is initialized to all zeroes
 unsigned int xres, yres;
 int BACKGROUND_COLOR = 0xFFFFFF;
 
-// populate scene with spheres
-struct sphere {
-	vec3 center;
-	double radius;
-	vec3 color;
-};
-
-typedef struct sphere sphere;
-
-sphere spheres[3];
+sphere_list spheres;
 
 void make_spheres() {
-	spheres[0] = (sphere){(vec3){2, 0, 5}, 1.0, (vec3){1.0, 0.0, 1.0}};
-	spheres[1] = (sphere){(vec3){0, -1, 4}, 1.2, (vec3){1.0, 0.0, 0.0}};
-	spheres[2] = (sphere){(vec3){-3, 2, 6}, 1.0, (vec3){0.0, 0.0, 1.0}};
+	size_t number_of_spheres = 3;
+	spheres = make_sphere_list(number_of_spheres);
+
+	append_sphere(
+			&spheres,
+			make_sphere(1.0, (vec3){2, 0, 5}, (vec3){1.0, 0, 1.0}));
+
+	append_sphere(
+			&spheres,
+			make_sphere(1.2, (vec3){0, -1, 4}, (vec3){1.0, 0, 0.0}));
+
+	append_sphere(
+			&spheres,
+			make_sphere(1.0, (vec3){-3, 2, 6}, (vec3){0.0, 0, 1.0}));
 }
 
 // set up lighting
-enum light_source_type {
-	ambient,
-	point,
-	directional
-};
 
-struct light_source {
-	enum light_source_type type;
-	double intensity;
-	vec3 position;
-	vec3 direction;
-};
+light_list lights;
 
-typedef struct light_source light_source;
+void make_lights() {
+	size_t number_of_lights = 3;
+	lights = make_light_list(number_of_lights);
+	vec3 empty_vec = {0, 0, 0};
 
-light_source light_sources[3];
-
-void make_light_sources() {
-	light_sources[0] = (light_source){ambient, 0.2, (vec3){0, 0, 0}, (vec3){0, 0, 0}};
-	light_sources[1] = (light_source){point, 0.6, (vec3){1, 2, 2}, (vec3){0, 0, 0}};
-	light_sources[2] = (light_source){directional, 0.2, (vec3){0, 0, 0}, (vec3){1, 4, 4}};
+	append_light(&lights, make_light(ambient, 0.2, empty_vec, empty_vec));
+	append_light(&lights, make_light(point, 0.6, (vec3){1, 2, 2}, empty_vec));
+	append_light(&lights, make_light(directional, 0.2, empty_vec, (vec3){1, 4, 4}));
 }
 
 // do the work
@@ -98,14 +92,14 @@ double compute_lighting(vec3 destination, vec3 unit_normal) {
 	int i;
 
 	for (i = 0; i < 3; i++) {
-		if (light_sources[i].type == ambient) {
-			intensity += light_sources[i].intensity;
+		if (lights.data[i].type == ambient) {
+			intensity += lights.data[i].intensity;
 		} else {
 			vec3 light_direction;
-			if (light_sources[i].type == point) {
-				light_direction = subtract_vec3(light_sources[i].position, destination);
+			if (lights.data[i].type == point) {
+				light_direction = subtract_vec3(lights.data[i].position, destination);
 			} else {
-				light_direction = light_sources[i].direction;
+				light_direction = lights.data[i].direction;
 			}
 
 			double normal_dot_direction = dot_product(unit_normal, light_direction);
@@ -113,7 +107,7 @@ double compute_lighting(vec3 destination, vec3 unit_normal) {
 			if (normal_dot_direction > 0) {
 				// isn't length(unit_normal) 1? is that still necessary? how does it
 				// being a unit vector change the math in this function?
-				intensity += light_sources[i].intensity * normal_dot_direction / (length(unit_normal) * length(light_direction));
+				intensity += lights.data[i].intensity * normal_dot_direction / (length(unit_normal) * length(light_direction));
 			}
 		}
 	}
@@ -130,11 +124,11 @@ int trace_ray(vec3 origin, vec3 direction, double t_min, double t_max) {
 
 	for (i = 0; i < 3; i++) {
 		double t1, t2;
-		vec3 oc = subtract_vec3(origin, spheres[i].center);
+		vec3 oc = subtract_vec3(origin, spheres.data[i].center);
 
 		double k1 = dot_product(direction, direction);
 		double k2 = 2 * dot_product(oc, direction);
-		double k3 = dot_product(oc, oc) - (spheres[i].radius * spheres[i].radius);
+		double k3 = dot_product(oc, oc) - (spheres.data[i].radius * spheres.data[i].radius);
 
 		double discriminant = (k2 * k2) - (4 * k1 * k3);
 
@@ -159,9 +153,9 @@ int trace_ray(vec3 origin, vec3 direction, double t_min, double t_max) {
 		return BACKGROUND_COLOR;
 	} else {
 		vec3 destination = scalar_multiply(direction, closest_t);
-		vec3 normal = subtract_vec3(destination, spheres[found_sphere].center);
+		vec3 normal = subtract_vec3(destination, spheres.data[found_sphere].center);
 		double light_intensity = compute_lighting(destination, unit_vector(normal));
-		return vec3_to_color(scalar_multiply(spheres[found_sphere].color, light_intensity));
+		return vec3_to_color(scalar_multiply(spheres.data[found_sphere].color, light_intensity));
 	}
 }
 
@@ -179,7 +173,7 @@ int main() {
 	vec3 viewport = {4, 3, 2};
 
 	make_spheres();
-	make_light_sources();
+	make_lights();
 
 	xres = get_xres();
 	yres = get_yres();

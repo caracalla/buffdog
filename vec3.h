@@ -1,3 +1,6 @@
+#ifndef BUFFDOG_VEC3
+#define BUFFDOG_VEC3
+
 struct vec3 {
 	double x;
 	double y;
@@ -22,3 +25,5 @@ vec3 cross_product(vec3 first, vec3 second);
 vec3 unit_vector(vec3 vec);
 double squared_length(vec3 vec);
 double length(vec3 vec);
+
+#endif

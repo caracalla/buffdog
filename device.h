@@ -1,3 +1,6 @@
+#ifndef BUFFDOG_DEVICE
+#define BUFFDOG_DEVICE
+
 // This must be called first
 int set_up_device();
 
@@ -21,3 +24,5 @@ unsigned int get_xres();
 unsigned int get_yres();
 
 void print_fb_info();
+
+#endif
