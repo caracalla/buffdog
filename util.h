@@ -6,4 +6,6 @@
 
 void self_destruct(char *message, int line, char *file);
 
+void set_up_signal_handling();
+
 #endif

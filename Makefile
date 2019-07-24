@@ -10,3 +10,5 @@ run: $(P)
 	./$(P)
 
 spinner: $(OBJECTS)
+
+ray_tracer: $(OBJECTS)

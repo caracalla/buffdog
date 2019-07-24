@@ -92,13 +92,19 @@ unsigned int get_yres() {
 }
 
 void print_fb_info() {
+	printf("*******************\n");
 	printf("Printing fixed info\n");
+	printf("*******************\n");
 	printf("length of fb memory: %d\n", fixed_info.smem_len);
 	printf("length of a line in bytes: %d\n", fixed_info.line_length);
 	printf("FB Type: %d\n", fixed_info.type);
 	printf("FB Visual: %d\n", fixed_info.visual);
 
+	printf("\n");
+	printf("\n");
+	printf("**********************\n");
 	printf("Printing variable info\n");
+	printf("**********************\n");
 	printf("xres: %d\n", variable_info.xres);
 	printf("yres: %d\n", variable_info.yres);
 	printf("xres_virtual: %d\n", variable_info.xres_virtual);
@@ -109,8 +115,6 @@ void print_fb_info() {
 	printf("red bitfied length: %d\n", variable_info.red.length);
 	printf("green bitfied length: %d\n", variable_info.green.length);
 	printf("blue bitfied length: %d\n", variable_info.blue.length);
-	printf("\n");
-	printf("\n");
 	printf("\n");
 	printf("\n");
 }

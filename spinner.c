@@ -11,14 +11,8 @@
 
 #include "device.h"
 #include "line.h"
+#include "util.h"
 
-void signal_handler(int signal_number) {
-	if (signal_number == SIGINT) {
-		printf("\nreceived SIGINT\n");
-		close_fbfd();
-		exit(0);
-	}
-}
 
 int main() {
 	int setup_status = set_up_device();
@@ -29,10 +23,7 @@ int main() {
 		return setup_status;
 	}
 
-	if (signal(SIGINT, signal_handler) == SIG_ERR) {
-		printf("\ncouldn't catch SIGINT\n");
-	}
-
+	set_up_signal_handling();
 	print_fb_info();
 
 	unsigned int xres = get_xres();
