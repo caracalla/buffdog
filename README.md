@@ -1,10 +1,8 @@
 # Buffdog
 
 ## TODO
-* make point light source movable
-* extract init logic out of main function
-* extract globals into logic
 * turn origin and viewport into camera object
+* set up frame swapping for cleaner animation
 
 ## Setup
 

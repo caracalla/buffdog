@@ -26,7 +26,8 @@ void signal_handler(int signal_number) {
 
 void set_up_signal_handling() {
 	if (signal(SIGINT, signal_handler) == SIG_ERR) {
-		printf("\ncouldn't catch SIGINT\n");
+		printf("\ncouldn't install signal handler\n");
+		exit(1);
 	}
 }
 
@@ -52,20 +53,26 @@ void make_spheres() {
 	append_sphere(
 			&spheres,
 			make_sphere(1.0, (vec3){-3, 2, 6}, (vec3){0.0, 0, 1.0}));
+
+	append_sphere(
+			&spheres,
+			make_sphere(5000, (vec3){0, -5002, 0}, (vec3){0, 1.0, 0}));
 }
 
 // set up lighting
 
 light_list lights;
+vec3 point_light_center; // where the point light will circle around
 
 void make_lights() {
 	size_t number_of_lights = 3;
 	lights = make_light_list(number_of_lights);
 	vec3 empty_vec = {0, 0, 0};
 
-	append_light(&lights, make_light(ambient, 0.2, empty_vec, empty_vec));
-	append_light(&lights, make_light(point, 0.6, (vec3){1, 2, 2}, empty_vec));
-	append_light(&lights, make_light(directional, 0.2, empty_vec, (vec3){1, 4, 4}));
+	// total intensity of all light sources must not exceed 1.0
+	append_light(&lights, make_light(ambient, 0.0, empty_vec, empty_vec));
+	append_light(&lights, make_light(point, 0.9, point_light_center, empty_vec));
+	append_light(&lights, make_light(directional, 0.1, empty_vec, (vec3){1, 4, 4}));
 }
 
 // do the work
@@ -91,7 +98,7 @@ double compute_lighting(vec3 destination, vec3 unit_normal) {
 	double intensity = 0.0;
 	int i;
 
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < lights.length; i++) {
 		if (lights.data[i].type == ambient) {
 			intensity += lights.data[i].intensity;
 		} else {
@@ -122,7 +129,7 @@ int trace_ray(vec3 origin, vec3 direction, double t_min, double t_max) {
 	int found_sphere = -1;
 	int i;
 
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < spheres.length; i++) {
 		double t1, t2;
 		vec3 oc = subtract_vec3(origin, spheres.data[i].center);
 
@@ -170,6 +177,10 @@ int main() {
 
 	print_fb_info();
 
+	// make a viewport that is:
+	//	 4 units wide
+	//	 3 units tall
+	//	 2 units away from the camera
 	vec3 viewport = {4, 3, 2};
 
 	make_spheres();
@@ -178,14 +189,27 @@ int main() {
 	xres = get_xres();
 	yres = get_yres();
 	int x, y;
+	double point_light_radius = 4;
+	double light_x, light_z;
+	double increment = 0.0;
 
-	for (x = 0; x < xres; x++) {
-		for (y = 0; y < yres; y++) {
-			// draw_pixel(x, y, color((double)x / xres, (double)y / yres, 0));
+	while (1) {
+		light_x = (sin(increment) * point_light_radius);
+		light_z = (cos(increment) * point_light_radius) + 5;
+		point_light_center = (vec3){light_x, 2, light_z};
+		// rerun this to remake the point light source with the new location
+		make_lights();
+		increment += 0.1;
 
-			vec3 direction = pixel_to_viewport(x, y, viewport);
-			draw_pixel(x, y, trace_ray(origin, direction, 1, INFINITY));
+		for (x = 0; x < xres; x++) {
+			for (y = 0; y < yres; y++) {
+				// draw_pixel(x, y, color((double)x / xres, (double)y / yres, 0));
+
+				vec3 direction = pixel_to_viewport(x, y, viewport);
+				draw_pixel(x, y, trace_ray(origin, direction, 1, INFINITY));
+			}
 		}
+		usleep(10000);
 	}
 
 
