@@ -7,3 +7,6 @@ CC=c99
 $(P): $(OBJECTS)
 
 spinner: $(OBJECTS)
+
+sdl:
+	clang sdl.c -o sdl -lSDL2 && ./sdl
