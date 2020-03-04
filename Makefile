@@ -12,3 +12,6 @@ run: $(P)
 spinner: $(OBJECTS)
 
 ray_tracer: $(OBJECTS)
+
+sdl:
+	clang sdl.c -o sdl -lSDL2 && ./sdl
