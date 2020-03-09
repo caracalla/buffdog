@@ -2,6 +2,7 @@
 #include "line.h"
 #include "device.h"
 
+
 void draw_line_DDA(int x1, int y1, int x2, int y2, int color) {
 	int dx = x2 - x1;
 	int dy = y2 - y1;
@@ -66,7 +67,7 @@ void draw_line_old(int x1, int y1, int x2, int y2, int color) {
 	int y = y1;
 
 	draw_pixel(x, y, color);
-	
+
 	while (x < x2) {
 		if (decider < 0) {
 			decider += increment_e;

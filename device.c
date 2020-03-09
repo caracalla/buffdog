@@ -1,120 +1,162 @@
-#include <linux/fb.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-#include <unistd.h> // close and usleep
+
+#include <SDL2/SDL.h>
+
 #include "device.h"
 
 
-const char *FB_NAME = "/dev/fb0";
-struct fb_fix_screeninfo fixed_info;
-struct fb_var_screeninfo variable_info;
-int m_FBFD;
-// pixels are 16 bits, so must be a short
-// although I guess this isn't always true
-// short int *fb_map_pointer;
-int *fb_map_pointer;
+pixeldata pixels = {
+	{0},
+	RES_X * 4
+};
 
-int set_up_device() {
-	// I got this from the internet, so I still need to figure out exactly what it's doing
+SDL_Window *window;
+SDL_Renderer *renderer;
+SDL_Texture *texture;
+SDL_Event event;
 
-	int iFrameBufferSize;
-	/* Open the framebuffer device in read write */
-	m_FBFD = open(FB_NAME, O_RDWR); // framebuffer file descriptor
-	if (m_FBFD < 0) {
-		printf("Unable to open %s.\n", FB_NAME);
-		return 1;
+bool is_running = false;
+
+
+bool set_up_device() {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
+		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+		return false;
 	}
 
-	/* Do Ioctl. Retrieve fixed screen info. */
-	if (ioctl(m_FBFD, FBIOGET_FSCREENINFO, &fixed_info) < 0) {
-		printf("get fixed screen info failed: %s\n", strerror(errno));
-		close(m_FBFD);
-		return 1;
+	window = SDL_CreateWindow(
+			"buffdog",
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			RES_X,
+			RES_Y,
+			SDL_WINDOW_SHOWN);
+
+	if (window == NULL) {
+		SDL_Log("Unable to create SDL window: %s", SDL_GetError());
+		return false;
 	}
 
-	/* Do Ioctl. Get the variable screen info. */
-	if (ioctl(m_FBFD, FBIOGET_VSCREENINFO, &variable_info) < 0) {
-		printf("Unable to retrieve variable screen info: %s\n", strerror(errno));
-		close(m_FBFD);
-		return 1;
+	renderer = SDL_CreateRenderer(window, -1, 0);
+
+	if (renderer == NULL) {
+		SDL_Log("Unable to create SDL renderer: %s", SDL_GetError());
+		return false;
 	}
 
-	/* Calculate the size to mmap */
-	iFrameBufferSize = fixed_info.line_length * variable_info.yres;
+	texture = SDL_CreateTexture(
+			renderer,
+			SDL_PIXELFORMAT_RGBX8888, // display mode is SDL_PIXELFORMAT_ARGB8888?
+			SDL_TEXTUREACCESS_STATIC,
+			RES_X,
+			RES_Y);
 
-	/* Now mmap the framebuffer. */
-	void *fb_map = mmap(NULL, iFrameBufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, m_FBFD,0);
-	if (fb_map == NULL) {
-		printf("mmap failed:\n");
-		close(m_FBFD);
-		return 1;
+	if (texture == NULL) {
+		SDL_Log("Unable to create SDL texture: %s", SDL_GetError());
+		return false;
 	}
 
-	// fb_map_pointer = (short int *) fb_map;
-	fb_map_pointer = (int *) fb_map;
+	// capture mouse
+	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	return 0;
+	// wait for the window to be exposed
+	{
+		do {
+			SDL_PollEvent(&event);
+
+			if (
+					event.type == SDL_WINDOWEVENT &&
+					event.window.event == SDL_WINDOWEVENT_SHOWN) {
+				is_running = true;
+			}
+		} while (!is_running);
+	}
+
+	return true;
 }
 
-void close_fbfd() {
-	close(m_FBFD);
+void close_device() {
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyTexture(texture);
+	SDL_Quit();
 }
 
-int color(double red, double green, double blue) {
+bool running() {
+	return is_running;
+}
+
+void process_events() {
+	while (SDL_PollEvent(&event)) {
+		switch(event.type) {
+			case SDL_QUIT:
+				spit("quitting");
+				is_running = false;
+				break;
+
+			default:
+				// noop;
+			break;
+		}
+	}
+}
+
+uint32_t color(double red, double green, double blue) {
 	unsigned char red_value = 255 * red;
 	unsigned char green_value = 255 * green;
 	unsigned char blue_value = 255 * blue;
-	return (red_value << 16) + (green_value << 8) + blue_value;
-}
-
-void draw_pixel(int x, int y, int color) {
-	// start the y coordinate axis at the bottom of the screen
-	fb_map_pointer[x + ((variable_info.yres - 1) - y) * variable_info.xres] = color;
+	return (red_value << 24) + (green_value << 16) + (blue_value << 8);
 }
 
 void clear_screen() {
-	memset(fb_map_pointer, 0, (variable_info.yres * variable_info.xres) * 4);
+	for (int y = 0; y < RES_Y; ++y) {
+		for (int x = 0; x < RES_X; ++x) {
+			draw_pixel(x, y, color(0, 0, 0));
+		}
+	}
+}
+
+void draw_pixel(int x, int y, int color) {
+	// invert y since it starts at the top
+	y = RES_Y - y - 1;
+
+  // uint32_t r = red & 0x000000FF;
+  // r = r << 24;
+	//
+  // uint32_t g = green & 0x000000FF;
+  // g = g << 16;
+	//
+  // uint32_t b = blue & 0x000000FF;
+  // b = b << 8;
+	//
+	// unsigned char *raw_data = (unsigned char *)(pixels.data);
+	// size_t size = sizeof(uint32_t);
+	//
+	// raw_data[(y * RES_X + x) * size] = 0;
+	// raw_data[(y * RES_X + x) * size + 1] = blue;
+	// raw_data[(y * RES_X + x) * size + 2] = green;
+	// raw_data[(y * RES_X + x) * size + 3] = red;
+
+	pixels.data[(y * RES_X + x)] = color;
+}
+
+void update_screen() {
+	SDL_UpdateTexture(
+			texture,
+			NULL,
+			pixels.data,
+			RES_X * sizeof(uint32_t));
+
+	SDL_RenderClear(renderer);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderPresent(renderer);
 }
 
 unsigned int get_xres() {
-	return variable_info.xres;
+	return RES_X;
 }
 
 unsigned int get_yres() {
-	return variable_info.yres;
-}
-
-void print_fb_info() {
-	printf("*******************\n");
-	printf("Printing fixed info\n");
-	printf("*******************\n");
-	printf("length of fb memory: %d\n", fixed_info.smem_len);
-	printf("length of a line in bytes: %d\n", fixed_info.line_length);
-	printf("FB Type: %d\n", fixed_info.type);
-	printf("FB Visual: %d\n", fixed_info.visual);
-
-	printf("\n");
-	printf("\n");
-	printf("**********************\n");
-	printf("Printing variable info\n");
-	printf("**********************\n");
-	printf("xres: %d\n", variable_info.xres);
-	printf("yres: %d\n", variable_info.yres);
-	printf("xres_virtual: %d\n", variable_info.xres_virtual);
-	printf("yres_virtual: %d\n", variable_info.yres_virtual);
-	printf("xoffset: %d\n", variable_info.xoffset);
-	printf("yoffset: %d\n", variable_info.yoffset);
-	printf("bits_per_pixel: %d\n", variable_info.bits_per_pixel);
-	printf("red bitfied length: %d\n", variable_info.red.length);
-	printf("green bitfied length: %d\n", variable_info.green.length);
-	printf("blue bitfied length: %d\n", variable_info.blue.length);
-	printf("\n");
-	printf("\n");
+	return RES_Y;
 }

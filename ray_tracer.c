@@ -3,9 +3,6 @@
 #include <unistd.h>
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
 #include <math.h>
 
 #include "device.h"
@@ -16,9 +13,10 @@
 #include "light.h"
 
 // necessary constants
-vec3 origin; // this is initialized to all zeroes
-unsigned int xres, yres;
-int BACKGROUND_COLOR = 0xFFFFFF;
+vec3 origin = {0, 0, 0};
+unsigned int xres;
+unsigned int yres;
+uint32_t BACKGROUND_COLOR = 0xFFFFFF;
 
 sphere_list spheres;
 
@@ -44,7 +42,6 @@ void make_spheres() {
 }
 
 // set up lighting
-
 light_list lights;
 vec3 point_light_center; // where the point light will circle around
 
@@ -61,11 +58,6 @@ void make_lights() {
 
 // do the work
 vec3 pixel_to_viewport(int x, int y, vec3 viewport) {
-	if (xres <= 0 || yres <= 0) {
-		printf("what the hell are you doing\n");
-		exit(1);
-	}
-
 	vec3 result;
 	result.x = (x * viewport.x / xres) - (viewport.x / 2);
 	result.y = (y * viewport.y / yres) - (viewport.y / 2);
@@ -151,15 +143,9 @@ int trace_ray(vec3 origin, vec3 direction, double t_min, double t_max) {
 }
 
 int main() {
-	int setup_status = set_up_device();
-
-	if (setup_status != 0) {
-		return setup_status;
+	if (!set_up_device()) {
+		return 1;
 	}
-
-	set_up_signal_handling();
-
-	print_fb_info();
 
 	// make a viewport that is:
 	//	 4 units wide
@@ -172,15 +158,19 @@ int main() {
 
 	xres = get_xres();
 	yres = get_yres();
+
 	int x, y;
 	double point_light_radius = 4;
 	double light_x, light_z;
 	double increment = 0.0;
 
-	while (1) {
+	while (running()) {
+		process_events();
+
 		light_x = (sin(increment) * point_light_radius);
 		light_z = (cos(increment) * point_light_radius) + 5;
 		point_light_center = (vec3){light_x, 2, light_z};
+
 		// rerun this to remake the point light source with the new location
 		make_lights();
 		increment += 0.1;
@@ -193,6 +183,8 @@ int main() {
 				draw_pixel(x, y, trace_ray(origin, direction, 1, INFINITY));
 			}
 		}
+
+		update_screen();
 		usleep(10000);
 	}
 

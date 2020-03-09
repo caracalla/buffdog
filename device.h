@@ -1,28 +1,50 @@
 #ifndef BUFFDOG_DEVICE
 #define BUFFDOG_DEVICE
 
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+
+#define RES_X 640
+#define RES_Y 480
+
+#define spit(x) printf("%s\n", x)
+
+typedef struct {
+	uint32_t data[RES_X * RES_Y];
+	int bytes_per_line;
+} pixeldata;
+
+
 // This must be called first
-int set_up_device();
+// returns false on failure
+bool set_up_device();
 
 // Should be called before exiting the program
-void close_fbfd();
+void close_device();
 
-// white for 16 bit pixels: 0xFFFF
-// white for 32 bit pixels: 0xFFFFFF
+bool running();
+
+// call before rendering on each frame
+// must be called, otherwise there is no way to quit
+void process_events();
+
+// converts color values into a pixel color value
 // red, green, and blue must be between 0.0 and 1.0
-int color(double red, double green, double blue);
+uint32_t color(double red, double green, double blue);
 
+// draw background
+void clear_screen();
 
 // TODO: document the layout of the arguments
 // (0, 0) is bottom left of the screen
 void draw_pixel(int x, int y, int color);
 
-void clear_screen();
+// call after drawing the background and all desired pixels
+void update_screen();
 
-// Getters for screen info
 unsigned int get_xres();
 unsigned int get_yres();
-
-void print_fb_info();
 
 #endif
