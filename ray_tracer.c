@@ -165,7 +165,7 @@ int main() {
 	double increment = 0.0;
 
 	while (running()) {
-		process_events();
+		process_input();
 
 		light_x = (sin(increment) * point_light_radius);
 		light_z = (cos(increment) * point_light_radius) + 5;

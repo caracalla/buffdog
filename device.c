@@ -6,6 +6,12 @@
 #include "device.h"
 
 
+typedef struct {
+	uint32_t data[RES_X * RES_Y];
+	int bytes_per_line;
+} pixeldata;
+
+
 pixeldata pixels = {
 	{0},
 	RES_X * 4
@@ -47,7 +53,7 @@ bool set_up_device() {
 
 	texture = SDL_CreateTexture(
 			renderer,
-			SDL_PIXELFORMAT_RGBX8888, // display mode is SDL_PIXELFORMAT_ARGB8888?
+			SDL_PIXELFORMAT_RGBX8888,
 			SDL_TEXTUREACCESS_STATIC,
 			RES_X,
 			RES_Y);
@@ -87,7 +93,11 @@ bool running() {
 	return is_running;
 }
 
-void process_events() {
+key_input last_key;
+
+void process_input() {
+  last_key = no_key;
+
 	while (SDL_PollEvent(&event)) {
 		switch(event.type) {
 			case SDL_QUIT:
@@ -95,11 +105,41 @@ void process_events() {
 				is_running = false;
 				break;
 
+      case SDL_KEYDOWN:
+        switch(event.key.keysym.scancode) {
+          case SDL_SCANCODE_UP:
+          case SDL_SCANCODE_W:
+            last_key = up;
+            break;
+
+          case SDL_SCANCODE_DOWN:
+          case SDL_SCANCODE_S:
+            last_key = down;
+            break;
+
+          case SDL_SCANCODE_LEFT:
+          case SDL_SCANCODE_A:
+            last_key = left;
+            break;
+
+          case SDL_SCANCODE_RIGHT:
+          case SDL_SCANCODE_D:
+            last_key = right;
+            break;
+
+          default:
+            break;
+        }
+
 			default:
 				// noop;
 			break;
 		}
 	}
+}
+
+key_input get_last_key() {
+  return last_key;
 }
 
 uint32_t color(double red, double green, double blue) {
@@ -109,10 +149,10 @@ uint32_t color(double red, double green, double blue) {
 	return (red_value << 24) + (green_value << 16) + (blue_value << 8);
 }
 
-void clear_screen() {
+void clear_screen(int color) {
 	for (int y = 0; y < RES_Y; ++y) {
 		for (int x = 0; x < RES_X; ++x) {
-			draw_pixel(x, y, color(0, 0, 0));
+			draw_pixel(x, y, color);
 		}
 	}
 }
@@ -120,25 +160,9 @@ void clear_screen() {
 void draw_pixel(int x, int y, int color) {
 	// invert y since it starts at the top
 	y = RES_Y - y - 1;
+  size_t index = y * RES_X + x;
 
-  // uint32_t r = red & 0x000000FF;
-  // r = r << 24;
-	//
-  // uint32_t g = green & 0x000000FF;
-  // g = g << 16;
-	//
-  // uint32_t b = blue & 0x000000FF;
-  // b = b << 8;
-	//
-	// unsigned char *raw_data = (unsigned char *)(pixels.data);
-	// size_t size = sizeof(uint32_t);
-	//
-	// raw_data[(y * RES_X + x) * size] = 0;
-	// raw_data[(y * RES_X + x) * size + 1] = blue;
-	// raw_data[(y * RES_X + x) * size + 2] = green;
-	// raw_data[(y * RES_X + x) * size + 3] = red;
-
-	pixels.data[(y * RES_X + x)] = color;
+	pixels.data[index] = color;
 }
 
 void update_screen() {

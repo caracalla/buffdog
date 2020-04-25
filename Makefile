@@ -13,6 +13,8 @@ spinner: $(OBJECTS)
 
 ray_tracer: $(OBJECTS)
 
+tri: $(OBJECTS)
+
 clean:
 	rm -f spinner
 	rm -f ray_tracer

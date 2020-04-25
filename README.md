@@ -1,30 +1,21 @@
 # Buffdog
 
 ## TODO
-* turn origin and viewport into camera object
-* set up frame swapping for cleaner animation
+* handle input more robustly
+  * multiple key up and down events per frame
+  * mouse motion events
+* transition to vec4
+* matrices
 
 ## Setup
 
-1. Install Debian **jessie** on a virtualbox VM
-    * Tried and failed on stretch, probably due to user error
-2. `apt-get install -y v86d`
-3. `modprobe uvesafb`
-    * The display on the VM should change to blockier text.  If this fails, check the syslog.
-        * Checking the syslog: `tail /var/log/syslog`
-4. Make sure you have `/dev/fb0`
-    * `ls /dev | grep fb`
-5. `make`
-
-## Troubleshooting
-
-#### "cannot reserve video memory at <address>"
-
-Edit `/etc/modprobe.d/fbdev-blacklist.conf` and comment out any lines with "86" in them.
+1. Install SDL2
+1. `make run`
 
 ## Targets
-* `spinner` - A simple spinning line, usually used to test that everything works.
-* `buffdog` - Whatever I'm working on.  Currently, a ray tracer.
+* `spinner` - A simple spinning line, used to test that everything works.
+* `ray_tracer` - A rudimentary real time ray tracer
+* `buffdog` - Whatever I'm working on.  Currently, a real time rasterizer
 
 ## Namesake
 

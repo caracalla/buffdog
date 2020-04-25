@@ -11,10 +11,14 @@
 
 #define spit(x) printf("%s\n", x)
 
-typedef struct {
-	uint32_t data[RES_X * RES_Y];
-	int bytes_per_line;
-} pixeldata;
+
+typedef enum {
+  no_key,
+  up,
+  down,
+  left,
+  right
+} key_input;
 
 
 // This must be called first
@@ -26,9 +30,13 @@ void close_device();
 
 bool running();
 
-// call before rendering on each frame
 // must be called, otherwise there is no way to quit
-void process_events();
+// call before rendering on each frame
+void process_input();
+
+// get the last key pressed
+// TODO: handle multiple key presses, keyup and keydown events separately
+key_input get_last_key();
 
 // converts color values into a pixel color value
 // red, green, and blue must be between 0.0 and 1.0
@@ -46,5 +54,7 @@ void update_screen();
 
 unsigned int get_xres();
 unsigned int get_yres();
+
+
 
 #endif

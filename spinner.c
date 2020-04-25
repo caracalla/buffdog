@@ -34,8 +34,8 @@ int main() {
 		x = ROUND(sin(theta) * 50) + x_mid;
 		y = ROUND(cos(theta) * 50) + y_mid;
 
-		process_events();
-		clear_screen();
+		process_input();
+		clear_screen(color(0, 0, 0));
 		draw_line(x_mid, y_mid, x, y, color(0, 1, 0));
 		update_screen();
 	}
