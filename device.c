@@ -93,10 +93,14 @@ bool running() {
 	return is_running;
 }
 
+key_input key_queue[64];
 key_input last_key;
+mouse_input mouse_motion;
 
 void process_input() {
-  last_key = no_key;
+	last_key = no_key;
+	mouse_motion.x = 0;
+	mouse_motion.y = 0;
 
 	while (SDL_PollEvent(&event)) {
 		switch(event.type) {
@@ -105,31 +109,40 @@ void process_input() {
 				is_running = false;
 				break;
 
-      case SDL_KEYDOWN:
-        switch(event.key.keysym.scancode) {
-          case SDL_SCANCODE_UP:
-          case SDL_SCANCODE_W:
-            last_key = up;
-            break;
+			case SDL_KEYDOWN:
+				switch(event.key.keysym.scancode) {
+					case SDL_SCANCODE_UP:
+					case SDL_SCANCODE_W:
+						last_key = up;
+						break;
 
-          case SDL_SCANCODE_DOWN:
-          case SDL_SCANCODE_S:
-            last_key = down;
-            break;
+					case SDL_SCANCODE_DOWN:
+					case SDL_SCANCODE_S:
+						last_key = down;
+						break;
 
-          case SDL_SCANCODE_LEFT:
-          case SDL_SCANCODE_A:
-            last_key = left;
-            break;
+					case SDL_SCANCODE_LEFT:
+					case SDL_SCANCODE_A:
+						last_key = left;
+						break;
 
-          case SDL_SCANCODE_RIGHT:
-          case SDL_SCANCODE_D:
-            last_key = right;
-            break;
+					case SDL_SCANCODE_RIGHT:
+					case SDL_SCANCODE_D:
+						last_key = right;
+						break;
 
-          default:
-            break;
-        }
+					default:
+						break;
+				}
+
+				break;
+
+			case SDL_MOUSEMOTION:
+				mouse_motion.x = event.motion.xrel;
+				mouse_motion.y = event.motion.yrel;
+
+				printf("mouse: x - %d, y - %d\n", mouse_motion.x, mouse_motion.y);
+				break;
 
 			default:
 				// noop;
@@ -138,8 +151,12 @@ void process_input() {
 	}
 }
 
-key_input get_last_key() {
-  return last_key;
+key_input get_next_key() {
+	return last_key;
+}
+
+mouse_input get_mouse_motion() {
+	return mouse_motion;
 }
 
 uint32_t color(double red, double green, double blue) {
@@ -160,7 +177,7 @@ void clear_screen(int color) {
 void draw_pixel(int x, int y, int color) {
 	// invert y since it starts at the top
 	y = RES_Y - y - 1;
-  size_t index = y * RES_X + x;
+	size_t index = y * RES_X + x;
 
 	pixels.data[index] = color;
 }

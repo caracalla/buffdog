@@ -25,35 +25,35 @@ int d = 2;
 vec3 viewport = {0, 0, 0};
 
 point viewportToCanvas(double x, double y) {
-  point result;
-  result.x = x * get_xres() / Vw + get_xres() / 2;
-  result.y = y * get_yres() / Vh + get_yres() / 2;
-  return result;
+	point result;
+	result.x = x * get_xres() / Vw + get_xres() / 2;
+	result.y = y * get_yres() / Vh + get_yres() / 2;
+	return result;
 }
 
 point projectVertex(vec3 vertex) {
-  double x = (vertex.x - viewport.x) * d / (vertex.z - viewport.z);
-  double y = (vertex.y - viewport.y) * d / (vertex.z - viewport.z);
-  return viewportToCanvas(x, y);
+	double x = (vertex.x - viewport.x) * d / (vertex.z - viewport.z);
+	double y = (vertex.y - viewport.y) * d / (vertex.z - viewport.z);
+	return viewportToCanvas(x, y);
 }
 
 void drawCube(cube item) {
-  point projectedVertices[CUBE_V_COUNT];
+	point projectedVertices[CUBE_V_COUNT];
 
-  for (int i = 0; i < CUBE_V_COUNT; i++) {
-    projectedVertices[i] = projectVertex(item.vertices[i]);
-  }
+	for (int i = 0; i < CUBE_V_COUNT; i++) {
+		projectedVertices[i] = projectVertex(item.vertices[i]);
+	}
 
-  for (int i = 0; i < CUBE_T_COUNT; i++) {
-    triangle tri = {
-      projectedVertices[item.triangles[i].v0],
-      projectedVertices[item.triangles[i].v1],
-      projectedVertices[item.triangles[i].v2],
-      item.triangles[i].color
-    };
+	for (int i = 0; i < CUBE_T_COUNT; i++) {
+		triangle tri = {
+			projectedVertices[item.triangles[i].v0],
+			projectedVertices[item.triangles[i].v1],
+			projectedVertices[item.triangles[i].v2],
+			item.triangles[i].color
+		};
 
-    drawTriangle(tri);
-  }
+		drawTriangle(tri);
+	}
 }
 
 int main() {
@@ -61,55 +61,59 @@ int main() {
 		return 1;
 	}
 
-  double cube1Scale = 1;
-  vec3 cube1pos = {-1.5, 0, 7};
-  vec3 cube1rot = {0, 0, 0};
-  cube cube1 = buildCube(cube1Scale, cube1pos, cube1rot);
+	double cube1Scale = 1;
+	vec3 cube1pos = {-1.5, 0, 7};
+	vec3 cube1rot = {0, 0, 0};
+	cube cube1 = buildCube(cube1Scale, cube1pos, cube1rot);
 
-  double cube2Scale = 0.5;
-  vec3 cube2pos = {2, -0.5, 6};
-  vec3 cube2rot = {0, 0, 0};
-  cube cube2 = buildCube(cube2Scale, cube2pos, cube2rot);
+	double cube2Scale = 0.5;
+	vec3 cube2pos = {2, -0.5, 6};
+	vec3 cube2rot = {0, 0, 0};
+	cube cube2 = buildCube(cube2Scale, cube2pos, cube2rot);
 
 	while (running()) {
 		usleep(DELAY_US);
 
-    cube1.rotation.x += 0.005;
-    cube1.rotation.y += 0.007;
-    cube1.rotation.z += 0.009;
+		cube1.rotation.x += 0.005;
+		cube1.rotation.y += 0.007;
+		cube1.rotation.z += 0.009;
 
-    clear_screen(color(1, 1, 1));
+		clear_screen(color(1, 1, 1));
 
-    drawCube(applyTransform(cube1));
-    drawCube(applyTransform(cube2));
+		drawCube(applyTransform(cube1));
+		drawCube(applyTransform(cube2));
 
-    update_screen();
-    process_input();
+		update_screen();
+		process_input();
 
-    key_input last_key = get_last_key();
+		key_input next_key = get_next_key();
 
-    if (last_key) {
-      switch(last_key) {
-        case up:
-          viewport.z += INCREMENT;
-          break;
+		if (next_key) {
+			switch(next_key) {
+				case up:
+					viewport.z += INCREMENT;
+					break;
 
-        case down:
-          viewport.z -= INCREMENT;
-          break;
+				case down:
+					viewport.z -= INCREMENT;
+					break;
 
-        case left:
-          viewport.x -= INCREMENT;
-          break;
+				case left:
+					viewport.x -= INCREMENT;
+					break;
 
-        case right:
-          viewport.x += INCREMENT;
-          break;
+				case right:
+					viewport.x += INCREMENT;
+					break;
 
-        default:
-          break;
-      }
-    }
+				default:
+					break;
+			}
+		}
+
+		mouse_input mouse_motion = get_mouse_motion();
+
+
 	}
 
 	close_device();

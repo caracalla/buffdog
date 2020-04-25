@@ -2,8 +2,8 @@
 
 ## TODO
 * handle input more robustly
-  * multiple key up and down events per frame
-  * mouse motion events
+	* multiple key up and down events per frame
+	* mouse motion events
 * transition to vec4
 * matrices
 

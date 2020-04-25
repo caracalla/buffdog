@@ -13,12 +13,17 @@
 
 
 typedef enum {
-  no_key,
-  up,
-  down,
-  left,
-  right
+	no_key,
+	up,
+	down,
+	left,
+	right
 } key_input;
+
+typedef struct {
+	int x;
+	int y;
+} mouse_input;
 
 
 // This must be called first
@@ -36,7 +41,9 @@ void process_input();
 
 // get the last key pressed
 // TODO: handle multiple key presses, keyup and keydown events separately
-key_input get_last_key();
+key_input get_next_key();
+
+mouse_input get_mouse_motion();
 
 // converts color values into a pixel color value
 // red, green, and blue must be between 0.0 and 1.0
