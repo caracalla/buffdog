@@ -25,6 +25,15 @@ typedef struct {
 	int y;
 } mouse_input;
 
+typedef struct {
+	bool up;
+	bool down;
+	bool left;
+	bool right;
+} key_states_t;
+
+key_states_t get_key_states();
+
 
 // This must be called first
 // returns false on failure
