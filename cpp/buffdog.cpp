@@ -2,8 +2,8 @@
 #define _BSD_SOURCE
 #include <unistd.h>
 
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 
 #include "device.h"
 #include "line.h"
@@ -20,51 +20,81 @@
 
 
 // define viewport
-struct camera_t {
+struct viewport_t {
 	int width;
 	int height;
-	int distance;
+	int distance; // from camera
+};
+
+// camera is always at origin
+// translation and rotation refer to in-world values
+struct camera_t {
+	viewport_t viewport;
 	vec4 translation;
 	vec4 rotation; // z is ignored
 };
 
-camera_t camera = {4, 3, 2, {0, 0, 0}, {0, 0, 0}};
+// camera starts out at the world origin
+viewport_t viewport = {4, 3, 2};
+camera_t camera = {viewport, {0, 0, 0}, {0, 0, 0}};
+int far_plane_distance = 10;
 
-// viewport culing
-vec4 near_plane = {0, 0, 1, -2};
+// view frustum planes
+vec4 near_plane = {0, 0, 1, -viewport.distance};
+
+// left plane P is (-2, 0, 2) and passes through the origin, so the normal is
+// (2, 0, 2), or (0.7071, 0, 0.7071)
 vec4 left_plane = {0.7071, 0, 0.7071, 0};
 vec4 right_plane = {-0.7071, 0, 0.7071, 0};
 vec4 high_plane = {0, -0.8, 0.6, 0};
 vec4 low_plane = {0, 0.8, 0.6, 0};
+vec4 far_plane = {0, 0, -1, far_plane_distance};
 
-bool cull(vec4 vertex) {
+// void set_up_frustum_planes() {
+// 	near_plane = {0, 0, 1, -viewport.distance};
+//
+// 	vec4 left_plane_point =
+// }
+
+bool insideFrustum(vec4 vertex) {
 	double nearD = vertex.dotProduct(near_plane);
 	double leftD = vertex.dotProduct(left_plane);
 	double rightD = vertex.dotProduct(right_plane);
 	double highD = vertex.dotProduct(high_plane);
 	double lowD = vertex.dotProduct(low_plane);
+	double farD = vertex.dotProduct(far_plane);
 
-	return nearD > 0 && leftD > 0 && rightD > 0 && highD > 0 && lowD > 0;
+	double limit_value = 0.0;
+
+	return (
+			nearD > limit_value &&
+			leftD > limit_value &&
+			rightD > limit_value &&
+			highD > limit_value &&
+			lowD > limit_value &&
+			farD > limit_value);
 }
 
 point viewportToCanvas(double x, double y) {
 	point result;
-	result.x = x * get_xres() / camera.width + get_xres() / 2;
-	result.y = y * get_yres() / camera.height + get_yres() / 2;
+	result.x = x * get_xres() / camera.viewport.width + get_xres() / 2;
+	result.y = y * get_yres() / camera.viewport.height + get_yres() / 2;
 	return result;
 }
 
 point projectVertex(vec4 vertex) {
-	double x = vertex.x * camera.distance / vertex.z;
-	double y = vertex.y * camera.distance / vertex.z;
+	double x = vertex.x * camera.viewport.distance / vertex.z;
+	double y = vertex.y * camera.viewport.distance / vertex.z;
 	return viewportToCanvas(x, y);
 }
+
+
 
 void drawCube(cube item) {
 	point projectedVertices[CUBE_V_COUNT];
 
 	for (int i = 0; i < CUBE_V_COUNT; i++) {
-		if (cull(item.vertices[i])) {
+		if (insideFrustum(item.vertices[i])) {
 			projectedVertices[i] = projectVertex(item.vertices[i]);
 		} else {
 			// vertex not visible, insert dummy value
@@ -73,22 +103,20 @@ void drawCube(cube item) {
 	}
 
 	for (int i = 0; i < CUBE_T_COUNT; i++) {
-		// don't draw triangles with hidden vertices
+		// all vertices are visible, draw triangle
 		if (
-				projectedVertices[item.triangles[i].v0].x == -1 ||
-				projectedVertices[item.triangles[i].v1].x == -1 ||
-				projectedVertices[item.triangles[i].v2].x == -1) {
-			continue;
+				projectedVertices[item.triangles[i].v0].x != -1 &&
+				projectedVertices[item.triangles[i].v1].x != -1 &&
+				projectedVertices[item.triangles[i].v2].x != -1) {
+			triangle tri = {
+				projectedVertices[item.triangles[i].v0],
+				projectedVertices[item.triangles[i].v1],
+				projectedVertices[item.triangles[i].v2],
+				item.triangles[i].color
+			};
+
+			drawTriangle(tri);
 		}
-
-		triangle tri = {
-			projectedVertices[item.triangles[i].v0],
-			projectedVertices[item.triangles[i].v1],
-			projectedVertices[item.triangles[i].v2],
-			item.triangles[i].color
-		};
-
-		drawTriangle(tri);
 	}
 }
 
@@ -143,20 +171,12 @@ int main() {
 		//
 		// if (next_key) {
 		// 	switch(next_key) {
-		// 		case up:
-		// 			camera.translation.z += INCREMENT;
+		// 		case x_key:
+		// 			limit_value += 0.01;
 		// 			break;
 		//
-		// 		case down:
-		// 			camera.translation.z -= INCREMENT;
-		// 			break;
-		//
-		// 		case left:
-		// 			camera.translation.x -= INCREMENT;
-		// 			break;
-		//
-		// 		case right:
-		// 			camera.translation.x += INCREMENT;
+		// 		case z_key:
+		// 			limit_value -= 0.01;
 		// 			break;
 		//
 		// 		default:

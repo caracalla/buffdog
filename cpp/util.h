@@ -1,9 +1,9 @@
 #ifndef BUFFDOG_UTIL
 #define BUFFDOG_UTIL
 
-// logging function
-// void bufflog(char* message, va_list args);
+#define terminate(message) self_destruct(message, __LINE__, __FILE__)
 
-void self_destruct(char *message, int line, char *file);
+
+void self_destruct(char *message, int line, const char* file);
 
 #endif

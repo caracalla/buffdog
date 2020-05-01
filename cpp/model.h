@@ -1,7 +1,8 @@
 #ifndef BUFFDOG_MODEL
 #define BUFFDOG_MODEL
 
-#include <math.h>
+#include <cmath>
+#include <vector>
 
 #include "vec4.h"
 #include "triangle.h"

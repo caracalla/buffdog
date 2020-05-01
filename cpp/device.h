@@ -1,9 +1,8 @@
 #ifndef BUFFDOG_DEVICE
 #define BUFFDOG_DEVICE
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 
 #define RES_X 640
@@ -17,7 +16,9 @@ typedef enum {
 	up,
 	down,
 	left,
-	right
+	right,
+	x_key,
+	z_key
 } key_input;
 
 typedef struct {

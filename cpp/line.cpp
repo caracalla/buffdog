@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include "line.h"
 #include "device.h"
 
