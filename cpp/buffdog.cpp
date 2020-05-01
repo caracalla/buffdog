@@ -35,20 +35,20 @@ struct camera_t {
 };
 
 // camera starts out at the world origin
-viewport_t viewport = {4, 3, 2};
+viewport_t viewport = {4, 3, -2};
 camera_t camera = {viewport, {0, 0, 0}, {0, 0, 0}};
 int far_plane_distance = 10;
 
 // view frustum planes
-vec4 near_plane = {0, 0, 1, -viewport.distance};
+vec4 near_plane = {0, 0, -1, -viewport.distance};
 
 // left plane P is (-2, 0, 2) and passes through the origin, so the normal is
 // (2, 0, 2), or (0.7071, 0, 0.7071)
-vec4 left_plane = {0.7071, 0, 0.7071, 0};
-vec4 right_plane = {-0.7071, 0, 0.7071, 0};
-vec4 high_plane = {0, -0.8, 0.6, 0};
-vec4 low_plane = {0, 0.8, 0.6, 0};
-vec4 far_plane = {0, 0, -1, far_plane_distance};
+vec4 left_plane = {0.7071, 0, -0.7071, 0};
+vec4 right_plane = {-0.7071, 0, -0.7071, 0};
+vec4 high_plane = {0, -0.8, -0.6, 0};
+vec4 low_plane = {0, 0.8, -0.6, 0};
+vec4 far_plane = {0, 0, 1, far_plane_distance};
 
 // void set_up_frustum_planes() {
 // 	near_plane = {0, 0, 1, -viewport.distance};
@@ -139,12 +139,12 @@ int main() {
 	}
 
 	double cube1Scale = 1;
-	vec4 cube1translation = vec4::direction(-1.5, 0, 7);
+	vec4 cube1translation = vec4::direction(-1.5, 0, -7);
 	vec4 cube1rotation = vec4::direction(0, 0, 0);
 	cube cube1 = buildCube(cube1Scale, cube1translation, cube1rotation);
 
 	double cube2Scale = 0.5;
-	vec4 cube2translation = vec4::direction(2, -0.5, 6);
+	vec4 cube2translation = vec4::direction(2, -0.5, -6);
 	vec4 cube2rotation = vec4::direction(0, 0, 0);
 	cube cube2 = buildCube(cube2Scale, cube2translation, cube2rotation);
 
@@ -186,8 +186,8 @@ int main() {
 
 		mouse_input mouse_motion = get_mouse_motion();
 
-		camera.rotation.x += -(double)mouse_motion.y / MOUSE_SENSITIVITY_FACTOR;
-		camera.rotation.y += -(double)mouse_motion.x / MOUSE_SENSITIVITY_FACTOR;
+		camera.rotation.x += (double)mouse_motion.y / MOUSE_SENSITIVITY_FACTOR;
+		camera.rotation.y += (double)mouse_motion.x / MOUSE_SENSITIVITY_FACTOR;
 
 		key_states_t key_states = get_key_states();
 
@@ -206,10 +206,10 @@ int main() {
 		}
 
 		if (key_states.up) {
-			translation.z += 1;
+			translation.z -= 1;
 		}
 		if (key_states.down) {
-			translation.z -= 1;
+			translation.z += 1;
 		}
 		if (key_states.left) {
 			translation.x -= 1;
