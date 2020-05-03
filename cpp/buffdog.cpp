@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <ctime>
 
 #include "device.h"
 #include "line.h"
@@ -17,6 +18,25 @@
 #define INCREMENT 0.005
 #define MOUSE_SENSITIVITY_FACTOR 1000
 #define MAX_VELOCITY 0.125
+
+
+int fps = 0;
+clock_t nextPrintTime;
+
+void printFPS(/* clock_t frameStartTime */) {
+	fps++;
+
+	clock_t nowTime = clock();
+
+	double timeDiff = ((double) (nowTime - nextPrintTime)) / CLOCKS_PER_SEC;
+	// double frameDiff = ((double) (nowTime - frameStartTime)) / CLOCKS_PER_SEC;
+
+	if (timeDiff >= 1.0) {
+		nextPrintTime = nowTime;
+		printf("FPS: %d\n", fps);
+		fps = 0;
+	}
+}
 
 
 // define viewport
@@ -138,6 +158,8 @@ int main() {
 		return 1;
 	}
 
+	nextPrintTime = clock();
+
 	double cube1Scale = 1;
 	vec4 cube1translation = vec4::direction(-1.5, 0, -7);
 	vec4 cube1rotation = vec4::direction(0, 0, 0);
@@ -222,6 +244,8 @@ int main() {
 		mat4 rotation = mat4::makeRotationMatrix((vec4){0, camera.rotation.y, 0, 0});
 
 		camera.translation.add(rotation.multiplyVec4(movement));
+
+		printFPS();
 	}
 
 	close_device();
