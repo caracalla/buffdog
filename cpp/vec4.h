@@ -53,15 +53,15 @@ struct vec4 {
 		return result;
 	}
 
-	double squared_length() {
+	double squaredLength() {
 		return (this->x * this->x) + (this->y * this->y) + (this->z * this->z);
 	}
 
 	double length() {
-		return sqrt(this->squared_length());
+		return sqrt(this->squaredLength());
 	}
 
-	vec4 scalar_multiply(double scalar) {
+	vec4 scalarMultiply(double scalar) {
 		vec4 result;
 
 		result.x = this->x * scalar;
@@ -79,14 +79,31 @@ struct vec4 {
 			return (vec4){0, 0, 0, 0};
 		}
 
-		return scalar_multiply(1 / length);
+		return scalarMultiply(1 / length);
 	}
 
-	void add(vec4 other) {
-		this->x += other.x;
-		this->y += other.y;
-		this->z += other.z;
-		this->w += other.w;
+	vec4 add(vec4 other) {
+		vec4 result;
+		result.x = this->x + other.x;
+		result.y = this->y + other.y;
+		result.z = this->z + other.z;
+		result.w = this->w + other.w;
+
+		return result;
+	}
+
+	vec4 subtract(vec4 other) {
+		vec4 result;
+		result.x = this->x - other.x;
+		result.y = this->y - other.y;
+		result.z = this->z - other.z;
+		result.w = this->w - other.w;
+
+		return result;
+	}
+
+	void log() {
+		printf("{%f, %f, %f, %f}\n", this->x, this->y, this->z, this->w);
 	}
 };
 

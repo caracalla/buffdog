@@ -19,17 +19,18 @@
 #define MOUSE_SENSITIVITY_FACTOR 1000
 #define MAX_VELOCITY 0.125
 
+#define NUM_FRUSTUM_PLANES 6
+
 
 int fps = 0;
 clock_t nextPrintTime;
 
-void printFPS(/* clock_t frameStartTime */) {
+void printFPS() {
 	fps++;
 
 	clock_t nowTime = clock();
 
 	double timeDiff = ((double) (nowTime - nextPrintTime)) / CLOCKS_PER_SEC;
-	// double frameDiff = ((double) (nowTime - frameStartTime)) / CLOCKS_PER_SEC;
 
 	if (timeDiff >= 1.0) {
 		nextPrintTime = nowTime;
@@ -41,9 +42,10 @@ void printFPS(/* clock_t frameStartTime */) {
 
 // define viewport
 struct viewport_t {
-	int width;
-	int height;
-	int distance; // from camera
+	double width;
+	double height;
+	double distance; // position on z axis
+	double far_plane_distance; // position on z axis
 };
 
 // camera is always at origin
@@ -55,44 +57,56 @@ struct camera_t {
 };
 
 // camera starts out at the world origin
-viewport_t viewport = {4, 3, -2};
+viewport_t viewport = {4, 3, -2, -10};
 camera_t camera = {viewport, {0, 0, 0}, {0, 0, 0}};
-int far_plane_distance = 10;
 
-// view frustum planes
-vec4 near_plane = {0, 0, -1, -viewport.distance};
-
-// left plane P is (-2, 0, 2) and passes through the origin, so the normal is
-// (2, 0, 2), or (0.7071, 0, 0.7071)
-vec4 left_plane = {0.7071, 0, -0.7071, 0};
-vec4 right_plane = {-0.7071, 0, -0.7071, 0};
-vec4 high_plane = {0, -0.8, -0.6, 0};
-vec4 low_plane = {0, 0.8, -0.6, 0};
-vec4 far_plane = {0, 0, 1, far_plane_distance};
+// TODO: determine these dynamically from viewport
+// the x value for the right plane and the y value for the high plane are a
+// little off because otherwise the clipAndDraw function would try to draw out
+// of bounds
+vec4 frustum_planes[NUM_FRUSTUM_PLANES] = {
+	{0, 0, -1, viewport.distance}, // near plane
+	{0.7071, 0, -0.7071, 0}, // left plane
+	{-0.70712, 0, -0.7071, 0}, // right plane
+	{0, -0.801, -0.6, 0}, // high plane
+	{0, 0.8, -0.6, 0}, // low plane
+	{0, 0, 1, -viewport.far_plane_distance} // far plane
+};
 
 // void set_up_frustum_planes() {
-// 	near_plane = {0, 0, 1, -viewport.distance};
-//
-// 	vec4 left_plane_point =
+// 	// near plane
+// 	frustum_planes[0] = {0, 0, 1, -viewport.distance};
+// 	// far plane
+// 	frustum_planes[1] = {0, 0, 1, viewport.far_plane_distance};
 // }
 
+double limit_value = 0.0;
+
+bool insidePlane(vec4 vertex, vec4 plane) {
+	return vertex.dotProduct(plane) > limit_value;
+}
+
 bool insideFrustum(vec4 vertex) {
-	double nearD = vertex.dotProduct(near_plane);
-	double leftD = vertex.dotProduct(left_plane);
-	double rightD = vertex.dotProduct(right_plane);
-	double highD = vertex.dotProduct(high_plane);
-	double lowD = vertex.dotProduct(low_plane);
-	double farD = vertex.dotProduct(far_plane);
+	for (int i = 0; i < NUM_FRUSTUM_PLANES; i++) {
+		if (!insidePlane(vertex, frustum_planes[i])) {
+			return false;
+		}
+	}
 
-	double limit_value = 0.0;
+	return true;
+}
 
-	return (
-			nearD > limit_value &&
-			leftD > limit_value &&
-			rightD > limit_value &&
-			highD > limit_value &&
-			lowD > limit_value &&
-			farD > limit_value);
+// the max potential vertices for a triangle is 9
+//   clipping a convex polygon of n vertices against each plane can yield n+1 vertices
+//   clipping against six planes yields n + 6 vertices
+#define MAX_VERTICES 9
+vec4 vertices1[MAX_VERTICES];
+vec4 vertices2[MAX_VERTICES];
+
+vec4 linePlaneIntersection(vec4 v1, vec4 v2, vec4 plane) {
+	double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
+
+	return v1.add(v2.subtract(v1).scalarMultiply(t));
 }
 
 point viewportToCanvas(double x, double y) {
@@ -108,34 +122,132 @@ point projectVertex(vec4 vertex) {
 	return viewportToCanvas(x, y);
 }
 
+// Sutherland-Hodgman algorithm
+// TODO: Take into account triangle winding.  This *should* already do so but
+// I'm not certain
+void clipAndDraw(vec4 v0, vec4 v1, vec4 v2, int color) {
+	vec4* original_vertices = vertices1;
+	vec4* new_vertices = vertices2;
+	int original_count = 3;
+	int new_count = 0;
 
+	original_vertices[0] = v0;
+	original_vertices[1] = v1;
+	original_vertices[2] = v2;
 
-void drawCube(cube item) {
-	point projectedVertices[CUBE_V_COUNT];
+	// clip against each frustum plane
+	for (int i = 0; i < NUM_FRUSTUM_PLANES; i++) {
+		new_count = 0;
+		int previous = original_count - 1;
+		int current = 0;
 
-	for (int i = 0; i < CUBE_V_COUNT; i++) {
-		if (insideFrustum(item.vertices[i])) {
-			projectedVertices[i] = projectVertex(item.vertices[i]);
-		} else {
-			// vertex not visible, insert dummy value
-			projectedVertices[i] = (point){-1, -1};
+		// step through each pair of vertices, deciding what to do based on whether
+		// each is inside or outside the given plane
+		while (current < original_count) {
+			if (insidePlane(original_vertices[previous], frustum_planes[i])) {
+				if (insidePlane(original_vertices[current], frustum_planes[i])) {
+					// just add current
+					new_vertices[new_count] = original_vertices[current];
+					new_count++;
+				} else {
+					// add the intersect
+					new_vertices[new_count] = linePlaneIntersection(
+							original_vertices[current],
+							original_vertices[previous],
+							frustum_planes[i]);
+					new_count++;
+				}
+			} else {
+				if (insidePlane(original_vertices[current], frustum_planes[i])) {
+					// add the intersect
+					new_vertices[new_count] = linePlaneIntersection(
+							original_vertices[current],
+							original_vertices[previous],
+							frustum_planes[i]);
+					new_count++;
+
+					// then add current
+					new_vertices[new_count] = original_vertices[current];
+					new_count++;
+				} else {
+					// both previous and current are outside the plane, do nothing
+				}
+			}
+
+			previous += 1;
+			current += 1;
+			if (previous == original_count) {
+				previous = 0;
+			}
+		}
+
+		if (i < NUM_FRUSTUM_PLANES - 1) {
+			// swap for the next plane
+			vec4* temp = original_vertices;
+			original_vertices = new_vertices;
+			new_vertices = temp;
+			original_count = new_count;
 		}
 	}
 
-	for (int i = 0; i < CUBE_T_COUNT; i++) {
-		// all vertices are visible, draw triangle
-		if (
-				projectedVertices[item.triangles[i].v0].x != -1 &&
-				projectedVertices[item.triangles[i].v1].x != -1 &&
-				projectedVertices[item.triangles[i].v2].x != -1) {
-			triangle tri = {
-				projectedVertices[item.triangles[i].v0],
-				projectedVertices[item.triangles[i].v1],
-				projectedVertices[item.triangles[i].v2],
-				item.triangles[i].color
-			};
+	point projectedVertices[new_count];
+
+	for (int i = 0; i < new_count; i++) {
+		projectedVertices[i] = projectVertex(new_vertices[i]);
+	}
+
+	// triangulate the resulting polygon, with all triangles starting at v0
+	for (int i = 1; i < new_count - 1; i++) {
+		tri2d triangle = {
+				projectedVertices[0],
+				projectedVertices[i],
+				projectedVertices[i + 1],
+				color};
+
+		drawTriangle(triangle);
+	}
+}
+
+void drawCube(cube item) {
+	bool isVertexVisible[item.vertices.size()];
+	point projectedVertices[item.vertices.size()];
+
+	for (int i = 0; i < item.vertices.size(); i++) {
+		isVertexVisible[i] = insideFrustum(item.vertices[i]);
+
+		if (isVertexVisible[i]) {
+			projectedVertices[i] = projectVertex(item.vertices[i]);
+		}
+	}
+
+	for (const auto& triangle : item.triangles) {
+		if (isVertexVisible[triangle.v0] &&
+				isVertexVisible[triangle.v1] &&
+				isVertexVisible[triangle.v2]) {
+			// all vertices are visible
+			tri2d tri = {
+					projectedVertices[triangle.v0],
+					projectedVertices[triangle.v1],
+					projectedVertices[triangle.v2],
+					triangle.color};
 
 			drawTriangle(tri);
+		} else if (!isVertexVisible[triangle.v0] &&
+				!isVertexVisible[triangle.v1] &&
+				!isVertexVisible[triangle.v2]) {
+			// no vertices are visible, do nothing
+			// NOTE: this is technically incorrect.  For instance, the triangle could
+			// be so large that it covers the entire screen, and each vertex are is
+			// outside of a different plane.  Technically, this should fall into the
+			// final condition below.
+		} else {
+			// some vertices are visible
+			// it's clipping time
+			clipAndDraw(
+					item.vertices[triangle.v0],
+					item.vertices[triangle.v1],
+					item.vertices[triangle.v2],
+					triangle.color);
 		}
 	}
 }
@@ -146,7 +258,7 @@ cube applyTransform(cube item) {
 	mat4 worldMatrix = mat4::makeWorldMatrix(item.scale, item.rotation, item.translation);
 	mat4 finalMatrix = cameraMatrix.multiplyMat4(worldMatrix);
 
-	for (int i = 0; i < CUBE_V_COUNT; i++) {
+	for (int i = 0; i < item.vertices.size(); i++) {
 		item.vertices[i] = finalMatrix.multiplyVec4(item.vertices[i]);
 	}
 
@@ -158,6 +270,7 @@ int main() {
 		return 1;
 	}
 
+	// for FPS determination
 	nextPrintTime = clock();
 
 	double cube1Scale = 1;
@@ -240,10 +353,10 @@ int main() {
 			translation.x += 1;
 		}
 
-		vec4 movement = translation.unit().scalar_multiply(velocity);
+		vec4 movement = translation.unit().scalarMultiply(velocity);
 		mat4 rotation = mat4::makeRotationMatrix((vec4){0, camera.rotation.y, 0, 0});
 
-		camera.translation.add(rotation.multiplyVec4(movement));
+		camera.translation = camera.translation.add(rotation.multiplyVec4(movement));
 
 		printFPS();
 	}

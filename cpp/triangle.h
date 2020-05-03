@@ -15,19 +15,19 @@ typedef struct {
 	point p1;
 	point p2;
 	int color;
-} triangle;
+} tri2d;
 
 void drawLine(point start, point end, int color) {
 	draw_line(start.x, start.y, end.x, end.y, color);
 }
 
-void drawTriangle(triangle tri) {
+void drawTriangle(tri2d tri) {
 	drawLine(tri.p0, tri.p1, tri.color);
 	drawLine(tri.p1, tri.p2, tri.color);
 	drawLine(tri.p2, tri.p0, tri.color);
 }
 
-void fillTriangle(triangle tri) {
+void fillTriangle(tri2d tri) {
 	// sort from highest to lowest (?)
 	point temp;
 	if (tri.p0.y > tri.p1.y) {
