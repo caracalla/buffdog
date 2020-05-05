@@ -12,7 +12,6 @@
 #include "model.h"
 #include "triangle.h"
 #include "vector.h"
-#include "util.h"
 
 
 #define DELAY_US 10000

@@ -5,7 +5,6 @@
 #include <SDL2/SDL.h>
 
 #include "device.h"
-#include "util.h"
 
 
 typedef struct {

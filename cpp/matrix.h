@@ -2,7 +2,6 @@
 #define BUFFDOG_MAT4
 
 #include "vector.h"
-#include "util.h"
 
 
 typedef enum {x_axis, y_axis, z_axis, w_axis} axis;
