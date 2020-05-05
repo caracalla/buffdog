@@ -3,7 +3,7 @@
 #include "device.h"
 
 
-void draw_vertical_line(int x, int y1, int y2, int color) {
+void drawVerticalLine(int x, int y1, int y2, int color) {
 	int y;
 
 	if (y2 < y1) {
@@ -13,11 +13,11 @@ void draw_vertical_line(int x, int y1, int y2, int color) {
 	}
 
 	for (y = y1; y <= y2; y++) {
-		draw_pixel(x, y, color);
+		device::setPixel(x, y, color);
 	}
 }
 
-void draw_horizontal_line(int y, int x1, int x2, int color) {
+void drawHorizontalLine(int y, int x1, int x2, int color) {
 	int x;
 
 	if (x2 < x1) {
@@ -27,12 +27,12 @@ void draw_horizontal_line(int y, int x1, int x2, int color) {
 	}
 
 	for (x = x1; x <= x2; x++) {
-		draw_pixel(x, y, color);
+		device::setPixel(x, y, color);
 	}
 }
 
 // midpoint algorithm
-void draw_line(int x1, int y1, int x2, int y2, int color) {
+void drawLine(int x1, int y1, int x2, int y2, int color) {
 	int dx = x2 - x1;
 	int dy = y2 - y1;
 	int decider;
@@ -42,12 +42,12 @@ void draw_line(int x1, int y1, int x2, int y2, int color) {
 	int y;
 
 	if (dx == 0) {
-		draw_vertical_line(x1, y1, y2, color);
+		drawVerticalLine(x1, y1, y2, color);
 		return;
 	}
 
 	if (dy == 0) {
-		draw_horizontal_line(y1, x1, x2, color);
+		drawHorizontalLine(y1, x1, x2, color);
 		return;
 	}
 
@@ -65,7 +65,7 @@ void draw_line(int x1, int y1, int x2, int y2, int color) {
 	x = x1;
 	y = y1;
 
-	draw_pixel(x, y, color);
+	device::setPixel(x, y, color);
 
 	if (dy > 0) {
 		if (dx > dy) {
@@ -84,7 +84,7 @@ void draw_line(int x1, int y1, int x2, int y2, int color) {
 					y++;
 				}
 
-				draw_pixel(x, y, color);
+				device::setPixel(x, y, color);
 			}
 		} else {
 			decider = 2 * dx - dy;
@@ -101,7 +101,7 @@ void draw_line(int x1, int y1, int x2, int y2, int color) {
 					x++;
 				}
 
-				draw_pixel(x, y, color);
+				device::setPixel(x, y, color);
 			}
 		}
 	} else {
@@ -122,7 +122,7 @@ void draw_line(int x1, int y1, int x2, int y2, int color) {
 					y--;
 				}
 
-				draw_pixel(x, y, color);
+				device::setPixel(x, y, color);
 			}
 		} else {
 			decider = 2 * dx - dy;
@@ -139,7 +139,7 @@ void draw_line(int x1, int y1, int x2, int y2, int color) {
 					x++;
 				}
 
-				draw_pixel(x, y, color);
+				device::setPixel(x, y, color);
 			}
 		}
 	}

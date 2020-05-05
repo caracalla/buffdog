@@ -1,14 +1,14 @@
 #ifndef BUFFDOG_MAT4
 #define BUFFDOG_MAT4
 
-#include "vec4.h"
+#include "vector.h"
 #include "util.h"
 
 
 typedef enum {x_axis, y_axis, z_axis, w_axis} axis;
 
 
-struct mat4 {
+struct Matrix {
 	// [row][column]
 	double data[4][4];
 
@@ -16,8 +16,8 @@ struct mat4 {
 		return data[row][col];
 	}
 
-	mat4 transpose() {
-		mat4 result;
+	Matrix transpose() {
+		Matrix result;
 
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
@@ -28,8 +28,8 @@ struct mat4 {
 		return result;
 	}
 
-	mat4 multiplyMat4(mat4 other) {
-		mat4 result;
+	Matrix multiplyMatrix(Matrix other) {
+		Matrix result;
 
 		double calc;
 
@@ -48,8 +48,8 @@ struct mat4 {
 		return result;
 	}
 
-	vec4 multiplyVec4(vec4 vec) {
-		vec4 result;
+	Vector multiplyVector(Vector vec) {
+		Vector result;
 
 		for (int i = 0; i < 4; i++) {
 			result.at(i) = 0;
@@ -62,8 +62,8 @@ struct mat4 {
 		return result;
 	}
 
-	static mat4 makeScaleMatrix(double scale) {
-		mat4 result;
+	static Matrix makeScaleMatrix(double scale) {
+		Matrix result;
 
 		result.at(0, 0) = scale;
 		result.at(0, 1) = 0;
@@ -88,11 +88,11 @@ struct mat4 {
 		return result;
 	}
 
-	static mat4 makeAxisRotationMatrix(double angle, axis about_axis) {
+	static Matrix makeAxisRotationMatrix(double angle, axis about_axis) {
 		double s = sin(angle);
 		double c = cos(angle);
 
-		mat4 r;
+		Matrix r;
 
 		if (about_axis == x_axis) {
 			r.at(0, 0) = 1;  r.at(0, 1) = 0;  r.at(0, 2) = 0;  r.at(0, 3) = 0;
@@ -110,19 +110,19 @@ struct mat4 {
 			r.at(2, 0) = 0;  r.at(2, 1) = 0;  r.at(2, 2) = 1;  r.at(2, 3) = 0;
 			r.at(3, 0) = 0;  r.at(3, 1) = 0;  r.at(3, 2) = 0;  r.at(3, 3) = 1;
 		} else {
-			terminate("invalid rotation axis");
+			terminateFatal("invalid rotation axis");
 		}
 
 		return r;
 	}
 
-	static mat4 makeRotationMatrix(vec4 rotation) {
+	static Matrix makeRotationMatrix(Vector rotation) {
 #if 1
-		mat4 xRotation = makeAxisRotationMatrix(rotation.x * -1, x_axis);
-		mat4 yRotation = makeAxisRotationMatrix(rotation.y * -1, y_axis);
-		mat4 zRotation = makeAxisRotationMatrix(rotation.z * -1, z_axis);
+		Matrix xRotation = makeAxisRotationMatrix(rotation.x * -1, x_axis);
+		Matrix yRotation = makeAxisRotationMatrix(rotation.y * -1, y_axis);
+		Matrix zRotation = makeAxisRotationMatrix(rotation.z * -1, z_axis);
 
-		return zRotation.multiplyMat4(yRotation.multiplyMat4(xRotation));
+		return zRotation.multiplyMatrix(yRotation.multiplyMatrix(xRotation));
 #else
 		double alpha = rotation.z * -1;
 		double beta = rotation.y * -1;
@@ -132,7 +132,7 @@ struct mat4 {
 		double sb = sin(beta),  cb = cos(beta);
 		double sg = sin(gamma), cg = cos(gamma);
 
-		mat4 result;
+		Matrix result;
 
 		result.at(0, 0) = ca * cb;
 		result.at(0, 1) = ca * sb * sg - (sa * cg);
@@ -158,8 +158,8 @@ struct mat4 {
 #endif
 	}
 
-	static mat4 makeTranslationMatrix(vec4 translation) {
-		mat4 result;
+	static Matrix makeTranslationMatrix(Vector translation) {
+		Matrix result;
 
 		result.at(0, 0) = 1;
 		result.at(0, 1) = 0;
@@ -184,25 +184,25 @@ struct mat4 {
 		return result;
 	}
 
-	static mat4 makeWorldMatrix(double scale, vec4 rotation, vec4 translation) {
-		mat4 scaleMat = makeScaleMatrix(scale);
-		mat4 rotationMat = makeRotationMatrix(rotation);
-		mat4 translationMat = makeTranslationMatrix(translation);
+	static Matrix makeWorldMatrix(double scale, Vector rotation, Vector translation) {
+		Matrix scaleMat = makeScaleMatrix(scale);
+		Matrix rotationMat = makeRotationMatrix(rotation);
+		Matrix translationMat = makeTranslationMatrix(translation);
 
-		return translationMat.multiplyMat4(scaleMat).multiplyMat4(rotationMat);
+		return translationMat.multiplyMatrix(scaleMat).multiplyMatrix(rotationMat);
 	}
 
-	static mat4 makeCameraMatrix(vec4 rotation, vec4 translation) {
-		vec4 safeRotation = vec4::direction(rotation.x, rotation.y, 0);
-		vec4 invertedTranslation = vec4::direction(
+	static Matrix makeCameraMatrix(Vector rotation, Vector translation) {
+		Vector safeRotation = Vector::direction(rotation.x, rotation.y, 0);
+		Vector invertedTranslation = Vector::direction(
 				-translation.x,
 				-translation.y,
 				-translation.z);
 
-		mat4 rotationMat = makeRotationMatrix(safeRotation).transpose();
-		mat4 translationMat = makeTranslationMatrix(invertedTranslation);
+		Matrix rotationMat = makeRotationMatrix(safeRotation).transpose();
+		Matrix translationMat = makeTranslationMatrix(invertedTranslation);
 
-		return rotationMat.multiplyMat4(translationMat);
+		return rotationMat.multiplyMatrix(translationMat);
 	}
 
 	void log() {
@@ -213,8 +213,8 @@ struct mat4 {
 		printf("\n");
 	}
 
-	static mat4 makeIdentity() {
-		mat4 result;
+	static Matrix makeIdentity() {
+		Matrix result;
 
 		result.at(0, 0) = 1;
 		result.at(0, 1) = 0;

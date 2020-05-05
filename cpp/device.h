@@ -10,6 +10,8 @@
 
 #define spit(x) printf("%s\n", x)
 
+#define terminateFatal(message) device::selfDestruct(message, __LINE__, __FILE__)
+
 
 typedef enum {
 	no_key,
@@ -35,45 +37,47 @@ typedef struct {
 	bool ydown;
 } key_states_t;
 
-key_states_t get_key_states();
+namespace device {
+	key_states_t get_key_states();
 
+	// This must be called first
+	// returns false on failure
+	bool setUp();
 
-// This must be called first
-// returns false on failure
-bool set_up_device();
+	// Should be called before exiting the program
+	void tearDown();
 
-// Should be called before exiting the program
-void close_device();
+	// if it all goes wrong somewhere
+	void selfDestruct(const char *message, int line, const char* file);
 
-bool running();
+	bool running();
 
-// must be called, otherwise there is no way to quit
-// call before rendering on each frame
-void process_input();
+	// must be called, otherwise there is no way to quit
+	// call before rendering on each frame
+	void processInput();
 
-// get the last key pressed
-// TODO: handle multiple key presses, keyup and keydown events separately
-key_input get_next_key();
+	// get the last key pressed
+	// TODO: handle multiple key presses, keyup and keydown events separately
+	key_input get_next_key();
 
-mouse_input get_mouse_motion();
+	mouse_input getMouseMotion();
 
-// converts color values into a pixel color value
-// red, green, and blue must be between 0.0 and 1.0
-uint32_t color(double red, double green, double blue);
+	// converts color values into a pixel color value
+	// red, green, and blue must be between 0.0 and 1.0
+	uint32_t color(double red, double green, double blue);
 
-// draw background
-void clear_screen(int color);
+	// draw background
+	void clearScreen(int color);
 
-// TODO: document the layout of the arguments
-// (0, 0) is bottom left of the screen
-void draw_pixel(int x, int y, int color);
+	// TODO: document the layout of the arguments
+	// (0, 0) is bottom left of the screen
+	void setPixel(int x, int y, int color);
 
-// call after drawing the background and all desired pixels
-void update_screen();
+	// call after drawing the background and all desired pixels
+	void updateScreen();
 
-unsigned int get_xres();
-unsigned int get_yres();
-
-
+	unsigned int getXRes();
+	unsigned int getYRes();
+}
 
 #endif

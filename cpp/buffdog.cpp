@@ -8,9 +8,10 @@
 
 #include "device.h"
 #include "line.h"
-#include "mat4.h"
+#include "matrix.h"
 #include "model.h"
 #include "triangle.h"
+#include "vector.h"
 #include "util.h"
 
 
@@ -54,8 +55,8 @@ struct viewport_t {
 // rotation is about x and y world axes
 struct camera_t {
 	viewport_t viewport;
-	vec4 translation;
-	vec4 rotation; // z is ignored
+	Vector translation;
+	Vector rotation; // z is ignored
 };
 
 // camera starts out at the world origin
@@ -66,7 +67,7 @@ camera_t camera = {viewport, {0, 0, 0, 1}, {0, 0, 0, 0}};
 // the x value for the right plane and the y value for the high plane are a
 // little off because otherwise the clipAndDraw function would try to draw out
 // of bounds
-vec4 frustum_planes[NUM_FRUSTUM_PLANES] = {
+Vector frustum_planes[NUM_FRUSTUM_PLANES] = {
 	{0, 0, -1, viewport.distance}, // near plane
 	{0.7071, 0, -0.7071, 0}, // left plane
 	{-0.70712, 0, -0.7071, 0}, // right plane
@@ -75,7 +76,7 @@ vec4 frustum_planes[NUM_FRUSTUM_PLANES] = {
 	{0, 0, 1, -viewport.far_plane_distance} // far plane
 };
 
-// void set_up_frustum_planes() {
+// void setUpFrustumPlanes() {
 // 	// near plane
 // 	frustum_planes[0] = {0, 0, 1, -viewport.distance};
 // 	// far plane
@@ -84,11 +85,11 @@ vec4 frustum_planes[NUM_FRUSTUM_PLANES] = {
 
 double limit_value = 0.0;
 
-bool insidePlane(vec4 vertex, vec4 plane) {
+bool insidePlane(Vector vertex, Vector plane) {
 	return vertex.dotProduct(plane) > limit_value;
 }
 
-bool insideFrustum(vec4 vertex) {
+bool insideFrustum(Vector vertex) {
 	for (int i = 0; i < NUM_FRUSTUM_PLANES; i++) {
 		if (!insidePlane(vertex, frustum_planes[i])) {
 			return false;
@@ -102,23 +103,23 @@ bool insideFrustum(vec4 vertex) {
 //   clipping a convex polygon of n vertices against each plane can yield n+1 vertices
 //   clipping against six planes yields n + 6 vertices
 #define MAX_VERTICES 9
-vec4 vertices1[MAX_VERTICES];
-vec4 vertices2[MAX_VERTICES];
+Vector vertices1[MAX_VERTICES];
+Vector vertices2[MAX_VERTICES];
 
-vec4 linePlaneIntersection(vec4 v1, vec4 v2, vec4 plane) {
+Vector linePlaneIntersection(Vector v1, Vector v2, Vector plane) {
 	double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
 
 	return v1.add(v2.subtract(v1).scalarMultiply(t));
 }
 
-point viewportToCanvas(double x, double y) {
-	point result;
-	result.x = x * get_xres() / camera.viewport.width + get_xres() / 2;
-	result.y = y * get_yres() / camera.viewport.height + get_yres() / 2;
+Point viewportToCanvas(double x, double y) {
+	Point result;
+	result.x = x * device::getXRes() / camera.viewport.width + device::getXRes() / 2;
+	result.y = y * device::getYRes() / camera.viewport.height + device::getYRes() / 2;
 	return result;
 }
 
-point projectVertex(vec4 vertex) {
+Point projectVertex(Vector vertex) {
 	double x = vertex.x * camera.viewport.distance / vertex.z;
 	double y = vertex.y * camera.viewport.distance / vertex.z;
 	return viewportToCanvas(x, y);
@@ -127,9 +128,9 @@ point projectVertex(vec4 vertex) {
 // Sutherland-Hodgman algorithm
 // TODO: Take into account triangle winding.  This *should* already do so but
 // I'm not certain
-void clipAndDraw(vec4 v0, vec4 v1, vec4 v2, int color) {
-	vec4* original_vertices = vertices1;
-	vec4* new_vertices = vertices2;
+void clipAndDraw(Vector v0, Vector v1, Vector v2, int color) {
+	Vector* original_vertices = vertices1;
+	Vector* new_vertices = vertices2;
 	int original_count = 3;
 	int new_count = 0;
 
@@ -185,14 +186,14 @@ void clipAndDraw(vec4 v0, vec4 v1, vec4 v2, int color) {
 
 		if (i < NUM_FRUSTUM_PLANES - 1) {
 			// swap for the next plane
-			vec4* temp = original_vertices;
+			Vector* temp = original_vertices;
 			original_vertices = new_vertices;
 			new_vertices = temp;
 			original_count = new_count;
 		}
 	}
 
-	point projectedVertices[new_count];
+	Point projectedVertices[new_count];
 
 	for (int i = 0; i < new_count; i++) {
 		projectedVertices[i] = projectVertex(new_vertices[i]);
@@ -200,29 +201,28 @@ void clipAndDraw(vec4 v0, vec4 v1, vec4 v2, int color) {
 
 	// triangulate the resulting polygon, with all triangles starting at v0
 	for (int i = 1; i < new_count - 1; i++) {
-		tri2d triangle = {
+		Triangle2D triangle = {
 				projectedVertices[0],
 				projectedVertices[i],
 				projectedVertices[i + 1],
 				color};
 
-		// drawTriangle(triangle);
-		fillTriangle(triangle);
+		triangle.fill();
 	}
 }
 
 // position of the camera after all transforms is always at the origin
-vec4 cameraOrigin = {0, 0, 0, 1};
+Vector cameraOrigin = {0, 0, 0, 1};
 
-bool isBackFace(vec4 triangle_normal, vec4 vertex) {
-	vec4 vectorToCamera = cameraOrigin.subtract(vertex);
+bool isBackFace(Vector triangle_normal, Vector vertex) {
+	Vector vectorToCamera = cameraOrigin.subtract(vertex);
 
 	return vectorToCamera.dotProduct(triangle_normal) <= 0;
 }
 
-void drawCube(cube item) {
+void drawModel(Model item) {
 	bool isVertexVisible[item.vertices.size()];
-	point projectedVertices[item.vertices.size()];
+	Point projectedVertices[item.vertices.size()];
 
 	for (int i = 0; i < item.vertices.size(); i++) {
 		isVertexVisible[i] = insideFrustum(item.vertices[i]);
@@ -242,14 +242,13 @@ void drawCube(cube item) {
 				isVertexVisible[triangle.v1] &&
 				isVertexVisible[triangle.v2]) {
 			// all vertices are visible
-			tri2d tri = {
+			Triangle2D tri = {
 					projectedVertices[triangle.v0],
 					projectedVertices[triangle.v1],
 					projectedVertices[triangle.v2],
 					triangle.color};
 
-			// drawTriangle(tri);
-			fillTriangle(tri);
+			tri.fill();
 		} else if (!isVertexVisible[triangle.v0] &&
 				!isVertexVisible[triangle.v1] &&
 				!isVertexVisible[triangle.v2]) {
@@ -270,27 +269,27 @@ void drawCube(cube item) {
 	}
 }
 
-mat4 cameraMatrix;
+Matrix cameraMatrix;
 
-cube applyTransform(cube item) {
-	mat4 worldMatrix = mat4::makeWorldMatrix(item.scale, item.rotation, item.translation);
-	mat4 finalMatrix = cameraMatrix.multiplyMat4(worldMatrix);
+Model applyTransform(Model item) {
+	Matrix worldMatrix = Matrix::makeWorldMatrix(item.scale, item.rotation, item.translation);
+	Matrix finalMatrix = cameraMatrix.multiplyMatrix(worldMatrix);
 
 	// transform vertices
 	for (auto& vertex : item.vertices) {
-		vertex = finalMatrix.multiplyVec4(vertex);
+		vertex = finalMatrix.multiplyVector(vertex);
 	}
 
 	// transform triangle normals (is using finalMatrix here really okay?)
 	for (auto& triangle : item.triangles) {
-		triangle.normal = finalMatrix.multiplyVec4(triangle.normal);
+		triangle.normal = finalMatrix.multiplyVector(triangle.normal);
 	}
 
 	return item;
 }
 
 int main() {
-	if (!set_up_device()) {
+	if (!device::setUp()) {
 		return 1;
 	}
 
@@ -298,33 +297,33 @@ int main() {
 	nextPrintTime = clock();
 
 	double cube1Scale = 1;
-	vec4 cube1translation = vec4::direction(-1.5, 0, -7);
-	vec4 cube1rotation = vec4::direction(0, 0, 0);
-	cube cube1 = buildCube(cube1Scale, cube1translation, cube1rotation);
+	Vector cube1translation = Vector::direction(-1.5, 0, -7);
+	Vector cube1rotation = Vector::direction(0, 0, 0);
+	Model cube1 = buildCube(cube1Scale, cube1translation, cube1rotation);
 
 	double cube2Scale = 0.5;
-	vec4 cube2translation = vec4::direction(2, -0.5, -6);
-	vec4 cube2rotation = vec4::direction(0, 0, 0);
-	cube cube2 = buildCube(cube2Scale, cube2translation, cube2rotation);
+	Vector cube2translation = Vector::direction(2, -0.5, -6);
+	Vector cube2rotation = Vector::direction(0, 0, 0);
+	Model cube2 = buildCube(cube2Scale, cube2translation, cube2rotation);
 
 	double velocity = 0;
 
-	while (running()) {
+	while (device::running()) {
 		usleep(DELAY_US);
 
 		cube1.rotation.x += 0.005;
 		cube1.rotation.y += 0.007;
 		cube1.rotation.z += 0.009;
 
-		clear_screen(color(1, 1, 1));
+		device::clearScreen(device::color(1, 1, 1));
 
-		cameraMatrix = mat4::makeCameraMatrix(camera.rotation, camera.translation);
+		cameraMatrix = Matrix::makeCameraMatrix(camera.rotation, camera.translation);
 
-		drawCube(applyTransform(cube1));
-		drawCube(applyTransform(cube2));
+		drawModel(applyTransform(cube1));
+		drawModel(applyTransform(cube2));
 
-		update_screen();
-		process_input();
+		device::updateScreen();
+		device::processInput();
 
 		// key_input next_key = get_next_key();
 		//
@@ -339,14 +338,14 @@ int main() {
 		// 	}
 		// }
 
-		mouse_input mouse_motion = get_mouse_motion();
+		mouse_input mouse_motion = device::getMouseMotion();
 
 		camera.rotation.x += (double)mouse_motion.y / MOUSE_SENSITIVITY_FACTOR;
 		camera.rotation.y += (double)mouse_motion.x / MOUSE_SENSITIVITY_FACTOR;
 
-		key_states_t key_states = get_key_states();
+		key_states_t key_states = device::get_key_states();
 
-		vec4 translation = {0, 0, 0, 0};
+		Vector translation = {0, 0, 0, 0};
 
 		if (key_states.up || key_states.down || key_states.left || key_states.right || key_states.yup || key_states.ydown) {
 			if (velocity < MAX_VELOCITY) {
@@ -379,16 +378,16 @@ int main() {
 			translation.y -= 1;
 		}
 
-		vec4 movement = translation.unit().scalarMultiply(velocity);
+		Vector movement = translation.unit().scalarMultiply(velocity);
 
 		// the direction of motion is determined only by the rotation about the y axis
-		mat4 rotationAboutY = mat4::makeRotationMatrix((vec4){0, camera.rotation.y, 0, 0});
-		camera.translation = camera.translation.add(rotationAboutY.multiplyVec4(movement));
+		Matrix rotationAboutY = Matrix::makeRotationMatrix((Vector){0, camera.rotation.y, 0, 0});
+		camera.translation = camera.translation.add(rotationAboutY.multiplyVector(movement));
 
 		printFPS();
 	}
 
-	close_device();
+	device::tearDown();
 
 	return 0;
 }
