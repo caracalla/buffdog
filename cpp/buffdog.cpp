@@ -206,7 +206,8 @@ void clipAndDraw(vec4 v0, vec4 v1, vec4 v2, int color) {
 				projectedVertices[i + 1],
 				color};
 
-		drawTriangle(triangle);
+		// drawTriangle(triangle);
+		fillTriangle(triangle);
 	}
 }
 
@@ -247,7 +248,8 @@ void drawCube(cube item) {
 					projectedVertices[triangle.v2],
 					triangle.color};
 
-			drawTriangle(tri);
+			// drawTriangle(tri);
+			fillTriangle(tri);
 		} else if (!isVertexVisible[triangle.v0] &&
 				!isVertexVisible[triangle.v1] &&
 				!isVertexVisible[triangle.v2]) {
@@ -303,7 +305,6 @@ int main() {
 	double cube2Scale = 0.5;
 	vec4 cube2translation = vec4::direction(2, -0.5, -6);
 	vec4 cube2rotation = vec4::direction(0, 0, 0);
-
 	cube cube2 = buildCube(cube2Scale, cube2translation, cube2rotation);
 
 	double velocity = 0;
