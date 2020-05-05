@@ -31,6 +31,8 @@ typedef struct {
 	bool down;
 	bool left;
 	bool right;
+	bool yup;
+	bool ydown;
 } key_states_t;
 
 key_states_t get_key_states();

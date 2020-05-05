@@ -19,6 +19,7 @@ typedef struct {
 	size_t v1;
 	size_t v2;
 	int color;
+	vec4 normal;
 } tri3d;
 
 typedef struct {
@@ -28,6 +29,13 @@ typedef struct {
 	vec4 translation;
 	vec4 rotation; // represented as radians around each axis
 } cube;
+
+vec4 triangleNormal(vec4 v0, vec4 v1, vec4 v2) {
+	vec4 side1 = v1.subtract(v0);
+	vec4 side2 = v2.subtract(v0);
+
+	return side1.crossProduct(side2).unit();
+}
 
 cube buildCube(double scale, vec4 translation, vec4 rotation) {
 	int red = color(1, 0, 0);
@@ -65,6 +73,13 @@ cube buildCube(double scale, vec4 translation, vec4 rotation) {
 		translation,
 		rotation
 	};
+
+	for (auto& triangle : item.triangles) {
+		triangle.normal = triangleNormal(
+				item.vertices[triangle.v0],
+				item.vertices[triangle.v1],
+				item.vertices[triangle.v2]);
+	}
 
 	return item;
 }

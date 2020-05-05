@@ -1,5 +1,6 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
 
 #include <SDL2/SDL.h>
 
@@ -142,6 +143,14 @@ void process_input() {
 						key_states.right = true;
 						break;
 
+					case SDL_SCANCODE_Q:
+						key_states.yup = true;
+						break;
+
+					case SDL_SCANCODE_E:
+						key_states.ydown = true;
+						break;
+
 					case SDL_SCANCODE_X:
 						last_key = x_key;
 						break;
@@ -178,6 +187,14 @@ void process_input() {
 						key_states.right = false;
 						break;
 
+					case SDL_SCANCODE_Q:
+						key_states.yup = false;
+						break;
+
+					case SDL_SCANCODE_E:
+						key_states.ydown = false;
+						break;
+
 					default:
 						break;
 				}
@@ -205,9 +222,11 @@ mouse_input get_mouse_motion() {
 }
 
 uint32_t color(double red, double green, double blue) {
-	unsigned char red_value = 255 * red;
-	unsigned char green_value = 255 * green;
-	unsigned char blue_value = 255 * blue;
+	#define clampToZero(value) (value >= 0.0 ? value : 0.0)
+
+	unsigned char red_value = 255 * clampToZero(red);
+	unsigned char green_value = 255 * clampToZero(green);
+	unsigned char blue_value = 255 * clampToZero(blue);
 	return (red_value << 24) + (green_value << 16) + (blue_value << 8);
 }
 

@@ -21,6 +21,15 @@ void drawLine(point start, point end, int color) {
 	draw_line(start.x, start.y, end.x, end.y, color);
 }
 
+// mostly for debugging
+void drawPoint(point p, int color) {
+	for (int i = p.x - 2; i < p.x + 2; i++) {
+		for (int j = p.y - 2; j < p.y + 2; j++) {
+			draw_pixel(i, j, color);
+		}
+	}
+}
+
 void drawTriangle(tri2d tri) {
 	drawLine(tri.p0, tri.p1, tri.color);
 	drawLine(tri.p1, tri.p2, tri.color);

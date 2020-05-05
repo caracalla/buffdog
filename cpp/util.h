@@ -4,6 +4,6 @@
 #define terminate(message) self_destruct(message, __LINE__, __FILE__)
 
 
-void self_destruct(char *message, int line, const char* file);
+void self_destruct(const char *message, int line, const char* file);
 
 #endif

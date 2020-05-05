@@ -17,7 +17,8 @@
 #define DELAY_US 10000
 #define INCREMENT 0.005
 #define MOUSE_SENSITIVITY_FACTOR 1000
-#define MAX_VELOCITY 0.125
+// TODO: tie velocity to FPS
+#define MAX_VELOCITY 0.03125
 
 #define NUM_FRUSTUM_PLANES 6
 
@@ -48,8 +49,9 @@ struct viewport_t {
 	double far_plane_distance; // position on z axis
 };
 
-// camera is always at origin
-// translation and rotation refer to in-world values
+// camera is always at final render origin
+// translation is distance from world origin
+// rotation is about x and y world axes
 struct camera_t {
 	viewport_t viewport;
 	vec4 translation;
@@ -58,7 +60,7 @@ struct camera_t {
 
 // camera starts out at the world origin
 viewport_t viewport = {4, 3, -2, -10};
-camera_t camera = {viewport, {0, 0, 0}, {0, 0, 0}};
+camera_t camera = {viewport, {0, 0, 0, 1}, {0, 0, 0, 0}};
 
 // TODO: determine these dynamically from viewport
 // the x value for the right plane and the y value for the high plane are a
@@ -208,6 +210,15 @@ void clipAndDraw(vec4 v0, vec4 v1, vec4 v2, int color) {
 	}
 }
 
+// position of the camera after all transforms is always at the origin
+vec4 cameraOrigin = {0, 0, 0, 1};
+
+bool isBackFace(vec4 triangle_normal, vec4 vertex) {
+	vec4 vectorToCamera = cameraOrigin.subtract(vertex);
+
+	return vectorToCamera.dotProduct(triangle_normal) <= 0;
+}
+
 void drawCube(cube item) {
 	bool isVertexVisible[item.vertices.size()];
 	point projectedVertices[item.vertices.size()];
@@ -220,7 +231,12 @@ void drawCube(cube item) {
 		}
 	}
 
-	for (const auto& triangle : item.triangles) {
+	for (auto& triangle : item.triangles) {
+		if (isBackFace(triangle.normal, item.vertices[triangle.v0])) {
+			// this is a back face, don't draw
+			continue;
+		}
+
 		if (isVertexVisible[triangle.v0] &&
 				isVertexVisible[triangle.v1] &&
 				isVertexVisible[triangle.v2]) {
@@ -237,9 +253,9 @@ void drawCube(cube item) {
 				!isVertexVisible[triangle.v2]) {
 			// no vertices are visible, do nothing
 			// NOTE: this is technically incorrect.  For instance, the triangle could
-			// be so large that it covers the entire screen, and each vertex are is
-			// outside of a different plane.  Technically, this should fall into the
-			// final condition below.
+			// be so large that it covers the entire screen, and each vertex is outside
+			// of a different plane.  Technically, this should fall into the final
+			// condition below.
 		} else {
 			// some vertices are visible
 			// it's clipping time
@@ -258,8 +274,14 @@ cube applyTransform(cube item) {
 	mat4 worldMatrix = mat4::makeWorldMatrix(item.scale, item.rotation, item.translation);
 	mat4 finalMatrix = cameraMatrix.multiplyMat4(worldMatrix);
 
-	for (int i = 0; i < item.vertices.size(); i++) {
-		item.vertices[i] = finalMatrix.multiplyVec4(item.vertices[i]);
+	// transform vertices
+	for (auto& vertex : item.vertices) {
+		vertex = finalMatrix.multiplyVec4(vertex);
+	}
+
+	// transform triangle normals (is using finalMatrix here really okay?)
+	for (auto& triangle : item.triangles) {
+		triangle.normal = finalMatrix.multiplyVec4(triangle.normal);
 	}
 
 	return item;
@@ -281,6 +303,7 @@ int main() {
 	double cube2Scale = 0.5;
 	vec4 cube2translation = vec4::direction(2, -0.5, -6);
 	vec4 cube2rotation = vec4::direction(0, 0, 0);
+
 	cube cube2 = buildCube(cube2Scale, cube2translation, cube2rotation);
 
 	double velocity = 0;
@@ -307,11 +330,7 @@ int main() {
 		// if (next_key) {
 		// 	switch(next_key) {
 		// 		case x_key:
-		// 			limit_value += 0.01;
-		// 			break;
-		//
-		// 		case z_key:
-		// 			limit_value -= 0.01;
+		// 			cameraMatrix.log();
 		// 			break;
 		//
 		// 		default:
@@ -328,7 +347,7 @@ int main() {
 
 		vec4 translation = {0, 0, 0, 0};
 
-		if (key_states.up || key_states.down || key_states.left || key_states.right) {
+		if (key_states.up || key_states.down || key_states.left || key_states.right || key_states.yup || key_states.ydown) {
 			if (velocity < MAX_VELOCITY) {
 				velocity += INCREMENT;
 			}
@@ -352,11 +371,18 @@ int main() {
 		if (key_states.right) {
 			translation.x += 1;
 		}
+		if (key_states.yup) {
+			translation.y += 1;
+		}
+		if (key_states.ydown) {
+			translation.y -= 1;
+		}
 
 		vec4 movement = translation.unit().scalarMultiply(velocity);
-		mat4 rotation = mat4::makeRotationMatrix((vec4){0, camera.rotation.y, 0, 0});
 
-		camera.translation = camera.translation.add(rotation.multiplyVec4(movement));
+		// the direction of motion is determined only by the rotation about the y axis
+		mat4 rotationAboutY = mat4::makeRotationMatrix((vec4){0, camera.rotation.y, 0, 0});
+		camera.translation = camera.translation.add(rotationAboutY.multiplyVec4(movement));
 
 		printFPS();
 	}

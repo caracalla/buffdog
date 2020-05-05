@@ -30,6 +30,8 @@ struct vec4 {
 				break;
 
 			default:
+				// why is it that when I try to replace this with terminate() the compiler
+				// yells at me
 				throw std::runtime_error("invalid vec4 index");
 				break;
 		}
@@ -49,6 +51,18 @@ struct vec4 {
 		for (int i = 0; i < 4; i++) {
 			result += this->at(i) * other.at(i);
 		}
+
+		return result;
+	}
+
+	// only valid in three (or seven) dimensions!
+	vec4 crossProduct(vec4 other) {
+		vec4 result;
+
+		result.x = (this->y * other.z) - (this->z * other.y);
+		result.y = (this->z * other.x) - (this->x * other.z);
+		result.z = (this->x * other.y) - (this->y * other.x);
+		result.w = 0;
 
 		return result;
 	}
@@ -84,6 +98,7 @@ struct vec4 {
 
 	vec4 add(vec4 other) {
 		vec4 result;
+
 		result.x = this->x + other.x;
 		result.y = this->y + other.y;
 		result.z = this->z + other.z;
@@ -94,6 +109,7 @@ struct vec4 {
 
 	vec4 subtract(vec4 other) {
 		vec4 result;
+
 		result.x = this->x - other.x;
 		result.y = this->y - other.y;
 		result.z = this->z - other.z;

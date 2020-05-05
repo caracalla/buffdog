@@ -2,6 +2,10 @@
 #define BUFFDOG_MAT4
 
 #include "vec4.h"
+#include "util.h"
+
+
+typedef enum {x_axis, y_axis, z_axis, w_axis} axis;
 
 
 struct mat4 {
@@ -84,7 +88,42 @@ struct mat4 {
 		return result;
 	}
 
+	static mat4 makeAxisRotationMatrix(double angle, axis about_axis) {
+		double s = sin(angle);
+		double c = cos(angle);
+
+		mat4 r;
+
+		if (about_axis == x_axis) {
+			r.at(0, 0) = 1;  r.at(0, 1) = 0;  r.at(0, 2) = 0;  r.at(0, 3) = 0;
+			r.at(1, 0) = 0;  r.at(1, 1) = c;  r.at(1, 2) = -s; r.at(1, 3) = 0;
+			r.at(2, 0) = 0;  r.at(2, 1) = s;  r.at(2, 2) = c;  r.at(2, 3) = 0;
+			r.at(3, 0) = 0;  r.at(3, 1) = 0;  r.at(3, 2) = 0;  r.at(3, 3) = 1;
+		} else if (about_axis == y_axis) {
+			r.at(0, 0) = c;  r.at(0, 1) = 0;  r.at(0, 2) = s;  r.at(0, 3) = 0;
+			r.at(1, 0) = 0;  r.at(1, 1) = 1;  r.at(1, 2) = 0;  r.at(1, 3) = 0;
+			r.at(2, 0) = -s; r.at(2, 1) = 0;  r.at(2, 2) = c;  r.at(2, 3) = 0;
+			r.at(3, 0) = 0;  r.at(3, 1) = 0;  r.at(3, 2) = 0;  r.at(3, 3) = 1;
+		} else if (about_axis == z_axis) {
+			r.at(0, 0) = c;  r.at(0, 1) = -s; r.at(0, 2) = 0;  r.at(0, 3) = 0;
+			r.at(1, 0) = s;  r.at(1, 1) = c;  r.at(1, 2) = 0;  r.at(1, 3) = 0;
+			r.at(2, 0) = 0;  r.at(2, 1) = 0;  r.at(2, 2) = 1;  r.at(2, 3) = 0;
+			r.at(3, 0) = 0;  r.at(3, 1) = 0;  r.at(3, 2) = 0;  r.at(3, 3) = 1;
+		} else {
+			terminate("invalid rotation axis");
+		}
+
+		return r;
+	}
+
 	static mat4 makeRotationMatrix(vec4 rotation) {
+#if 1
+		mat4 xRotation = makeAxisRotationMatrix(rotation.x * -1, x_axis);
+		mat4 yRotation = makeAxisRotationMatrix(rotation.y * -1, y_axis);
+		mat4 zRotation = makeAxisRotationMatrix(rotation.z * -1, z_axis);
+
+		return zRotation.multiplyMat4(yRotation.multiplyMat4(xRotation));
+#else
 		double alpha = rotation.z * -1;
 		double beta = rotation.y * -1;
 		double gamma = rotation.x * -1;
@@ -116,6 +155,7 @@ struct mat4 {
 		result.at(3, 3) = 1;
 
 		return result;
+#endif
 	}
 
 	static mat4 makeTranslationMatrix(vec4 translation) {
@@ -163,6 +203,40 @@ struct mat4 {
 		mat4 translationMat = makeTranslationMatrix(invertedTranslation);
 
 		return rotationMat.multiplyMat4(translationMat);
+	}
+
+	void log() {
+		printf("{%f, %f, %f, %f}\n", this->at(0, 0), this->at(0, 1), this->at(0, 2), this->at(0, 3));
+		printf("{%f, %f, %f, %f}\n", this->at(1, 0), this->at(1, 1), this->at(1, 2), this->at(1, 3));
+		printf("{%f, %f, %f, %f}\n", this->at(2, 0), this->at(2, 1), this->at(2, 2), this->at(2, 3));
+		printf("{%f, %f, %f, %f}\n", this->at(3, 0), this->at(3, 1), this->at(3, 2), this->at(3, 3));
+		printf("\n");
+	}
+
+	static mat4 makeIdentity() {
+		mat4 result;
+
+		result.at(0, 0) = 1;
+		result.at(0, 1) = 0;
+		result.at(0, 2) = 0;
+		result.at(0, 3) = 0;
+
+		result.at(1, 0) = 0;
+		result.at(1, 1) = 1;
+		result.at(1, 2) = 0;
+		result.at(1, 3) = 0;
+
+		result.at(2, 0) = 0;
+		result.at(2, 1) = 0;
+		result.at(2, 2) = 1;
+		result.at(2, 3) = 0;
+
+		result.at(3, 0) = 0;
+		result.at(3, 1) = 0;
+		result.at(3, 2) = 0;
+		result.at(3, 3) = 1;
+
+		return result;
 	}
 };
 
