@@ -36,7 +36,7 @@ struct Triangle2D {
 	}
 
 	void fill() {
-		// sort from highest to lowest (?)
+		// sort from highest (p2) to lowest (p0)
 		Point temp;
 		if (this->p0.y > this->p1.y) {
 			temp = this->p0;
@@ -64,54 +64,76 @@ struct Triangle2D {
 		//
 		// x = (int)(x_0 + (y - y_0) * dx / (float)dy)
 
-		int dx01 = this->p1.x - this->p0.x;
-		double dy01 = this->p1.y - this->p0.y;
-		if (dy01 == 0) { dy01 = 0.000001; }
-		double m01 = dx01 / dy01;
-
-		int dx12 = this->p2.x - this->p1.x;
-		double dy12 = this->p2.y - this->p1.y;
-		if (dy12 == 0) { dy12 = 0.000001; }
-		double m12 = dx12 / dy12;
-
+		// po to p2 is the long vertical side
 		int dx02 = this->p2.x - this->p0.x;
 		double dy02 = this->p2.y - this->p0.y;
-		if (dy02 == 0) { dy02 = 0.000001; }
-		double m02 = dx02 / dy02;
 
+		if (dy02 == 0) {
+			// the whole thing is flat horizontally
+			// draw a horizontal line from the min x to the max x
+			drawHorizontalLine(this->p2.y, this->p0.x, this->p1.x, color);
+			drawHorizontalLine(this->p2.y, this->p1.x, this->p2.x, color);
+			return;
+		}
+
+		double m02 = dx02 / dy02;
 		int start_x;
 		int end_x;
 
-		// this is slow
-		for (int y = this->p0.y; y < this->p1.y; y++) {
-			int x01 = (int)(this->p0.x + (y - this->p0.y) * m01);
-			int x02 = (int)(this->p0.x + (y - this->p0.y) * m02);
+		// p0 to p1 is the bottom half
+		int dx01 = this->p1.x - this->p0.x;
+		double dy01 = this->p1.y - this->p0.y;
 
-			if (x01 < x02) {
-				start_x = x01;
-				end_x = x02;
-			} else {
-				start_x = x02;
-				end_x = x01;
+		if (dy01 == 0) {
+			// the bottom part is flat horizontally
+			drawHorizontalLine(this->p1.y, this->p0.x, this->p1.x, color);
+		} else {
+			double m01 = dx01 / dy01;
+
+			for (int y = this->p0.y; y < this->p1.y; y++) {
+				int x01 = (int)(this->p0.x + (y - this->p0.y) * m01);
+				int x02 = (int)(this->p0.x + (y - this->p0.y) * m02);
+
+				if (x01 < x02) {
+					start_x = x01;
+					end_x = x02;
+				} else {
+					start_x = x02;
+					end_x = x01;
+				}
+
+				drawLine(start_x, y, end_x, y, this->color);
 			}
-
-			drawLine(start_x, y, end_x, y, this->color);
 		}
 
-		for (int y = this->p1.y; y <= this->p2.y; y++) {
-			int x12 = (int)(this->p1.x + (y - this->p1.y) * m12);
-			int x02 = (int)(this->p0.x + (y - this->p0.y) * m02);
+		int dx12 = this->p2.x - this->p1.x;
+		double dy12 = this->p2.y - this->p1.y;
 
-			if (x12 < x02) {
-				start_x = x12;
-				end_x = x02;
-			} else {
-				start_x = x02;
-				end_x = x12;
+		if (dy12 == 0) {
+			// the top part is flat horizontally
+			drawHorizontalLine(this->p2.y, this->p1.x, this->p2.x, color);
+		} else {
+			double m12 = dx12 / dy12;
+
+			for (int y = this->p1.y; y <= this->p2.y; y++) {
+				int x12 = (int)(this->p1.x + (y - this->p1.y) * m12);
+				int x02 = (int)(this->p0.x + (y - this->p0.y) * m02);
+
+				if (x12 < x02) {
+					start_x = x12;
+					end_x = x02;
+				} else {
+					start_x = x02;
+					end_x = x12;
+				}
+
+				drawLine(start_x, y, end_x, y, this->color);
 			}
-
-			drawLine(start_x, y, end_x, y, this->color);
 		}
+	}
+
+	void fillShaded() {
+		//
 	}
 };
 

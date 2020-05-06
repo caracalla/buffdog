@@ -44,6 +44,7 @@ struct Vector {
 		return (Vector){x, y, z, 0};
 	}
 
+	// can't be marked const because at() returns a reference
 	double dotProduct(Vector other) {
 		double result = 0;
 
@@ -55,7 +56,7 @@ struct Vector {
 	}
 
 	// only valid in three (or seven) dimensions!
-	Vector crossProduct(Vector other) {
+	Vector crossProduct(Vector other) const {
 		Vector result;
 
 		result.x = (this->y * other.z) - (this->z * other.y);
@@ -66,15 +67,15 @@ struct Vector {
 		return result;
 	}
 
-	double squaredLength() {
+	double squaredLength() const {
 		return (this->x * this->x) + (this->y * this->y) + (this->z * this->z);
 	}
 
-	double length() {
+	double length() const {
 		return sqrt(this->squaredLength());
 	}
 
-	Vector scalarMultiply(double scalar) {
+	Vector scalarMultiply(double scalar) const {
 		Vector result;
 
 		result.x = this->x * scalar;
@@ -85,7 +86,7 @@ struct Vector {
 		return result;
 	}
 
-	Vector unit() {
+	Vector unit() const {
 		double length = this->length();
 
 		if (length == 0) {
@@ -95,7 +96,7 @@ struct Vector {
 		return scalarMultiply(1 / length);
 	}
 
-	Vector add(Vector other) {
+	Vector add(Vector other) const {
 		Vector result;
 
 		result.x = this->x + other.x;
@@ -106,7 +107,7 @@ struct Vector {
 		return result;
 	}
 
-	Vector subtract(Vector other) {
+	Vector subtract(Vector other) const {
 		Vector result;
 
 		result.x = this->x - other.x;
@@ -117,7 +118,7 @@ struct Vector {
 		return result;
 	}
 
-	void log() {
+	void log() const {
 		printf("{%f, %f, %f, %f}\n", this->x, this->y, this->z, this->w);
 	}
 };
