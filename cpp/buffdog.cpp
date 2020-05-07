@@ -51,24 +51,12 @@ int main() {
 	Scene scene = Scene::create();
 	Renderer renderer = Renderer::create(scene.camera.viewport);
 
-	double cube1Scale = 1;
-	Vector cube1translation = Vector::direction(-3, 0, -7);
-	Vector cube1rotation = Vector::direction(0, 0, 0);
-	Model cube1 = buildCube(cube1Scale, cube1translation, cube1rotation);
-
-	double cube2Scale = 0.5;
-	Vector cube2translation = Vector::direction(3, 0, -7);
-	Vector cube2rotation = Vector::direction(0, 0, 0);
-	Model cube2 = buildCube(cube2Scale, cube2translation, cube2rotation);
-
-	Model tetra = buildTetrahedron(
-			1.0,
-			Vector::direction(0, 3, -7),
-			Vector::direction(0, 0, 0));
-
-	scene.addModel(cube1);
-	scene.addModel(cube2);
-	scene.addModel(tetra);
+	scene.addModel(buildCube(
+        1.0, Vector::direction(-3, 0, -7), Vector::direction(0, 0, 0)));
+	scene.addModel(buildCube(
+        0.5, Vector::direction(3, 0, -7), Vector::direction(0, 0, 0)));
+	scene.addModel(buildTetrahedron(
+			1.0, Vector::direction(0, 3, -7), Vector::direction(0, 0, 0)));
 
 	double velocity = 0;
 

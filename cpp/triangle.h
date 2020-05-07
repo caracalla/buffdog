@@ -1,7 +1,11 @@
 #ifndef BUFFDOG_TRIANGLE
 #define BUFFDOG_TRIANGLE
 
+#include "device.h"
 #include "line.h"
+
+#define THREE_MIN(x0, x1, x2) x0 < x1 ? (x2 < x0 ? x2 : x0) : (x2 < x1 ? x2 : x1)
+#define THREE_MAX(x0, x1, x2) x0 > x1 ? (x2 > x0 ? x2 : x0) : (x2 > x1 ? x2 : x1)
 
 // Logic for drawing 2D triangles
 
@@ -56,78 +60,58 @@ struct Triangle2D {
 			this->p1 = temp;
 		}
 
-		// p0 to p2 is long side
-		// if p2.x > p1.x
-		//   long side is right
-		// else
-		//   long side is left (or, they're equal, then it doesn't matter?)
-		//
-		// x = (int)(x_0 + (y - y_0) * dx / (float)dy)
-
 		// po to p2 is the long vertical side
-		int dx02 = this->p2.x - this->p0.x;
 		double dy02 = this->p2.y - this->p0.y;
 
 		if (dy02 == 0) {
 			// the whole thing is flat horizontally
 			// draw a horizontal line from the min x to the max x
-			drawHorizontalLine(this->p2.y, this->p0.x, this->p1.x, color);
-			drawHorizontalLine(this->p2.y, this->p1.x, this->p2.x, color);
+			int min_x = THREE_MIN(this->p0.x, this->p1.x, this->p2.x);
+			int max_x = THREE_MAX(this->p0.x, this->p1.x, this->p2.x);
+
+			drawHorizontalLine(this->p2.y, min_x, max_x, color);
 			return;
 		}
 
+		int dx02 = this->p2.x - this->p0.x;
 		double m02 = dx02 / dy02;
-		int start_x;
-		int end_x;
+		// the x value for line p2 - p0 changes constantly over the whole triangle
+		double x02 = this->p0.x;
 
 		// p0 to p1 is the bottom half
-		int dx01 = this->p1.x - this->p0.x;
 		double dy01 = this->p1.y - this->p0.y;
 
 		if (dy01 == 0) {
 			// the bottom part is flat horizontally
 			drawHorizontalLine(this->p1.y, this->p0.x, this->p1.x, color);
 		} else {
+			int dx01 = this->p1.x - this->p0.x;
 			double m01 = dx01 / dy01;
+			double x01 = this->p0.x;
 
 			for (int y = this->p0.y; y < this->p1.y; y++) {
-				int x01 = (int)(this->p0.x + (y - this->p0.y) * m01);
-				int x02 = (int)(this->p0.x + (y - this->p0.y) * m02);
+				drawHorizontalLine(y, (int)x01, (int)x02, this->color);
 
-				if (x01 < x02) {
-					start_x = x01;
-					end_x = x02;
-				} else {
-					start_x = x02;
-					end_x = x01;
-				}
-
-				drawLine(start_x, y, end_x, y, this->color);
+				x01 += m01;
+				x02 += m02;
 			}
 		}
 
-		int dx12 = this->p2.x - this->p1.x;
 		double dy12 = this->p2.y - this->p1.y;
 
 		if (dy12 == 0) {
 			// the top part is flat horizontally
 			drawHorizontalLine(this->p2.y, this->p1.x, this->p2.x, color);
 		} else {
+			int dx12 = this->p2.x - this->p1.x;
 			double m12 = dx12 / dy12;
+			double x12 = this->p1.x;
 
 			for (int y = this->p1.y; y <= this->p2.y; y++) {
-				int x12 = (int)(this->p1.x + (y - this->p1.y) * m12);
-				int x02 = (int)(this->p0.x + (y - this->p0.y) * m02);
+				drawHorizontalLine(y, (int)x12, (int)x02, this->color);
 
-				if (x12 < x02) {
-					start_x = x12;
-					end_x = x02;
-				} else {
-					start_x = x02;
-					end_x = x12;
-				}
-
-				drawLine(start_x, y, end_x, y, this->color);
+				x12 += m12;
+				x02 += m02;
 			}
 		}
 	}
