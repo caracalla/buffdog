@@ -4,7 +4,6 @@
 #include <cmath>
 #include <vector>
 
-#include "device.h"
 #include "triangle.h"
 #include "vector.h"
 
@@ -19,7 +18,7 @@ typedef struct {
 	size_t v0;
 	size_t v1;
 	size_t v2;
-	int color;
+	Vector color;
 	Vector normal;
 } tri3d;
 
@@ -48,12 +47,12 @@ struct Model {
 };
 
 Model buildCube(double scale, Vector translation, Vector rotation) {
-	int red = device::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
-	int blue = device::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
-	int green = device::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
-	int yellow = device::color(MAX_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
-	int purple = device::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
-	int cyan = device::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MAX_COLOR_VAL);
+	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
+	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
+	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
+	Vector yellow = Vector::color(MAX_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
+	Vector purple = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
+	Vector cyan = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MAX_COLOR_VAL);
 
 	Model item;
 
@@ -91,10 +90,10 @@ Model buildCube(double scale, Vector translation, Vector rotation) {
 }
 
 Model buildTetrahedron(double scale, Vector translation, Vector rotation) {
-	int red = device::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
-	int blue = device::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
-	int green = device::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
-	int black = device::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
+	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
+	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
+	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
+	Vector black = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 
 	Model item;
 

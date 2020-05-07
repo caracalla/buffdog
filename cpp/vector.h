@@ -44,6 +44,11 @@ struct Vector {
 		return (Vector){x, y, z, 0};
 	}
 
+	static Vector color(double r, double g, double b) {
+		// should we validate the ranges? clamp to 0-1?
+		return direction(r, g, b);
+	}
+
 	// can't be marked const because at() returns a reference
 	double dotProduct(Vector other) {
 		double result = 0;

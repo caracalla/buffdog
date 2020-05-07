@@ -3,6 +3,7 @@
 
 #include "device.h"
 #include "line.h"
+#include "vector.h"
 
 #define THREE_MIN(x0, x1, x2) x0 < x1 ? (x2 < x0 ? x2 : x0) : (x2 < x1 ? x2 : x1)
 #define THREE_MAX(x0, x1, x2) x0 > x1 ? (x2 > x0 ? x2 : x0) : (x2 > x1 ? x2 : x1)
@@ -18,6 +19,10 @@ void drawLineFromPoints(Point start, Point end, int color) {
 	drawLine(start.x, start.y, end.x, end.y, color);
 }
 
+int colorFromVector(Vector vec) {
+	return device::color(vec.x, vec.y, vec.z);
+}
+
 // mostly for debugging
 void drawPoint(Point p, int color) {
 	for (int i = p.x - 2; i < p.x + 2; i++) {
@@ -31,15 +36,18 @@ struct Triangle2D {
 	Point p0;
 	Point p1;
 	Point p2;
-	int color;
+	Vector color;
 
 	void draw() {
-		drawLineFromPoints(this->p0, this->p1, this->color);
-		drawLineFromPoints(this->p1, this->p2, this->color);
-		drawLineFromPoints(this->p2, this->p0, this->color);
+		int color = colorFromVector(this->color);
+		drawLineFromPoints(this->p0, this->p1, color);
+		drawLineFromPoints(this->p1, this->p2, color);
+		drawLineFromPoints(this->p2, this->p0, color);
 	}
 
 	void fill() {
+		int color = colorFromVector(this->color);
+
 		// sort from highest (p2) to lowest (p0)
 		Point temp;
 		if (this->p0.y > this->p1.y) {
@@ -90,7 +98,7 @@ struct Triangle2D {
 			double x01 = this->p0.x;
 
 			for (int y = this->p0.y; y < this->p1.y; y++) {
-				drawHorizontalLine(y, (int)x01, (int)x02, this->color);
+				drawHorizontalLine(y, (int)x01, (int)x02, color);
 
 				x01 += m01;
 				x02 += m02;
@@ -108,7 +116,7 @@ struct Triangle2D {
 			double x12 = this->p1.x;
 
 			for (int y = this->p1.y; y <= this->p2.y; y++) {
-				drawHorizontalLine(y, (int)x12, (int)x02, this->color);
+				drawHorizontalLine(y, (int)x12, (int)x02, color);
 
 				x12 += m12;
 				x02 += m02;
