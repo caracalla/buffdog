@@ -29,7 +29,10 @@ key_input key_queue[64];
 key_input last_key;
 mouse_input mouse_motion;
 
+double zbuffer[RES_X * RES_Y];
+
 namespace device {
+
 	bool setUp() {
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
 			SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -235,7 +238,18 @@ namespace device {
 		return (red_value << 24) + (green_value << 16) + (blue_value << 8);
 	}
 
+	double& zBufferAt(size_t x, size_t y) {
+		size_t index = y * RES_X + x;
+
+		return zbuffer[index];
+	}
+
+	void zBufferReset() {
+		memset(zbuffer, 0, RES_X * RES_Y * sizeof(double));
+	}
+
 	void clearScreen(int color) {
+		zBufferReset();
 		for (int y = 0; y < RES_Y; ++y) {
 			for (int x = 0; x < RES_X; ++x) {
 				setPixel(x, y, color);

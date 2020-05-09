@@ -38,6 +38,8 @@ typedef struct {
 } key_states_t;
 
 namespace device {
+	double& zBufferAt(size_t x, size_t);
+
 	key_states_t get_key_states();
 
 	// This must be called first

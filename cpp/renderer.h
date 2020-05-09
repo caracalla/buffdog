@@ -224,7 +224,10 @@ struct Renderer {
 						triangle.color,
 						item.shades[triangle.v0],
 						item.shades[triangle.v1],
-						item.shades[triangle.v2]};
+						item.shades[triangle.v2],
+						1 / item.vertices[triangle.v0].z,
+						1 / item.vertices[triangle.v1].z,
+						1 / item.vertices[triangle.v2].z};
 
 				tri.fillShaded();
 			} else if (!isVertexVisible[triangle.v0] &&
@@ -268,7 +271,10 @@ struct Renderer {
 							triangle.color,
 							poly.shades[0],
 							poly.shades[i],
-							poly.shades[i + 1]};
+							poly.shades[i + 1],
+							1 / poly.vertices[0].z,
+							1 / poly.vertices[i].z,
+							1 / poly.vertices[i + 1].z};
 
 					new_triangle.fillShaded();
 				}
