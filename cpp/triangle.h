@@ -32,11 +32,42 @@ void drawPoint(Point p, int color) {
 	}
 }
 
+void drawShadedLine(double y, double x1, double x2, double h1, double h2, Vector color) {
+	int start_x;
+	int end_x;
+
+	double h;
+	double a;
+
+	if (x1 < x2) {
+		start_x = (int)x1;
+		end_x = (int)x2;
+
+		h = h1;
+		a = (h2 - h1) / (x2 - x1);
+	} else {
+		start_x = (int)x2;
+		end_x = (int)x1;
+
+		h = h2;
+		a = (h1 - h2) / (x1 - x2);
+	}
+
+	for (int x = start_x; x < end_x; x++) {
+		device::setPixel(x, y, colorFromVector(color.scalarMultiply(h)));
+
+		h += a;
+	}
+}
+
 struct Triangle2D {
 	Point p0;
 	Point p1;
 	Point p2;
 	Vector color;
+	double h0;
+	double h1;
+	double h2;
 
 	void draw() {
 		int color = colorFromVector(this->color);
@@ -124,8 +155,107 @@ struct Triangle2D {
 		}
 	}
 
+
+
 	void fillShaded() {
-		//
+		// sort from highest (p2) to lowest (p0)
+		Point temp;
+		double htemp;
+		if (this->p0.y > this->p1.y) {
+			temp = this->p0;
+			this->p0 = this->p1;
+			this->p1 = temp;
+
+			htemp = this->h0;
+			this->h0 = this->h1;
+			this->h1 = htemp;
+		}
+
+		if (this->p0.y > this->p2.y) {
+			temp = this->p0;
+			this->p0 = this->p2;
+			this->p2 = temp;
+
+			htemp = this->h0;
+			this->h0 = this->h2;
+			this->h2 = htemp;
+		}
+
+		if (this->p1.y > this->p2.y) {
+			temp = this->p2;
+			this->p2 = this->p1;
+			this->p1 = temp;
+
+			htemp = this->h1;
+			this->h1 = this->h2;
+			this->h2 = htemp;
+		}
+
+		double dy01 = this->p1.y - this->p0.y;
+		double dy12 = this->p2.y - this->p1.y;
+		double dy02 = this->p2.y - this->p0.y;
+
+		double dx01 = this->p1.x - this->p0.x;
+		double dx12 = this->p2.x - this->p1.x;
+		double dx02 = this->p2.x - this->p0.x;
+
+		double x01 = this->p0.x;
+		double x12 = this->p1.x;
+		double x02 = this->p0.x;
+
+		double h01 = this->h0;
+		double h12 = this->h1;
+		double h02 = this->h0;
+
+		if (dy02 == 0) {
+			// the whole thing is flat horizontally
+			// draw a horizontal line from the min x to the max x
+			// int min_x = THREE_MIN(this->p0.x, this->p1.x, this->p2.x);
+			// int max_x = THREE_MAX(this->p0.x, this->p1.x, this->p2.x);
+
+			drawShadedLine(this->p2.y, this->p0.x, this->p1.x, this->h0, this->h1, this->color);
+			drawShadedLine(this->p2.y, this->p1.x, this->p2.x, this->h1, this->h2, this->color);
+			return;
+		}
+
+		double m02 = dx02 / dy02;
+		double a02 = (this->h2 - this->h0) / dy02;
+
+		if (dy01 == 0) {
+			// the bottom part is flat horizontally
+			drawShadedLine(this->p1.y, this->p0.x, this->p1.x, this->h0, this->h1, this->color);
+		} else {
+			double m01 = dx01 / dy01;
+			double a01 = (this->h1 - this->h0) / dy01;
+
+			for (int y = this->p0.y; y < this->p1.y; y++) {
+				drawShadedLine(y, x01, x02, h01, h02, this->color);
+
+				x01 += m01;
+				x02 += m02;
+
+				h01 += a01;
+				h02 += a02;
+			}
+		}
+
+		if (dy12 == 0) {
+			// the top part is flat horizontally
+			drawShadedLine(this->p2.y, this->p1.x, this->p2.x, this->h1, this->h2, this->color);
+		} else {
+			double m12 = dx12 / dy12;
+			double a12 = (this->h2 - this->h1) / dy12;
+
+			for (int y = this->p1.y; y <= this->p2.y; y++) {
+				drawShadedLine(y, x12, x02, h12, h02, this->color);
+
+				x12 += m12;
+				x02 += m02;
+
+				h12 += a12;
+				h02 += a02;
+			}
+		}
 	}
 };
 

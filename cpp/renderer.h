@@ -1,6 +1,7 @@
 #ifndef BUFFDOG_RENDERER
 #define BUFFDOG_RENDERER
 
+#include <array>
 #include <vector>
 
 #include "device.h"
@@ -15,12 +16,16 @@
 #define MAX_CLIPPED_POLYGON_VERTICES 9
 
 
-// these buffers are used for clipping triangles
-Vector vertices1[MAX_CLIPPED_POLYGON_VERTICES];
-Vector vertices2[MAX_CLIPPED_POLYGON_VERTICES];
-
 // position of the camera after all transforms is always at the origin
 const Vector kOrigin = {0, 0, 0, 1};
+
+
+// a container to represent the vertices of a clipped triangle
+struct ClippedPolygon {
+	std::array<Vector, MAX_CLIPPED_POLYGON_VERTICES> vertices;
+	std::array<double, MAX_CLIPPED_POLYGON_VERTICES> shades;
+	size_t vertex_count;
+};
 
 
 struct Renderer {
@@ -46,9 +51,9 @@ struct Renderer {
 
 	// void setUpFrustumPlanes() {
 	// 	// near plane
-	// 	frustum_planes[0] = {0, 0, 1, -viewport.distance};
+	// 	this->frustum_planes[0] = {0, 0, 1, -viewport.distance};
 	// 	// far plane
-	// 	frustum_planes[1] = {0, 0, 1, viewport.far_plane_distance};
+	// 	this->frustum_planes[1] = {0, 0, 1, viewport.far_plane_distance};
 	// }
 
 	bool insidePlane(Vector vertex, Vector plane) {
@@ -57,7 +62,7 @@ struct Renderer {
 
 	bool insideFrustum(Vector vertex) {
 		for (int i = 0; i < NUM_FRUSTUM_PLANES; i++) {
-			if (!insidePlane(vertex, frustum_planes[i])) {
+			if (!insidePlane(vertex, this->frustum_planes[i])) {
 				return false;
 			}
 		}
@@ -90,54 +95,56 @@ struct Renderer {
 	// drawing
 
 	// Sutherland-Hodgman algorithm
-	// fills the result array with a new set of vertices representing the clipped
-	// polygon
-	// the return value is the length of that array
-	// I don't like this but I'll figure out something better
-	size_t clipTriangle(Vector v0, Vector v1, Vector v2, Vector* result) {
-		Vector* original_vertices = vertices1;
-		Vector* new_vertices = vertices2;
-		int original_count = 3;
-		int new_count = 0;
+	ClippedPolygon clipTriangle(ClippedPolygon triangle) {
+		ClippedPolygon final_poly = {{}, {}, 0};
 
-		original_vertices[0] = v0;
-		original_vertices[1] = v1;
-		original_vertices[2] = v2;
+		ClippedPolygon* original_poly = &triangle;
+		ClippedPolygon* new_poly = &final_poly;
+
+		int new_poly_vertex_count = 0;
 
 		// clip against each frustum plane
 		for (int i = 0; i < NUM_FRUSTUM_PLANES; i++) {
-			new_count = 0;
-			int previous = original_count - 1;
+			new_poly_vertex_count = 0;
+			int previous = original_poly->vertex_count - 1;
 			int current = 0;
 
 			// step through each pair of vertices, deciding what to do based on whether
 			// each is inside or outside the given plane
-			while (current < original_count) {
-				if (insidePlane(original_vertices[previous], frustum_planes[i])) {
-					if (insidePlane(original_vertices[current], frustum_planes[i])) {
+			while (current < original_poly->vertex_count) {
+				Vector& v1 = original_poly->vertices[previous];
+				Vector& v2 = original_poly->vertices[current];
+				Vector& plane = this->frustum_planes[i];
+
+				double& s1 = original_poly->shades[previous];
+				double& s2 = original_poly->shades[current];
+
+				if (insidePlane(v1, plane)) {
+					if (insidePlane(v2, plane)) {
 						// just add current
-						new_vertices[new_count] = original_vertices[current];
-						new_count++;
+						new_poly->vertices[new_poly_vertex_count] = v2;
+						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
+						new_poly_vertex_count++;
 					} else {
 						// add the intersect
-						new_vertices[new_count] = linePlaneIntersection(
-								original_vertices[current],
-								original_vertices[previous],
-								frustum_planes[i]);
-						new_count++;
+						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
+						new_poly->vertices[new_poly_vertex_count] = v1.add(v2.subtract(v1).scalarMultiply(t));
+						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
+
+						new_poly_vertex_count++;
 					}
 				} else {
-					if (insidePlane(original_vertices[current], frustum_planes[i])) {
+					if (insidePlane(v2, plane)) {
 						// add the intersect
-						new_vertices[new_count] = linePlaneIntersection(
-								original_vertices[current],
-								original_vertices[previous],
-								frustum_planes[i]);
-						new_count++;
+						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
+						new_poly->vertices[new_poly_vertex_count] = v1.add(v2.subtract(v1).scalarMultiply(t));
+						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
+						new_poly_vertex_count++;
 
 						// then add current
-						new_vertices[new_count] = original_vertices[current];
-						new_count++;
+						new_poly->vertices[new_poly_vertex_count] = v2;
+						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
+						new_poly_vertex_count++;
 					} else {
 						// both previous and current are outside the plane, do nothing
 					}
@@ -145,25 +152,23 @@ struct Renderer {
 
 				previous += 1;
 				current += 1;
-				if (previous == original_count) {
+				if (previous == original_poly->vertex_count) {
 					previous = 0;
 				}
 			}
 
 			if (i < NUM_FRUSTUM_PLANES - 1) {
 				// swap for the next plane
-				Vector* temp = original_vertices;
-				original_vertices = new_vertices;
-				new_vertices = temp;
-				original_count = new_count;
+				ClippedPolygon* temp = original_poly;
+				original_poly = new_poly;
+				new_poly = temp;
+
+				original_poly->vertex_count = new_poly_vertex_count;
+				new_poly->vertex_count = 0;
 			}
 		}
 
-		for (int i = 0; i < new_count; i++) {
-			result[i] = new_vertices[i];
-		}
-
-		return new_count;
+		return final_poly;
 	}
 
 	bool isBackFace(Vector triangle_normal, Vector vertex) {
@@ -174,7 +179,7 @@ struct Renderer {
 
 	Model applyTransform(Model item) {
 		Matrix worldMatrix = Matrix::makeWorldMatrix(item.scale, item.rotation, item.translation);
-		Matrix finalMatrix = cameraMatrix.multiplyMatrix(worldMatrix);
+		Matrix finalMatrix = this->cameraMatrix.multiplyMatrix(worldMatrix);
 
 		// transform vertices
 		for (auto& vertex : item.vertices) {
@@ -216,9 +221,12 @@ struct Renderer {
 						projectedVertices[triangle.v0],
 						projectedVertices[triangle.v1],
 						projectedVertices[triangle.v2],
-						triangle.color};
+						triangle.color,
+						item.shades[triangle.v0],
+						item.shades[triangle.v1],
+						item.shades[triangle.v2]};
 
-				tri.fill();
+				tri.fillShaded();
 			} else if (!isVertexVisible[triangle.v0] &&
 					!isVertexVisible[triangle.v1] &&
 					!isVertexVisible[triangle.v2]) {
@@ -230,29 +238,39 @@ struct Renderer {
 			} else {
 				// some vertices are visible
 				// it's clipping time
-				Vector new_vertices[MAX_CLIPPED_POLYGON_VERTICES];
+				ClippedPolygon triangle_poly = (ClippedPolygon){
+						{
+							item.vertices[triangle.v0],
+							item.vertices[triangle.v1],
+							item.vertices[triangle.v2]
+						},
+						{
+							item.shades[triangle.v0],
+							item.shades[triangle.v1],
+							item.shades[triangle.v2]
+						},
+						3};
 
-				int new_vertex_count = clipTriangle(
-						item.vertices[triangle.v0],
-						item.vertices[triangle.v1],
-						item.vertices[triangle.v2],
-						new_vertices);
+				ClippedPolygon poly = clipTriangle(triangle_poly);
 
-				Point projectedVertices[new_vertex_count];
+				Point projectedVertices[poly.vertex_count];
 
-				for (int i = 0; i < new_vertex_count; i++) {
-					projectedVertices[i] = projectVertexToScreen(new_vertices[i], viewport);
+				for (int i = 0; i < poly.vertex_count; i++) {
+					projectedVertices[i] = projectVertexToScreen(poly.vertices[i], viewport);
 				}
 
 				// triangulate the resulting polygon, with all triangles starting at v0
-				for (int i = 1; i < new_vertex_count - 1; i++) {
+				for (int i = 1; i < poly.vertex_count - 1; i++) {
 					Triangle2D new_triangle = {
 							projectedVertices[0],
 							projectedVertices[i],
 							projectedVertices[i + 1],
-							triangle.color};
+							triangle.color,
+							poly.shades[0],
+							poly.shades[i],
+							poly.shades[i + 1]};
 
-					new_triangle.fill();
+					new_triangle.fillShaded();
 				}
 			}
 		}
@@ -260,7 +278,7 @@ struct Renderer {
 
 	void drawScene(Scene& scene) {
 		// update camera matrix (should we check if it has changed first?)
-		cameraMatrix = Matrix::makeCameraMatrix(scene.camera.rotation, scene.camera.translation);
+		this->cameraMatrix = Matrix::makeCameraMatrix(scene.camera.rotation, scene.camera.translation);
 
 		// draw the background
 		// TODO: make this more interesting/dynamic

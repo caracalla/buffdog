@@ -32,6 +32,7 @@ Vector triangleNormal(Vector v0, Vector v1, Vector v2) {
 struct Model {
 	std::vector<Vector> vertices;
 	std::vector<tri3d> triangles;
+	std::vector<double> shades;
 	double scale;
 	Vector translation;
 	Vector rotation; // represented as radians around each axis
@@ -80,6 +81,16 @@ Model buildCube(double scale, Vector translation, Vector rotation) {
 			(tri3d){2, 6, 7, cyan},
 			(tri3d){2, 7, 3, cyan}};
 
+	item.shades = {
+			1.0,
+			0.0,
+			1.0,
+			0.0,
+			0.0,
+			1.0,
+			0.0,
+			1.0};
+
 	item.scale = scale;
 	item.translation = translation;
 	item.rotation = rotation;
@@ -110,6 +121,8 @@ Model buildTetrahedron(double scale, Vector translation, Vector rotation) {
 			(tri3d){0, 3, 1, green},
 			(tri3d){0, 2, 3, blue},
 			(tri3d){1, 3, 2, black}};
+
+	item.shades = {1.0, 0.0, 0.0, 0.0};
 
 	item.scale = scale;
 	item.translation = translation;
