@@ -6,6 +6,7 @@
 #include <cmath>
 #include <ctime>
 
+#include "bmp.h"
 #include "device.h"
 #include "line.h"
 #include "matrix.h"
@@ -51,10 +52,13 @@ int main() {
 	Scene scene = Scene::create();
 	Renderer renderer = Renderer::create(scene.camera.viewport);
 
+	Model cube = buildCube(
+			1.0, Vector::direction(-3, 0, -7), Vector::direction(0, 0, 0));
+	cube.addTexture(BMPTexture::load("crate.bmp"));
+
+	scene.addModel(cube);
 	scene.addModel(buildCube(
-        1.0, Vector::direction(-3, 0, -7), Vector::direction(0, 0, 0)));
-	scene.addModel(buildCube(
-        0.5, Vector::direction(3, 0, -7), Vector::direction(0, 0, 0)));
+			0.5, Vector::direction(3, 0, -7), Vector::direction(0, 0, 0)));
 	scene.addModel(buildTetrahedron(
 			1.0, Vector::direction(0, 3, -7), Vector::direction(0, 0, 0)));
 

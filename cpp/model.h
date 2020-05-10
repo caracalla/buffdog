@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 
+#include "bmp.h"
 #include "triangle.h"
 #include "vector.h"
 
@@ -19,6 +20,12 @@ typedef struct {
 	size_t v1;
 	size_t v2;
 	Vector color;
+	double tex_u0;
+	double tex_v0;
+	double tex_u1;
+	double tex_v1;
+	double tex_u2;
+	double tex_v2;
 	Vector normal;
 } tri3d;
 
@@ -36,6 +43,7 @@ struct Model {
 	double scale;
 	Vector translation;
 	Vector rotation; // represented as radians around each axis
+	BMPTexture texture;
 
 	void setTriangleNormals() {
 		for (auto& triangle : this->triangles) {
@@ -44,6 +52,10 @@ struct Model {
 					this->vertices[triangle.v1],
 					this->vertices[triangle.v2]);
 		}
+	}
+
+	void addTexture(BMPTexture texture) {
+		this->texture = texture;
 	}
 };
 
@@ -58,28 +70,29 @@ Model buildCube(double scale, Vector translation, Vector rotation) {
 	Model item;
 
 	item.vertices = {
-			Vector::point( 1,  1,  1),
-			Vector::point(-1,  1,  1),
-			Vector::point(-1, -1,  1),
-			Vector::point( 1, -1,  1),
-			Vector::point( 1,  1, -1),
-			Vector::point(-1,  1, -1),
-			Vector::point(-1, -1, -1),
-			Vector::point( 1, -1, -1)};
+			Vector::point( 1,  1,  1),   // 0
+			Vector::point(-1,  1,  1),   // 1
+			Vector::point(-1, -1,  1),   // 2
+			Vector::point( 1, -1,  1),   // 3
+			Vector::point( 1,  1, -1),   // 4
+			Vector::point(-1,  1, -1),   // 5
+			Vector::point(-1, -1, -1),   // 6
+			Vector::point( 1, -1, -1)};  // 7
 
 	item.triangles = {
-			(tri3d){0, 1, 2, red},
-			(tri3d){0, 2, 3, red},
-			(tri3d){4, 0, 3, green},
-			(tri3d){4, 3, 7, green},
-			(tri3d){5, 4, 7, blue},
-			(tri3d){5, 7, 6, blue},
-			(tri3d){1, 5, 6, yellow},
-			(tri3d){1, 6, 2, yellow},
-			(tri3d){4, 5, 1, purple},
-			(tri3d){4, 1, 0, purple},
-			(tri3d){2, 6, 7, cyan},
-			(tri3d){2, 7, 3, cyan}};
+			(tri3d){0, 1, 2, red, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0},
+			(tri3d){0, 2, 3, red, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0},
+			// (tri3d){0, 3, 2, red, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0},
+			(tri3d){4, 0, 3, green, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0},
+			(tri3d){4, 3, 7, green, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0},
+			(tri3d){5, 4, 7, blue, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+			(tri3d){5, 7, 6, blue, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0},
+			(tri3d){1, 5, 6, yellow, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0},
+			(tri3d){1, 6, 2, yellow, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0},
+			(tri3d){4, 5, 1, purple, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+			(tri3d){4, 1, 0, purple, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0},
+			(tri3d){2, 6, 7, cyan, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0},
+			(tri3d){2, 7, 3, cyan, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0}};
 
 	item.shades = {
 			1.0,

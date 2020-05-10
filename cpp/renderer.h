@@ -24,6 +24,8 @@ const Vector kOrigin = {0, 0, 0, 1};
 struct ClippedPolygon {
 	std::array<Vector, MAX_CLIPPED_POLYGON_VERTICES> vertices;
 	std::array<double, MAX_CLIPPED_POLYGON_VERTICES> shades;
+	std::array<double, MAX_CLIPPED_POLYGON_VERTICES> u_values;
+	std::array<double, MAX_CLIPPED_POLYGON_VERTICES> v_values;
 	size_t vertex_count;
 };
 
@@ -96,7 +98,7 @@ struct Renderer {
 
 	// Sutherland-Hodgman algorithm
 	ClippedPolygon clipTriangle(ClippedPolygon triangle) {
-		ClippedPolygon final_poly = {{}, {}, 0};
+		ClippedPolygon final_poly = {{}, {}, {}, {}, 0};
 
 		ClippedPolygon* original_poly = &triangle;
 		ClippedPolygon* new_poly = &final_poly;
@@ -119,18 +121,29 @@ struct Renderer {
 				double& s1 = original_poly->shades[previous];
 				double& s2 = original_poly->shades[current];
 
+				double tex_u1 = original_poly->u_values[previous];
+				double tex_v1 = original_poly->v_values[previous];
+
+				double tex_u2 = original_poly->u_values[current];
+				double tex_v2 = original_poly->v_values[current];
+
 				if (insidePlane(v1, plane)) {
 					if (insidePlane(v2, plane)) {
 						// just add current
 						new_poly->vertices[new_poly_vertex_count] = v2;
 						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
+						new_poly->u_values[new_poly_vertex_count] = tex_u2;
+						new_poly->v_values[new_poly_vertex_count] = tex_v2;
 						new_poly_vertex_count++;
 					} else {
 						// add the intersect
 						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
 						new_poly->vertices[new_poly_vertex_count] = v1.add(v2.subtract(v1).scalarMultiply(t));
 						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
-
+						new_poly->u_values[new_poly_vertex_count] =
+								(tex_u1 + (tex_u2 - tex_u1) * t);
+						new_poly->v_values[new_poly_vertex_count] =
+								(tex_v1 + (tex_v2 - tex_v1) * t);
 						new_poly_vertex_count++;
 					}
 				} else {
@@ -139,11 +152,17 @@ struct Renderer {
 						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
 						new_poly->vertices[new_poly_vertex_count] = v1.add(v2.subtract(v1).scalarMultiply(t));
 						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
+						new_poly->u_values[new_poly_vertex_count] =
+								(tex_u1 + (tex_u2 - tex_u1) * t);
+						new_poly->v_values[new_poly_vertex_count] =
+								(tex_v1 + (tex_v2 - tex_v1) * t);
 						new_poly_vertex_count++;
 
 						// then add current
 						new_poly->vertices[new_poly_vertex_count] = v2;
 						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
+						new_poly->u_values[new_poly_vertex_count] = tex_u2;
+						new_poly->v_values[new_poly_vertex_count] = tex_v2;
 						new_poly_vertex_count++;
 					} else {
 						// both previous and current are outside the plane, do nothing
@@ -227,7 +246,14 @@ struct Renderer {
 						item.shades[triangle.v2],
 						1 / item.vertices[triangle.v0].z,
 						1 / item.vertices[triangle.v1].z,
-						1 / item.vertices[triangle.v2].z};
+						1 / item.vertices[triangle.v2].z,
+						triangle.tex_u0,
+						triangle.tex_v0,
+						triangle.tex_u1,
+						triangle.tex_v1,
+						triangle.tex_u2,
+						triangle.tex_v2,
+						item.texture};
 
 				tri.fillShaded();
 			} else if (!isVertexVisible[triangle.v0] &&
@@ -252,6 +278,16 @@ struct Renderer {
 							item.shades[triangle.v1],
 							item.shades[triangle.v2]
 						},
+						{
+							triangle.tex_u0,
+							triangle.tex_u1,
+							triangle.tex_u2
+						},
+						{
+							triangle.tex_v0,
+							triangle.tex_v1,
+							triangle.tex_v2
+						},
 						3};
 
 				ClippedPolygon poly = clipTriangle(triangle_poly);
@@ -274,7 +310,14 @@ struct Renderer {
 							poly.shades[i + 1],
 							1 / poly.vertices[0].z,
 							1 / poly.vertices[i].z,
-							1 / poly.vertices[i + 1].z};
+							1 / poly.vertices[i + 1].z,
+							poly.u_values[0],
+							poly.v_values[0],
+							poly.u_values[i],
+							poly.v_values[i],
+							poly.u_values[i + 1],
+							poly.v_values[i + 1],
+							item.texture};
 
 					new_triangle.fillShaded();
 				}

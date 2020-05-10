@@ -40,7 +40,12 @@ void drawShadedLine(
 		double h2,
 		double z1,
 		double z2,
-		Vector color) {
+		double u1,
+		double v1,
+		double u2,
+		double v2,
+		Vector color,
+		BMPTexture texture) {
 	int start_x;
 	int end_x;
 
@@ -50,37 +55,70 @@ void drawShadedLine(
 	double z;
 	double q;
 
+	double u;
+	double v;
+
+	double uq;
+	double vq;
+
 	if (x1 < x2) {
 		start_x = (int)x1;
 		end_x = (int)x2;
 
+		double dx = (x2 - x1);
+
 		h = h1;
-		a = (h2 - h1) / (x2 - x1);
+		a = (h2 - h1) / dx;
 
 		z = z1;
-		q = (z2 - z1) / (x2 - x1);
+		q = (z2 - z1) / dx;
+
+		u = u1;
+		uq = (u2 - u1) / dx;
+
+		v = v1;
+		vq = (v2 - v1) / dx;
 	} else {
 		start_x = (int)x2;
 		end_x = (int)x1;
 
+		double dx = (x1 - x2);
+
 		h = h2;
-		a = (h1 - h2) / (x1 - x2);
+		a = (h1 - h2) / dx;
 
 		z = z2;
-		q = (z1 - z2) / (x1 - x2);
+		q = (z1 - z2) / dx;
+
+		u = u2;
+		uq = (u1 - u2) / dx;
+
+		v = v2;
+		vq = (v1 - v2) / dx;
 	}
 
 	for (int x = start_x; x < end_x; x++) {
 		double& z_buffer_value = device::zBufferAt(x, y);
 
 		if (z < z_buffer_value) {
-			device::setPixel(x, y, colorFromVector(color.scalarMultiply(h)));
+			uint32_t final_color;
+
+			if (texture.exists) {
+				final_color = texture.colorFromUV(u / z, v / z);
+				// final_color = texture.colorFromUV(u, v);
+			} else {
+				final_color = colorFromVector(color.scalarMultiply(h));
+			}
+			device::setPixel(x, y, final_color);
 
 			z_buffer_value = z;
 		}
 
 		h += a;
 		z += q;
+
+		u += uq;
+		v += vq;
 	}
 }
 
@@ -95,6 +133,13 @@ struct Triangle2D {
 	double invZ0;
 	double invZ1;
 	double invZ2;
+	double u0;
+	double v0;
+	double u1;
+	double v1;
+	double u2;
+	double v2;
+	BMPTexture texture;
 
 	void draw() {
 		int color = colorFromVector(this->color);
@@ -187,6 +232,17 @@ struct Triangle2D {
 		Point temp;
 		double htemp;
 		double invZtemp;
+		double utemp;
+		double vtemp;
+
+		double inv_u0 = this->u0 * this->invZ0;
+		double inv_v0 = this->v0 * this->invZ0;
+
+		double inv_u1 = this->u1 * this->invZ1;
+		double inv_v1 = this->v1 * this->invZ1;
+
+		double inv_u2 = this->u2 * this->invZ2;
+		double inv_v2 = this->v2 * this->invZ2;
 
 		if (this->p0.y > this->p1.y) {
 			temp = this->p0;
@@ -200,6 +256,14 @@ struct Triangle2D {
 			invZtemp = this->invZ0;
 			this->invZ0 = this->invZ1;
 			this->invZ1 = invZtemp;
+
+			utemp = inv_u0;
+			inv_u0 = inv_u1;
+			inv_u1 = utemp;
+
+			vtemp = inv_v0;
+			inv_v0 = inv_v1;
+			inv_v1 = vtemp;
 		}
 
 		if (this->p0.y > this->p2.y) {
@@ -214,6 +278,14 @@ struct Triangle2D {
 			invZtemp = this->invZ0;
 			this->invZ0 = this->invZ2;
 			this->invZ2 = invZtemp;
+
+			utemp = inv_u0;
+			inv_u0 = inv_u2;
+			inv_u2 = utemp;
+
+			vtemp = inv_v0;
+			inv_v0 = inv_v2;
+			inv_v2 = vtemp;
 		}
 
 		if (this->p1.y > this->p2.y) {
@@ -228,23 +300,19 @@ struct Triangle2D {
 			invZtemp = this->invZ1;
 			this->invZ1 = this->invZ2;
 			this->invZ2 = invZtemp;
+
+			utemp = inv_u1;
+			inv_u1 = inv_u2;
+			inv_u2 = utemp;
+
+			vtemp = inv_v1;
+			inv_v1 = inv_v2;
+			inv_v2 = vtemp;
 		}
 
 		double dy01 = this->p1.y - this->p0.y;
 		double dy12 = this->p2.y - this->p1.y;
 		double dy02 = this->p2.y - this->p0.y;
-
-		double x01 = this->p0.x;
-		double x12 = this->p1.x;
-		double x02 = this->p0.x;
-
-		double h01 = this->h0;
-		double h12 = this->h1;
-		double h02 = this->h0;
-
-		double z01 = this->invZ0;
-		double z12 = this->invZ1;
-		double z02 = this->invZ2;
 
 		if (dy02 == 0) {
 			// the whole thing is flat horizontally
@@ -261,7 +329,12 @@ struct Triangle2D {
 					this->h1,
 					this->invZ0,
 					this->invZ1,
-					this->color);
+					inv_u0,
+					inv_u1,
+					inv_v0,
+					inv_v1,
+					this->color,
+					this->texture);
 
 			drawShadedLine(
 					this->p2.y,
@@ -271,13 +344,40 @@ struct Triangle2D {
 					this->h2,
 					this->invZ1,
 					this->invZ2,
-					this->color);
+					inv_u1,
+					inv_u2,
+					inv_v1,
+					inv_v2,
+					this->color,
+					this->texture);
 			return;
 		}
+
+		double x01 = this->p0.x;
+		double x12 = this->p1.x;
+		double x02 = this->p0.x;
+
+		double h01 = this->h0;
+		double h12 = this->h1;
+		double h02 = this->h0;
+
+		double z01 = this->invZ0;
+		double z12 = this->invZ1;
+		double z02 = this->invZ0;
+
+		double u01 = inv_u0;
+		double u12 = inv_u1;
+		double u02 = inv_u0;
+
+		double v01 = inv_v0;
+		double v12 = inv_v1;
+		double v02 = inv_v0;
 
 		double m02 = (this->p2.x - this->p0.x) / dy02;
 		double a02 = (this->h2 - this->h0) / dy02;
 		double q02 = (this->invZ2 - this->invZ0) / dy02;
+		double uq02 = (inv_u2 - inv_u0) / dy02;
+		double vq02 = (inv_v2 - inv_v0) / dy02;
 
 		if (dy01 == 0) {
 			// the bottom part is flat horizontally
@@ -289,14 +389,21 @@ struct Triangle2D {
 					this->h1,
 					this->invZ0,
 					this->invZ1,
-					this->color);
+					inv_u0,
+					inv_v0,
+					inv_u1,
+					inv_v1,
+					this->color,
+					this->texture);
 		} else {
 			double m01 = (this->p1.x - this->p0.x) / dy01;
 			double a01 = (this->h1 - this->h0) / dy01;
 			double q01 = (this->invZ1 - this->invZ0) / dy01;
+			double uq01 = (inv_u1 - inv_u0) / dy01;
+			double vq01 = (inv_v1 - inv_v0) / dy01;
 
 			for (int y = this->p0.y; y < this->p1.y; y++) {
-				drawShadedLine(y, x01, x02, h01, h02, z01, z02, this->color);
+				drawShadedLine(y, x01, x02, h01, h02, z01, z02, u01, v01, u02, v02, this->color, this->texture);
 
 				x01 += m01;
 				x02 += m02;
@@ -306,6 +413,12 @@ struct Triangle2D {
 
 				z01 += q01;
 				z02 += q02;
+
+				u01 += uq01;
+				u02 += uq02;
+
+				v01 += vq01;
+				v02 += vq02;
 			}
 		}
 
@@ -319,14 +432,21 @@ struct Triangle2D {
 					this->h2,
 					this->invZ1,
 					this->invZ2,
-					this->color);
+					inv_u1,
+					inv_v1,
+					inv_u2,
+					inv_v2,
+					this->color,
+					this->texture);
 		} else {
 			double m12 = (this->p2.x - this->p1.x) / dy12;
 			double a12 = (this->h2 - this->h1) / dy12;
 			double q12 = (this->invZ2 - this->invZ1) / dy12;
+			double uq12 = (inv_u2 - inv_u1) / dy12;
+			double vq12 = (inv_v2 - inv_v1) / dy12;
 
 			for (int y = this->p1.y; y <= this->p2.y; y++) {
-				drawShadedLine(y, x12, x02, h12, h02, z12, z02, this->color);
+				drawShadedLine(y, x12, x02, h12, h02, z12, z02, u12, v12, u02, v02, this->color, this->texture);
 
 				x12 += m12;
 				x02 += m02;
@@ -336,6 +456,12 @@ struct Triangle2D {
 
 				z12 += q12;
 				z02 += q02;
+
+				u12 += uq12;
+				u02 += uq02;
+
+				v12 += vq12;
+				v02 += vq02;
 			}
 		}
 	}
