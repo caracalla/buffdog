@@ -97,7 +97,7 @@ namespace device {
 		SDL_Quit();
 	}
 
-	void selfDestruct(char *message, int line_number, const char* file_name) {
+	void selfDestruct(char const* message, int line_number, const char* file_name) {
 		printf("[%s:%d] %s\n", file_name, line_number, message);
 		device::tearDown();
 		exit(1);

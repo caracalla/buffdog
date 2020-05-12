@@ -78,7 +78,6 @@ struct Renderer {
 		return v1.add(v2.subtract(v1).scalarMultiply(t));
 	}
 
-
 	// projection to canvas
 
 	Point viewportToCanvas(double x, double y, double viewport_width, double viewport_height) {
@@ -121,48 +120,50 @@ struct Renderer {
 				double& s1 = original_poly->shades[previous];
 				double& s2 = original_poly->shades[current];
 
-				double tex_u1 = original_poly->u_values[previous];
-				double tex_v1 = original_poly->v_values[previous];
+				double vt_u1 = original_poly->u_values[previous];
+				double vt_v1 = original_poly->v_values[previous];
 
-				double tex_u2 = original_poly->u_values[current];
-				double tex_v2 = original_poly->v_values[current];
+				double vt_u2 = original_poly->u_values[current];
+				double vt_v2 = original_poly->v_values[current];
 
 				if (insidePlane(v1, plane)) {
 					if (insidePlane(v2, plane)) {
 						// just add current
 						new_poly->vertices[new_poly_vertex_count] = v2;
 						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
-						new_poly->u_values[new_poly_vertex_count] = tex_u2;
-						new_poly->v_values[new_poly_vertex_count] = tex_v2;
+						new_poly->u_values[new_poly_vertex_count] = vt_u2;
+						new_poly->v_values[new_poly_vertex_count] = vt_v2;
 						new_poly_vertex_count++;
 					} else {
 						// add the intersect
 						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
-						new_poly->vertices[new_poly_vertex_count] = v1.add(v2.subtract(v1).scalarMultiply(t));
+						new_poly->vertices[new_poly_vertex_count] =
+								v1.add(v2.subtract(v1).scalarMultiply(t));
 						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
 						new_poly->u_values[new_poly_vertex_count] =
-								(tex_u1 + (tex_u2 - tex_u1) * t);
+								(vt_u1 + (vt_u2 - vt_u1) * t);
 						new_poly->v_values[new_poly_vertex_count] =
-								(tex_v1 + (tex_v2 - tex_v1) * t);
+								(vt_v1 + (vt_v2 - vt_v1) * t);
 						new_poly_vertex_count++;
 					}
 				} else {
 					if (insidePlane(v2, plane)) {
 						// add the intersect
 						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
-						new_poly->vertices[new_poly_vertex_count] = v1.add(v2.subtract(v1).scalarMultiply(t));
+						new_poly->vertices[new_poly_vertex_count] =
+								v1.add(v2.subtract(v1).scalarMultiply(t));
 						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
 						new_poly->u_values[new_poly_vertex_count] =
-								(tex_u1 + (tex_u2 - tex_u1) * t);
+								(vt_u1 + (vt_u2 - vt_u1) * t);
 						new_poly->v_values[new_poly_vertex_count] =
-								(tex_v1 + (tex_v2 - tex_v1) * t);
+								(vt_v1 + (vt_v2 - vt_v1) * t);
 						new_poly_vertex_count++;
 
 						// then add current
 						new_poly->vertices[new_poly_vertex_count] = v2;
 						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
-						new_poly->u_values[new_poly_vertex_count] = tex_u2;
-						new_poly->v_values[new_poly_vertex_count] = tex_v2;
+						new_poly->u_values[new_poly_vertex_count] = vt_u2;
+						new_poly->v_values[new_poly_vertex_count] = vt_v2;
 						new_poly_vertex_count++;
 					} else {
 						// both previous and current are outside the plane, do nothing
@@ -247,15 +248,17 @@ struct Renderer {
 						1 / item.vertices[triangle.v0].z,
 						1 / item.vertices[triangle.v1].z,
 						1 / item.vertices[triangle.v2].z,
-						triangle.tex_u0,
-						triangle.tex_v0,
-						triangle.tex_u1,
-						triangle.tex_v1,
-						triangle.tex_u2,
-						triangle.tex_v2,
+						triangle.vt_u0,
+						triangle.vt_v0,
+						triangle.vt_u1,
+						triangle.vt_v1,
+						triangle.vt_u2,
+						triangle.vt_v2,
 						item.texture};
 
 				tri.fillShaded();
+
+				tri.draw();
 			} else if (!isVertexVisible[triangle.v0] &&
 					!isVertexVisible[triangle.v1] &&
 					!isVertexVisible[triangle.v2]) {
@@ -279,14 +282,14 @@ struct Renderer {
 							item.shades[triangle.v2]
 						},
 						{
-							triangle.tex_u0,
-							triangle.tex_u1,
-							triangle.tex_u2
+							triangle.vt_u0,
+							triangle.vt_u1,
+							triangle.vt_u2
 						},
 						{
-							triangle.tex_v0,
-							triangle.tex_v1,
-							triangle.tex_v2
+							triangle.vt_v0,
+							triangle.vt_v1,
+							triangle.vt_v2
 						},
 						3};
 
@@ -320,6 +323,8 @@ struct Renderer {
 							item.texture};
 
 					new_triangle.fillShaded();
+
+					new_triangle.draw();
 				}
 			}
 		}

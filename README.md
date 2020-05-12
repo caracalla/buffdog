@@ -1,14 +1,10 @@
 # Buffdog
 
 ## TODO
-* shading
 * tie velocity/movement to FPS
-* put more stuff in classes (like a renderer class), code cleanup
-* z buffering
-
+* better OBJ file parsing
 
 ## Setup
-
 1. Install SDL2
 1. `cd cpp` (it's where all the good stuff is)
 1. `make run`

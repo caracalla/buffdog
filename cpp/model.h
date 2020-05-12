@@ -20,13 +20,16 @@ typedef struct {
 	size_t v1;
 	size_t v2;
 	Vector color;
-	double tex_u0;
-	double tex_v0;
-	double tex_u1;
-	double tex_v1;
-	double tex_u2;
-	double tex_v2;
-	Vector normal;
+	double vt_u0;
+	double vt_v0;
+	double vt_u1;
+	double vt_v1;
+	double vt_u2;
+	double vt_v2;
+	Vector normal; // the normal of the triangle itself
+	Vector vn0;
+	Vector vn1;
+	Vector vn2;
 } tri3d;
 
 Vector triangleNormal(Vector v0, Vector v1, Vector v2) {
@@ -38,6 +41,7 @@ Vector triangleNormal(Vector v0, Vector v1, Vector v2) {
 
 struct Model {
 	std::vector<Vector> vertices;
+	std::vector<Vector> normals;
 	std::vector<tri3d> triangles;
 	std::vector<double> shades;
 	double scale;
@@ -82,7 +86,6 @@ Model buildCube(double scale, Vector translation, Vector rotation) {
 	item.triangles = {
 			(tri3d){0, 1, 2, red, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0},
 			(tri3d){0, 2, 3, red, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0},
-			// (tri3d){0, 3, 2, red, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0},
 			(tri3d){4, 0, 3, green, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0},
 			(tri3d){4, 3, 7, green, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0},
 			(tri3d){5, 4, 7, blue, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0},

@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "device.h"
+
 
 #define DATA_OFFSET_OFFSET 0x000A
 #define WIDTH_OFFSET 0x0012
@@ -30,9 +32,14 @@ bmp_info_t readBMPFile(const char* filename) {
 	FILE *file = fopen(filename, "rb");
 
 	if (!file) {
-		// terminateFatal("couldn't read bmp file\n");
-		printf("could't read file %s\n", filename);
-		exit(0);
+		char message[1024];
+		snprintf(
+				message,
+				sizeof(message),
+				"could't read bmp file %s\n",
+				filename);
+
+		terminateFatal(message);
 	}
 
 	// read offset
