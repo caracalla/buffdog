@@ -197,24 +197,25 @@ struct Renderer {
 		return vectorToCamera.dotProduct(triangle_normal) <= 0;
 	}
 
-	Model applyTransform(Model item) {
-		Matrix worldMatrix = Matrix::makeWorldMatrix(item.scale, item.rotation, item.translation);
-		Matrix finalMatrix = this->cameraMatrix.multiplyMatrix(worldMatrix);
+	double applyLighting(tri3d& triangle, std::vector<Light>& lights) {
+		double result = 0;
 
-		// transform vertices
-		for (auto& vertex : item.vertices) {
-			vertex = finalMatrix.multiplyVector(vertex);
+		for (auto& light : lights) {
+			if (light.type == LightType::directional) {
+				double directional_light = triangle.normal.dotProduct(light.direction);
+
+				if (directional_light > 0) {
+					result += directional_light * light.intensity;
+				}
+			} else {
+				result += light.intensity;
+			}
 		}
 
-		// transform triangle normals (is using finalMatrix here really okay?)
-		for (auto& triangle : item.triangles) {
-			triangle.normal = finalMatrix.multiplyVector(triangle.normal);
-		}
-
-		return item;
+		return result;
 	}
 
-	void drawModel(Model item, Viewport& viewport) {
+	void drawModel(Model item, Viewport& viewport, std::vector<Light>& lights) {
 		bool isVertexVisible[item.vertices.size()];
 		Point projectedVertices[item.vertices.size()];
 
@@ -233,6 +234,8 @@ struct Renderer {
 				continue;
 			}
 
+			triangle.shade = applyLighting(triangle, lights);
+
 			if (isVertexVisible[triangle.v0] &&
 					isVertexVisible[triangle.v1] &&
 					isVertexVisible[triangle.v2]) {
@@ -242,9 +245,12 @@ struct Renderer {
 						projectedVertices[triangle.v1],
 						projectedVertices[triangle.v2],
 						triangle.color,
-						item.shades[triangle.v0],
-						item.shades[triangle.v1],
-						item.shades[triangle.v2],
+						// item.shades[triangle.v0],
+						// item.shades[triangle.v1],
+						// item.shades[triangle.v2],
+						triangle.shade,
+						triangle.shade,
+						triangle.shade,
 						1 / item.vertices[triangle.v0].z,
 						1 / item.vertices[triangle.v1].z,
 						1 / item.vertices[triangle.v2].z,
@@ -257,8 +263,6 @@ struct Renderer {
 						item.texture};
 
 				tri.fillShaded();
-
-				tri.draw();
 			} else if (!isVertexVisible[triangle.v0] &&
 					!isVertexVisible[triangle.v1] &&
 					!isVertexVisible[triangle.v2]) {
@@ -277,9 +281,12 @@ struct Renderer {
 							item.vertices[triangle.v2]
 						},
 						{
-							item.shades[triangle.v0],
-							item.shades[triangle.v1],
-							item.shades[triangle.v2]
+							// item.shades[triangle.v0],
+							// item.shades[triangle.v1],
+							// item.shades[triangle.v2]
+							triangle.shade,
+							triangle.shade,
+							triangle.shade
 						},
 						{
 							triangle.vt_u0,
@@ -323,11 +330,26 @@ struct Renderer {
 							item.texture};
 
 					new_triangle.fillShaded();
-
-					new_triangle.draw();
 				}
 			}
 		}
+	}
+
+	Model transformModel(Model item) {
+		Matrix worldMatrix = Matrix::makeWorldMatrix(item.scale, item.rotation, item.translation);
+		Matrix finalMatrix = this->cameraMatrix.multiplyMatrix(worldMatrix);
+
+		// transform vertices
+		for (auto& vertex : item.vertices) {
+			vertex = finalMatrix.multiplyVector(vertex);
+		}
+
+		// transform triangle normals (is using finalMatrix here really okay?)
+		for (auto& triangle : item.triangles) {
+			triangle.normal = finalMatrix.multiplyVector(triangle.normal);
+		}
+
+		return item;
 	}
 
 	void drawScene(Scene& scene) {
@@ -338,8 +360,16 @@ struct Renderer {
 		// TODO: make this more interesting/dynamic
 		device::clearScreen(device::color(1, 1, 1));
 
+		std::vector<Light> lights = scene.lights;
+
+		for (auto& light : lights) {
+			if (light.type == LightType::directional) {
+				light.direction = this->cameraMatrix.multiplyVector(light.direction);
+			}
+		}
+
 		for (const auto& model : scene.models) {
-			drawModel(applyTransform(model), scene.camera.viewport);
+			drawModel(transformModel(model), scene.camera.viewport, lights);
 		}
 	}
 };

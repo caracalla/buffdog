@@ -27,9 +27,24 @@ struct Camera {
 };
 
 
+enum LightType {
+	ambient,
+	directional,
+	point
+};
+
+struct Light {
+	LightType type;
+	Vector direction;
+	double intensity;
+};
+
+
 struct Scene {
 	std::vector<Model> models;
 	Camera camera;
+	std::vector<Light> lights;
+
 
 	static Scene create() {
 		Scene scene;
@@ -41,6 +56,12 @@ struct Scene {
 
 		scene.camera.translation = Vector::point(0, 0, 0);
 		scene.camera.rotation = Vector::direction(0, 0, 0);
+
+		Light ambient = {LightType::ambient, Vector::direction(0, 0, 0), 0.2};
+		Light directional = {LightType::directional, Vector::direction(-1, 1, 1).unit(), 0.8};
+
+		scene.lights.push_back(ambient);
+		scene.lights.push_back(directional);
 
 		return scene;
 	}

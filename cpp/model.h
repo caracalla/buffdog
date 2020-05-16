@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <utility>
 
 #include "bmp.h"
 #include "triangle.h"
@@ -13,6 +14,22 @@
 double MAX_COLOR_VAL = 0.9;
 double MIN_COLOR_VAL = 0.0;
 
+
+struct Vertex {
+	size_t index;
+	size_t normal;
+	size_t uv;
+	double light_intensity;
+};
+
+struct Triangle3D {
+	Vertex v0;
+	Vertex v1;
+	Vertex v2;
+	Vector color;
+	Vector normal;
+	double shade;
+};
 
 // 3D triangles are represented as indices in the model's vertex list
 typedef struct {
@@ -30,6 +47,7 @@ typedef struct {
 	Vector vn0;
 	Vector vn1;
 	Vector vn2;
+	double shade;
 } tri3d;
 
 Vector triangleNormal(Vector v0, Vector v1, Vector v2) {
@@ -42,8 +60,8 @@ Vector triangleNormal(Vector v0, Vector v1, Vector v2) {
 struct Model {
 	std::vector<Vector> vertices;
 	std::vector<Vector> normals;
+	std::vector<std::pair<double, double>> uvs;
 	std::vector<tri3d> triangles;
-	std::vector<double> shades;
 	double scale;
 	Vector translation;
 	Vector rotation; // represented as radians around each axis
@@ -97,16 +115,6 @@ Model buildCube(double scale, Vector translation, Vector rotation) {
 			(tri3d){2, 6, 7, cyan, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0},
 			(tri3d){2, 7, 3, cyan, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0}};
 
-	item.shades = {
-			1.0,
-			0.0,
-			1.0,
-			0.0,
-			0.0,
-			1.0,
-			0.0,
-			1.0};
-
 	item.scale = scale;
 	item.translation = translation;
 	item.rotation = rotation;
@@ -120,7 +128,7 @@ Model buildTetrahedron(double scale, Vector translation, Vector rotation) {
 	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
-	Vector black = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
+	Vector purple = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 
 	Model item;
 
@@ -136,9 +144,7 @@ Model buildTetrahedron(double scale, Vector translation, Vector rotation) {
 			(tri3d){0, 1, 2, red},
 			(tri3d){0, 3, 1, green},
 			(tri3d){0, 2, 3, blue},
-			(tri3d){1, 3, 2, black}};
-
-	item.shades = {1.0, 0.0, 0.0, 0.0};
+			(tri3d){1, 3, 2, purple}};
 
 	item.scale = scale;
 	item.translation = translation;

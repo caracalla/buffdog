@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "device.h"
+#include "vector.h"
 
 
 #define DATA_OFFSET_OFFSET 0x000A
@@ -111,13 +112,30 @@ struct BMPTexture {
 
 		size_t index = (bmp_info.width * y + x) * bmp_info.bytes_per_pixel;
 
-		unsigned char red = bmp_info.pixel_buffer[index];
+		unsigned char blue = bmp_info.pixel_buffer[index];
 		unsigned char green = bmp_info.pixel_buffer[index + 1];
-		unsigned char blue = bmp_info.pixel_buffer[index + 2];
+		unsigned char red = bmp_info.pixel_buffer[index + 2];
 
-		uint32_t raw_color = (blue << 24) + (green << 16) + (red << 8);
+		uint32_t raw_color = (red << 24) + (green << 16) + (blue << 8);
 
 		return raw_color;
+	}
+
+	Vector vectorColorFromUV(double u, double v) {
+		int x = (bmp_info.width - 1) * u;
+		int y = (bmp_info.height - 1) * v;
+
+		size_t index = (bmp_info.width * y + x) * bmp_info.bytes_per_pixel;
+
+		unsigned char blue = bmp_info.pixel_buffer[index];
+		unsigned char green = bmp_info.pixel_buffer[index + 1];
+		unsigned char red = bmp_info.pixel_buffer[index + 2];
+
+		return ((Vector) {
+				(double)red / 255,
+				(double)green / 255,
+				(double)blue / 255,
+				0});
 	}
 
 	static BMPTexture load(const char* filename) {

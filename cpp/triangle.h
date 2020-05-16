@@ -104,8 +104,8 @@ void drawShadedLine(
 			uint32_t final_color;
 
 			if (texture.exists) {
-				final_color = texture.colorFromUV(u / z, v / z);
-				// final_color = texture.colorFromUV(u, v);
+				Vector vec_color = texture.vectorColorFromUV(u / z, v / z);
+				final_color = colorFromVector(vec_color.scalarMultiply(h));
 			} else {
 				final_color = colorFromVector(color.scalarMultiply(h));
 			}
