@@ -65,8 +65,9 @@ int main(int argc, char** argv) {
 	// scene.addModel(buildCube(
 	// 		0.5, Vector::direction(3, 0, -7), Vector::direction(0, 0, 0)));
 
-	scene.addModel(buildTetrahedron(
-			1.0, Vector::direction(0, 3, -7), Vector::direction(0, 0, 0)));
+	Model tetra = buildTetrahedron(
+			1.0, Vector::direction(0, 3, -7), Vector::direction(0, 0, 0));
+	scene.addModel(tetra);
 
 	if (argc == 2) {
 		Model item = parseOBJFile(argv[1]);

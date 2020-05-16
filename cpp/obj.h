@@ -78,6 +78,68 @@ std::pair<double, double> readUV(char* str, size_t index) {
 	return result;
 }
 
+Triangle3D readTriangle(char* str, size_t index) {
+	Triangle3D result;
+	char num[MAXCHAR];
+
+	for (int i = 0; i < 3; i++) {
+		// v/vt/vn
+		while (isspace(str[index])) {
+			index += 1;
+		}
+
+		Vertex& vertex = result.at(i);
+		size_t num_index = 0;
+
+		while (isdigit(str[index])) {
+			num[num_index] = str[index];
+			index += 1;
+			num_index += 1;
+		}
+
+		num[num_index] = 0;
+		vertex.index = atoi(num) - 1;
+
+		if (str[index] == '/') {
+			// vt
+			index += 1;
+			num_index = 0;
+
+			while (isdigit(str[index])) {
+				num[num_index] = str[index];
+				index += 1;
+				num_index += 1;
+			}
+
+			num[num_index] = 0;
+			vertex.uv = atoi(num) - 1;
+
+			if (str[index] == '/') {
+				// vn
+				index += 1;
+				num_index = 0;
+
+				while (isdigit(str[index])) {
+					num[num_index] = str[index];
+					index += 1;
+					num_index += 1;
+				}
+
+				num[num_index] = 0;
+				vertex.normal = atoi(num) - 1;
+			}
+		}
+
+		vertex.light_intensity = 1.0;
+	}
+
+	for (int i = 0; i < 3; i++) {
+		result.color.at(i) = 0.8;
+	}
+
+	return result;
+}
+
 Model parseOBJFile(const char* filename) {
 	Model result;
 	char str[MAXCHAR];
@@ -116,63 +178,8 @@ Model parseOBJFile(const char* filename) {
 				// I don't know, skip
 			}
 		} else if (str[index] == 'f') {
-			tri3d triangle;
 			// face
-			char num[MAXCHAR];
-
-			index += 1;
-
-			while (isspace(str[index])) index += 1;
-
-			size_t num_index = 0;
-			while (isdigit(str[index])) {
-				num[num_index] = str[index];
-				index += 1;
-				num_index += 1;
-			}
-
-			num[num_index] = 0;
-			triangle.v0 = atoi(num) - 1;
-
-			if (str[index] == '/') {
-				// replace to handle vt and vn
-				while (!isspace(str[index])) index += 1;
-			}
-
-			while (isspace(str[index])) index += 1;
-
-			num_index = 0;
-			while (isdigit(str[index])) {
-				num[num_index] = str[index];
-				index += 1;
-				num_index += 1;
-			}
-
-			num[num_index] = 0;
-			triangle.v1 = atoi(num) - 1;
-
-			if (str[index] == '/') {
-				// replace to handle vt and vn
-				while (!isspace(str[index])) index += 1;
-			}
-
-			while (isspace(str[index])) index += 1;
-
-			num_index = 0;
-			while (isdigit(str[index])) {
-				num[num_index] = str[index];
-				index += 1;
-				num_index += 1;
-			}
-
-			num[num_index] = 0;
-			triangle.v2 = atoi(num) - 1;
-
-			for (int i = 0; i < 3; i++) {
-				triangle.color.at(i) = 0.8;
-			}
-
-			result.triangles.push_back(triangle);
+			result.triangles.push_back(readTriangle(str, index + 1));
 		}
 	}
 

@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "bmp.h"
+#include "device.h"
 #include "triangle.h"
 #include "vector.h"
 
@@ -28,27 +29,28 @@ struct Triangle3D {
 	Vertex v2;
 	Vector color;
 	Vector normal;
-	double shade;
-};
 
-// 3D triangles are represented as indices in the model's vertex list
-typedef struct {
-	size_t v0;
-	size_t v1;
-	size_t v2;
-	Vector color;
-	double vt_u0;
-	double vt_v0;
-	double vt_u1;
-	double vt_v1;
-	double vt_u2;
-	double vt_v2;
-	Vector normal; // the normal of the triangle itself
-	Vector vn0;
-	Vector vn1;
-	Vector vn2;
-	double shade;
-} tri3d;
+	Vertex& at(size_t index) {
+		switch(index) {
+			case 0:
+				return this->v0;
+				break;
+
+			case 1:
+				return this->v1;
+				break;
+
+			case 2:
+				return this->v2;
+				break;
+
+			default:
+				terminateFatal("invalid Triangle3D Vertex index");
+				return this->v0;
+				break;
+		}
+	}
+};
 
 Vector triangleNormal(Vector v0, Vector v1, Vector v2) {
 	Vector side1 = v1.subtract(v0);
@@ -60,19 +62,22 @@ Vector triangleNormal(Vector v0, Vector v1, Vector v2) {
 struct Model {
 	std::vector<Vector> vertices;
 	std::vector<Vector> normals;
-	std::vector<std::pair<double, double>> uvs;
-	std::vector<tri3d> triangles;
+	std::vector<std::pair<double, double> > uvs;
+
+	std::vector<Triangle3D> triangles;
+
 	double scale;
 	Vector translation;
 	Vector rotation; // represented as radians around each axis
+
 	BMPTexture texture;
 
 	void setTriangleNormals() {
 		for (auto& triangle : this->triangles) {
 			triangle.normal = triangleNormal(
-					this->vertices[triangle.v0],
-					this->vertices[triangle.v1],
-					this->vertices[triangle.v2]);
+					this->vertices[triangle.v0.index],
+					this->vertices[triangle.v1.index],
+					this->vertices[triangle.v2.index]);
 		}
 	}
 
@@ -101,19 +106,82 @@ Model buildCube(double scale, Vector translation, Vector rotation) {
 			Vector::point(-1, -1, -1),   // 6
 			Vector::point( 1, -1, -1)};  // 7
 
+	item.normals = {
+			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[3]),
+			triangleNormal(item.vertices[4], item.vertices[0], item.vertices[3]),
+			triangleNormal(item.vertices[5], item.vertices[4], item.vertices[7]),
+			triangleNormal(item.vertices[1], item.vertices[5], item.vertices[6]),
+			triangleNormal(item.vertices[4], item.vertices[5], item.vertices[1]),
+			triangleNormal(item.vertices[2], item.vertices[6], item.vertices[7])};
+
+	item.uvs = {
+			std::make_pair(0.0, 0.0),
+			std::make_pair(1.0, 0.0),
+			std::make_pair(0.0, 1.0),
+			std::make_pair(1.0, 1.0)};
+
 	item.triangles = {
-			(tri3d){0, 1, 2, red, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0},
-			(tri3d){0, 2, 3, red, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0},
-			(tri3d){4, 0, 3, green, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0},
-			(tri3d){4, 3, 7, green, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0},
-			(tri3d){5, 4, 7, blue, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-			(tri3d){5, 7, 6, blue, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0},
-			(tri3d){1, 5, 6, yellow, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0},
-			(tri3d){1, 6, 2, yellow, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0},
-			(tri3d){4, 5, 1, purple, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0},
-			(tri3d){4, 1, 0, purple, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0},
-			(tri3d){2, 6, 7, cyan, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0},
-			(tri3d){2, 7, 3, cyan, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0}};
+			(Triangle3D){
+					(Vertex){0, 0, 0, 1.0},
+					(Vertex){1, 0, 2, 1.0},
+					(Vertex){2, 0, 3, 1.0},
+					red},
+			(Triangle3D){
+					(Vertex){0, 0, 0, 1.0},
+					(Vertex){2, 0, 3, 1.0},
+					(Vertex){3, 0, 1, 1.0},
+					red},
+			(Triangle3D){
+					(Vertex){4, 1, 0, 1.0},
+					(Vertex){0, 1, 2, 1.0},
+					(Vertex){3, 1, 3, 1.0},
+					green},
+			(Triangle3D){
+					(Vertex){4, 1, 0, 1.0},
+					(Vertex){3, 1, 3, 1.0},
+					(Vertex){7, 1, 1, 1.0},
+					green},
+			(Triangle3D){
+					(Vertex){5, 2, 0, 1.0},
+					(Vertex){4, 2, 2, 1.0},
+					(Vertex){7, 2, 3, 1.0},
+					blue},
+			(Triangle3D){
+					(Vertex){5, 2, 0, 1.0},
+					(Vertex){7, 2, 3, 1.0},
+					(Vertex){6, 2, 1, 1.0},
+					blue},
+			(Triangle3D){
+					(Vertex){1, 3, 0, 1.0},
+					(Vertex){5, 3, 2, 1.0},
+					(Vertex){6, 3, 3, 1.0},
+					yellow},
+			(Triangle3D){
+					(Vertex){1, 3, 0, 1.0},
+					(Vertex){6, 3, 3, 1.0},
+					(Vertex){2, 3, 1, 1.0},
+					yellow},
+			(Triangle3D){
+					(Vertex){4, 4, 0, 1.0},
+					(Vertex){5, 4, 2, 1.0},
+					(Vertex){1, 4, 3, 1.0},
+					purple},
+			(Triangle3D){
+					(Vertex){4, 4, 0, 1.0},
+					(Vertex){1, 4, 3, 1.0},
+					(Vertex){0, 4, 1, 1.0},
+					purple},
+			(Triangle3D){
+					(Vertex){2, 5, 0, 1.0},
+					(Vertex){6, 5, 2, 1.0},
+					(Vertex){7, 5, 3, 1.0},
+					cyan},
+			(Triangle3D){
+					(Vertex){2, 5, 0, 1.0},
+					(Vertex){7, 5, 3, 1.0},
+					(Vertex){3, 5, 1, 1.0},
+					cyan},
+	};
 
 	item.scale = scale;
 	item.translation = translation;
@@ -140,11 +208,38 @@ Model buildTetrahedron(double scale, Vector translation, Vector rotation) {
 			Vector::point( 1, 0,       -1 / squirt3),
 			Vector::point(-1, 0,       -1 / squirt3)};
 
+	item.normals = {
+			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[3]),
+			triangleNormal(item.vertices[0], item.vertices[3], item.vertices[1]),
+			triangleNormal(item.vertices[0], item.vertices[2], item.vertices[3]),
+			triangleNormal(item.vertices[1], item.vertices[3], item.vertices[2])};
+
+	item.uvs = {
+			std::make_pair(0.0, 0.0),
+			std::make_pair(1.0, 0.0),
+			std::make_pair(0.5, 1.0)};
+
 	item.triangles = {
-			(tri3d){0, 1, 2, red},
-			(tri3d){0, 3, 1, green},
-			(tri3d){0, 2, 3, blue},
-			(tri3d){1, 3, 2, purple}};
+			(Triangle3D){
+					(Vertex){0, 0, 0, 1.0},
+					(Vertex){1, 0, 1, 1.0},
+					(Vertex){2, 0, 2, 1.0},
+					red},
+			(Triangle3D){
+					(Vertex){0, 1, 0, 1.0},
+					(Vertex){3, 1, 1, 1.0},
+					(Vertex){1, 1, 2, 1.0},
+					green},
+			(Triangle3D){
+					(Vertex){0, 2, 0, 1.0},
+					(Vertex){2, 2, 1, 1.0},
+					(Vertex){3, 2, 2, 1.0},
+					blue},
+			(Triangle3D){
+					(Vertex){1, 3, 0, 1.0},
+					(Vertex){3, 3, 1, 1.0},
+					(Vertex){2, 3, 2, 1.0},
+					purple}};
 
 	item.scale = scale;
 	item.translation = translation;

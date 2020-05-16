@@ -197,12 +197,12 @@ struct Renderer {
 		return vectorToCamera.dotProduct(triangle_normal) <= 0;
 	}
 
-	double applyLighting(tri3d& triangle, std::vector<Light>& lights) {
+	double applyLighting(Vector& normal, std::vector<Light>& lights) {
 		double result = 0;
 
 		for (auto& light : lights) {
 			if (light.type == LightType::directional) {
-				double directional_light = triangle.normal.dotProduct(light.direction);
+				double directional_light = normal.dotProduct(light.direction);
 
 				if (directional_light > 0) {
 					result += directional_light * light.intensity;
@@ -228,44 +228,46 @@ struct Renderer {
 		}
 
 		for (auto& triangle : item.triangles) {
-			if (isBackFace(triangle.normal, item.vertices[triangle.v0])) {
+			if (isBackFace(triangle.normal, item.vertices[triangle.v0.index])) {
 				// this is a back face, don't draw
 				// triangle.color = device::color(0, 0, 0);
 				continue;
 			}
 
-			triangle.shade = applyLighting(triangle, lights);
+			triangle.v0.light_intensity = applyLighting(
+					item.normals[triangle.v0.normal], lights);
+			triangle.v1.light_intensity = applyLighting(
+					item.normals[triangle.v1.normal], lights);
+			triangle.v2.light_intensity = applyLighting(
+					item.normals[triangle.v2.normal], lights);
 
-			if (isVertexVisible[triangle.v0] &&
-					isVertexVisible[triangle.v1] &&
-					isVertexVisible[triangle.v2]) {
+			if (isVertexVisible[triangle.v0.index] &&
+					isVertexVisible[triangle.v1.index] &&
+					isVertexVisible[triangle.v2.index]) {
 				// all vertices are visible
 				Triangle2D tri = {
-						projectedVertices[triangle.v0],
-						projectedVertices[triangle.v1],
-						projectedVertices[triangle.v2],
+						projectedVertices[triangle.v0.index],
+						projectedVertices[triangle.v1.index],
+						projectedVertices[triangle.v2.index],
 						triangle.color,
-						// item.shades[triangle.v0],
-						// item.shades[triangle.v1],
-						// item.shades[triangle.v2],
-						triangle.shade,
-						triangle.shade,
-						triangle.shade,
-						1 / item.vertices[triangle.v0].z,
-						1 / item.vertices[triangle.v1].z,
-						1 / item.vertices[triangle.v2].z,
-						triangle.vt_u0,
-						triangle.vt_v0,
-						triangle.vt_u1,
-						triangle.vt_v1,
-						triangle.vt_u2,
-						triangle.vt_v2,
+						triangle.v0.light_intensity,
+						triangle.v1.light_intensity,
+						triangle.v2.light_intensity,
+						1 / item.vertices[triangle.v0.index].z,
+						1 / item.vertices[triangle.v1.index].z,
+						1 / item.vertices[triangle.v2.index].z,
+						item.uvs[triangle.v0.uv].first,
+						item.uvs[triangle.v0.uv].second,
+						item.uvs[triangle.v1.uv].first,
+						item.uvs[triangle.v1.uv].second,
+						item.uvs[triangle.v2.uv].first,
+						item.uvs[triangle.v2.uv].second,
 						item.texture};
 
 				tri.fillShaded();
-			} else if (!isVertexVisible[triangle.v0] &&
-					!isVertexVisible[triangle.v1] &&
-					!isVertexVisible[triangle.v2]) {
+			} else if (!isVertexVisible[triangle.v0.index] &&
+					!isVertexVisible[triangle.v1.index] &&
+					!isVertexVisible[triangle.v2.index]) {
 				// no vertices are visible, do nothing
 				// NOTE: this is technically incorrect.  For instance, the triangle could
 				// be so large that it covers the entire screen, and each vertex is outside
@@ -276,27 +278,24 @@ struct Renderer {
 				// it's clipping time
 				ClippedPolygon triangle_poly = (ClippedPolygon){
 						{
-							item.vertices[triangle.v0],
-							item.vertices[triangle.v1],
-							item.vertices[triangle.v2]
+							item.vertices[triangle.v0.index],
+							item.vertices[triangle.v1.index],
+							item.vertices[triangle.v2.index]
 						},
 						{
-							// item.shades[triangle.v0],
-							// item.shades[triangle.v1],
-							// item.shades[triangle.v2]
-							triangle.shade,
-							triangle.shade,
-							triangle.shade
+							triangle.v0.light_intensity,
+							triangle.v1.light_intensity,
+							triangle.v2.light_intensity,
 						},
 						{
-							triangle.vt_u0,
-							triangle.vt_u1,
-							triangle.vt_u2
+							item.uvs[triangle.v0.uv].first,
+							item.uvs[triangle.v1.uv].first,
+							item.uvs[triangle.v2.uv].first,
 						},
 						{
-							triangle.vt_v0,
-							triangle.vt_v1,
-							triangle.vt_v2
+							item.uvs[triangle.v0.uv].second,
+							item.uvs[triangle.v1.uv].second,
+							item.uvs[triangle.v2.uv].second,
 						},
 						3};
 
@@ -336,12 +335,17 @@ struct Renderer {
 	}
 
 	Model transformModel(Model item) {
-		Matrix worldMatrix = Matrix::makeWorldMatrix(item.scale, item.rotation, item.translation);
+		Matrix worldMatrix = Matrix::makeWorldMatrix(
+				item.scale, item.rotation, item.translation);
 		Matrix finalMatrix = this->cameraMatrix.multiplyMatrix(worldMatrix);
 
 		// transform vertices
 		for (auto& vertex : item.vertices) {
 			vertex = finalMatrix.multiplyVector(vertex);
+		}
+
+		for (auto& normal : item.normals) {
+			normal = finalMatrix.multiplyVector(normal);
 		}
 
 		// transform triangle normals (is using finalMatrix here really okay?)
@@ -354,7 +358,8 @@ struct Renderer {
 
 	void drawScene(Scene& scene) {
 		// update camera matrix (should we check if it has changed first?)
-		this->cameraMatrix = Matrix::makeCameraMatrix(scene.camera.rotation, scene.camera.translation);
+		this->cameraMatrix = Matrix::makeCameraMatrix(
+				scene.camera.rotation, scene.camera.translation);
 
 		// draw the background
 		// TODO: make this more interesting/dynamic
