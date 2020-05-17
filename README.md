@@ -2,7 +2,8 @@
 
 ## TODO
 * tie velocity/movement to FPS
-* better OBJ file parsing
+* make the triangle drawing code less hideous
+* basic physics
 
 ## Setup
 1. Install SDL2

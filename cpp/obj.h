@@ -147,7 +147,7 @@ Model parseOBJFile(const char* filename) {
 	FILE *file = fopen(filename, "r");
 
 	if (!file) {
-		char message[1024];
+		char message[MAXCHAR];
 		snprintf(
 				message,
 				sizeof(message),

@@ -5,7 +5,7 @@
 #include <vector>
 #include <utility>
 
-#include "bmp.h"
+#include "texture.h"
 #include "device.h"
 #include "triangle.h"
 #include "vector.h"
@@ -70,7 +70,8 @@ struct Model {
 	Vector translation;
 	Vector rotation; // represented as radians around each axis
 
-	BMPTexture texture;
+	Texture* texture;
+	bool has_texture = false;
 
 	void setTriangleNormals() {
 		for (auto& triangle : this->triangles) {
@@ -81,8 +82,9 @@ struct Model {
 		}
 	}
 
-	void addTexture(BMPTexture texture) {
+	void addTexture(Texture* texture) {
 		this->texture = texture;
+		this->has_texture = true;
 	}
 };
 

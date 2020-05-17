@@ -45,7 +45,8 @@ void drawShadedLine(
 		double u2,
 		double v2,
 		Vector color,
-		BMPTexture texture) {
+		bool has_texture,
+		Texture* texture) {
 	int start_x;
 	int end_x;
 
@@ -103,8 +104,8 @@ void drawShadedLine(
 		if (z < z_buffer_value) {
 			uint32_t final_color;
 
-			if (texture.exists) {
-				Vector vec_color = texture.vectorColorFromUV(u / z, v / z);
+			if (has_texture) {
+				Vector vec_color = texture->vectorColorFromUV(u / z, v / z);
 				final_color = colorFromVector(vec_color.scalarMultiply(h));
 			} else {
 				final_color = colorFromVector(color.scalarMultiply(h));
@@ -139,7 +140,8 @@ struct Triangle2D {
 	double v1;
 	double u2;
 	double v2;
-	BMPTexture texture;
+	bool has_texture = false;
+	Texture* texture;
 
 	void draw() {
 		int color = colorFromVector(this->color);
@@ -334,6 +336,7 @@ struct Triangle2D {
 					inv_v0,
 					inv_v1,
 					this->color,
+					this->has_texture,
 					this->texture);
 
 			drawShadedLine(
@@ -349,6 +352,7 @@ struct Triangle2D {
 					inv_v1,
 					inv_v2,
 					this->color,
+					this->has_texture,
 					this->texture);
 			return;
 		}
@@ -381,6 +385,7 @@ struct Triangle2D {
 
 		if (dy01 == 0) {
 			// the bottom part is flat horizontally
+
 			drawShadedLine(
 					this->p1.y,
 					this->p0.x,
@@ -394,7 +399,9 @@ struct Triangle2D {
 					inv_u1,
 					inv_v1,
 					this->color,
+					this->has_texture,
 					this->texture);
+
 		} else {
 			double m01 = (this->p1.x - this->p0.x) / dy01;
 			double a01 = (this->h1 - this->h0) / dy01;
@@ -403,7 +410,7 @@ struct Triangle2D {
 			double vq01 = (inv_v1 - inv_v0) / dy01;
 
 			for (int y = this->p0.y; y < this->p1.y; y++) {
-				drawShadedLine(y, x01, x02, h01, h02, z01, z02, u01, v01, u02, v02, this->color, this->texture);
+				drawShadedLine(y, x01, x02, h01, h02, z01, z02, u01, v01, u02, v02, this->color, this->has_texture, this->texture);
 
 				x01 += m01;
 				x02 += m02;
@@ -419,6 +426,7 @@ struct Triangle2D {
 
 				v01 += vq01;
 				v02 += vq02;
+
 			}
 		}
 
@@ -437,6 +445,7 @@ struct Triangle2D {
 					inv_u2,
 					inv_v2,
 					this->color,
+					this->has_texture,
 					this->texture);
 		} else {
 			double m12 = (this->p2.x - this->p1.x) / dy12;
@@ -446,7 +455,7 @@ struct Triangle2D {
 			double vq12 = (inv_v2 - inv_v1) / dy12;
 
 			for (int y = this->p1.y; y <= this->p2.y; y++) {
-				drawShadedLine(y, x12, x02, h12, h02, z12, z02, u12, v12, u02, v02, this->color, this->texture);
+				drawShadedLine(y, x12, x02, h12, h02, z12, z02, u12, v12, u02, v02, this->color, this->has_texture, this->texture);
 
 				x12 += m12;
 				x02 += m02;

@@ -41,7 +41,7 @@ struct Renderer {
 		// the x value for the right plane and the y value for the high plane are a
 		// little off because otherwise the clipTriangle function would try to draw out
 		// of bounds
-		renderer.frustum_planes[0] = {0, 0, -1, viewport.distance}; // near plane
+		renderer.frustum_planes[0] = {0, 0, -1, viewport.near_plane_distance}; // near plane
 		renderer.frustum_planes[1] = {0.7071, 0, -0.7071, 0}; // left plane
 		renderer.frustum_planes[2] = {-0.70712, 0, -0.7071, 0}; // right plane
 		renderer.frustum_planes[3] = {0, -0.801, -0.6, 0}; // high plane
@@ -177,18 +177,24 @@ struct Renderer {
 				}
 			}
 
+			if (new_poly_vertex_count == 0) {
+				// clipped out of existence
+				return *new_poly;
+			}
+
+			new_poly->vertex_count = new_poly_vertex_count;
+
 			if (i < NUM_FRUSTUM_PLANES - 1) {
 				// swap for the next plane
 				ClippedPolygon* temp = original_poly;
 				original_poly = new_poly;
 				new_poly = temp;
 
-				original_poly->vertex_count = new_poly_vertex_count;
 				new_poly->vertex_count = 0;
 			}
 		}
 
-		return final_poly;
+		return *new_poly;
 	}
 
 	bool isBackFace(Vector triangle_normal, Vector vertex) {
@@ -262,19 +268,12 @@ struct Renderer {
 						item.uvs[triangle.v1.uv].second,
 						item.uvs[triangle.v2.uv].first,
 						item.uvs[triangle.v2.uv].second,
+						item.has_texture,
 						item.texture};
 
 				tri.fillShaded();
-			} else if (!isVertexVisible[triangle.v0.index] &&
-					!isVertexVisible[triangle.v1.index] &&
-					!isVertexVisible[triangle.v2.index]) {
-				// no vertices are visible, do nothing
-				// NOTE: this is technically incorrect.  For instance, the triangle could
-				// be so large that it covers the entire screen, and each vertex is outside
-				// of a different plane.  Technically, this should fall into the final
-				// condition below.
 			} else {
-				// some vertices are visible
+				// not all vertices are visible
 				// it's clipping time
 				ClippedPolygon triangle_poly = (ClippedPolygon){
 						{
@@ -301,6 +300,11 @@ struct Renderer {
 
 				ClippedPolygon poly = clipTriangle(triangle_poly);
 
+				if (poly.vertex_count == 0) {
+					// clipped out of existence, move on
+					continue;
+				}
+
 				Point projectedVertices[poly.vertex_count];
 
 				for (int i = 0; i < poly.vertex_count; i++) {
@@ -326,6 +330,7 @@ struct Renderer {
 							poly.v_values[i],
 							poly.u_values[i + 1],
 							poly.v_values[i + 1],
+							item.has_texture,
 							item.texture};
 
 					new_triangle.fillShaded();

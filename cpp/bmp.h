@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "device.h"
+#include "texture.h"
 #include "vector.h"
 
 
@@ -21,12 +22,12 @@
 #define ALL_COLORS_REQUIRED 0
 
 
-typedef struct {
+struct bmp_info_t {
 	uint32_t width;
 	uint32_t height;
 	uint32_t bytes_per_pixel;
 	unsigned char* pixel_buffer;
-} bmp_info_t;
+};
 
 bmp_info_t readBMPFile(const char* filename) {
 	bmp_info_t result;
@@ -97,31 +98,30 @@ bmp_info_t readBMPFile(const char* filename) {
 	return result;
 }
 
-struct BMPTexture {
+struct BMPTexture : public Texture {
 	bmp_info_t bmp_info;
-	bool exists = false;
 
-	uint32_t colorFromUV(double u, double v) {
-		// if (u < -0.0001 || u > 1.0001 || v < -0.0001 || v > 1.0001) {
-		// 	printf("got bad uv - u: %f, v: %f\n", u, v);
-		// 	return 0;
-		// }
+	// uint32_t colorFromUV(double u, double v) {
+	// 	// if (u < -0.0001 || u > 1.0001 || v < -0.0001 || v > 1.0001) {
+	// 	// 	printf("got bad uv - u: %f, v: %f\n", u, v);
+	// 	// 	return 0;
+	// 	// }
+	//
+	// 	int x = (bmp_info.width - 1) * u;
+	// 	int y = (bmp_info.height - 1) * v;
+	//
+	// 	size_t index = (bmp_info.width * y + x) * bmp_info.bytes_per_pixel;
+	//
+	// 	unsigned char blue = bmp_info.pixel_buffer[index];
+	// 	unsigned char green = bmp_info.pixel_buffer[index + 1];
+	// 	unsigned char red = bmp_info.pixel_buffer[index + 2];
+	//
+	// 	uint32_t raw_color = (red << 24) + (green << 16) + (blue << 8);
+	//
+	// 	return raw_color;
+	// }
 
-		int x = (bmp_info.width - 1) * u;
-		int y = (bmp_info.height - 1) * v;
-
-		size_t index = (bmp_info.width * y + x) * bmp_info.bytes_per_pixel;
-
-		unsigned char blue = bmp_info.pixel_buffer[index];
-		unsigned char green = bmp_info.pixel_buffer[index + 1];
-		unsigned char red = bmp_info.pixel_buffer[index + 2];
-
-		uint32_t raw_color = (red << 24) + (green << 16) + (blue << 8);
-
-		return raw_color;
-	}
-
-	Vector vectorColorFromUV(double u, double v) {
+	Vector vectorColorFromUV(double u, double v) override {
 		int x = (bmp_info.width - 1) * u;
 		int y = (bmp_info.height - 1) * v;
 
@@ -142,7 +142,6 @@ struct BMPTexture {
 		BMPTexture result;
 
 		result.bmp_info = readBMPFile(filename);
-		result.exists = true;
 
 		return result;
 	}

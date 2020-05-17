@@ -9,12 +9,13 @@
 
 #include "bmp.h"
 #include "device.h"
-#include "line.h"
 #include "matrix.h"
 #include "model.h"
 #include "obj.h"
+#include "ppm.h"
 #include "renderer.h"
 #include "scene.h"
+#include "texture.h"
 #include "triangle.h"
 #include "vector.h"
 
@@ -59,7 +60,8 @@ int main(int argc, char** argv) {
 
 	Model cube = buildCube(
 			1.0, Vector::direction(-3, 0, -7), Vector::direction(0, 0, 0));
-	cube.addTexture(BMPTexture::load("crate.bmp"));
+	BMPTexture crate_texture = BMPTexture::load("crate.bmp");
+	cube.addTexture(&crate_texture);
 	scene.addModel(cube);
 
 	// scene.addModel(buildCube(

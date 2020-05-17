@@ -13,6 +13,7 @@ struct Viewport {
 	double width;
 	double height;
 	double distance; // position on z axis
+	double near_plane_distance;
 	double far_plane_distance; // position on z axis
 };
 
@@ -52,7 +53,8 @@ struct Scene {
 		scene.camera.viewport.width = 4;
 		scene.camera.viewport.height = 3;
 		scene.camera.viewport.distance = -2;
-		scene.camera.viewport.far_plane_distance = -50;
+		scene.camera.viewport.near_plane_distance = -0.1;
+		scene.camera.viewport.far_plane_distance = -10;
 
 		scene.camera.translation = Vector::point(0, 0, 0);
 		scene.camera.rotation = Vector::direction(0, 0, 0);
