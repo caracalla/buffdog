@@ -35,6 +35,7 @@ typedef struct {
 	bool right;
 	bool yup;
 	bool ydown;
+	bool sprint;
 } key_states_t;
 
 namespace device {

@@ -240,12 +240,20 @@ struct Renderer {
 				continue;
 			}
 
-			triangle.v0.light_intensity = applyLighting(
-					item.normals[triangle.v0.normal], lights);
-			triangle.v1.light_intensity = applyLighting(
-					item.normals[triangle.v1.normal], lights);
-			triangle.v2.light_intensity = applyLighting(
-					item.normals[triangle.v2.normal], lights);
+			if (item.normals.size() > 0) {
+				triangle.v0.light_intensity = applyLighting(
+						item.normals[triangle.v0.normal], lights);
+				triangle.v1.light_intensity = applyLighting(
+						item.normals[triangle.v1.normal], lights);
+				triangle.v2.light_intensity = applyLighting(
+						item.normals[triangle.v2.normal], lights);
+			} else {
+				// triangle.v0.light_intensity = applyLighting(triangle.normal, lights);
+				// triangle.v1.light_intensity = applyLighting(triangle.normal, lights);
+				// triangle.v2.light_intensity = applyLighting(triangle.normal, lights);
+			}
+
+
 
 			if (isVertexVisible[triangle.v0.index] &&
 					isVertexVisible[triangle.v1.index] &&

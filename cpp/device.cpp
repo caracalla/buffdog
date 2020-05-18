@@ -159,6 +159,10 @@ namespace device {
 							key_states.ydown = true;
 							break;
 
+						case SDL_SCANCODE_LSHIFT:
+							key_states.sprint = true;
+							break;
+
 						case SDL_SCANCODE_X:
 							last_key = x_key;
 							break;
@@ -201,6 +205,10 @@ namespace device {
 
 						case SDL_SCANCODE_E:
 							key_states.ydown = false;
+							break;
+
+						case SDL_SCANCODE_LSHIFT:
+							key_states.sprint = false;
 							break;
 
 						default:

@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <sys/time.h>
+
 #include "bmp.h"
 #include "device.h"
 #include "matrix.h"
@@ -28,48 +30,45 @@
 
 
 int fps = 0;
-clock_t nextPrintTime;
+struct timespec lastPrintTimeSpec;
 
-void printFPS() {
+void logFPS() {
 	fps++;
 
-	clock_t nowTime = clock();
+	struct timespec now;
+	clock_gettime(CLOCK_REALTIME, &now);
 
-	double timeDiff = ((double) (nowTime - nextPrintTime)) / CLOCKS_PER_SEC;
-
-	if (timeDiff >= 1.0) {
-		nextPrintTime = nowTime;
+	if (now.tv_sec - lastPrintTimeSpec.tv_sec >= 1) {
 		printf("FPS: %d\n", fps);
+		lastPrintTimeSpec = now;
 		fps = 0;
 	}
 }
 
 int main(int argc, char** argv) {
-	// for generating random colors in parseOBJFile
-	srand(time(NULL));
-
 	if (!device::setUp()) {
 		return 1;
 	}
 
 	// for FPS determination
-	nextPrintTime = clock();
+	clock_gettime(CLOCK_REALTIME, &lastPrintTimeSpec);
 
 	Scene scene = Scene::create();
+	scene.camera.translation.y = 1.5;
 	Renderer renderer = Renderer::create(scene.camera.viewport);
 
 	Model cube = buildCube(
-			1.0, Vector::direction(-3, 0, -7), Vector::direction(0, 0, 0));
+			1.0, Vector::direction(10, 2, 2), Vector::direction(0, 0, 0));
 	BMPTexture crate_texture = BMPTexture::load("crate.bmp");
 	cube.addTexture(&crate_texture);
 	scene.addModel(cube);
-
-	// scene.addModel(buildCube(
-	// 		0.5, Vector::direction(3, 0, -7), Vector::direction(0, 0, 0)));
-
-	Model tetra = buildTetrahedron(
-			1.0, Vector::direction(0, 3, -7), Vector::direction(0, 0, 0));
-	scene.addModel(tetra);
+	//
+	// // scene.addModel(buildCube(
+	// // 		0.5, Vector::direction(3, 0, -7), Vector::direction(0, 0, 0)));
+	//
+	// Model tetra = buildTetrahedron(
+	// 		1.0, Vector::direction(0, 3, -7), Vector::direction(0, 0, 0));
+	// scene.addModel(tetra);
 
 	if (argc == 2) {
 		Model item = parseOBJFile(argv[1]);
@@ -80,7 +79,19 @@ int main(int argc, char** argv) {
 		scene.addModel(item);
 	}
 
+	// PPMTexture city_texture = PPMTexture::load("city.ppm");
+	//
+	// Model city = parseOBJFile("city.obj");
+	// city.addTexture(&city_texture);
+	// city.scale = 12.0;
+	// city.translation = Vector::direction(-38, 0, -38);
+	// city.rotation = Vector::direction(0, 0, 0);
+	// city.setTriangleNormals();
+	// scene.addModel(city);
+
 	double velocity = 0;
+
+	scene.camera.rotation.y = M_PI_2;
 
 	while (device::running()) {
 		usleep(DELAY_US);
@@ -94,7 +105,7 @@ int main(int argc, char** argv) {
 		device::updateScreen();
 		device::processInput();
 
-		// key_input next_key = get_next_key();
+		// key_input next_key = device::get_next_key();
 		//
 		// if (next_key) {
 		// 	switch(next_key) {
@@ -117,8 +128,16 @@ int main(int argc, char** argv) {
 		Vector translation = {0, 0, 0, 0};
 
 		if (key_states.up || key_states.down || key_states.left || key_states.right || key_states.yup || key_states.ydown) {
-			if (velocity < MAX_VELOCITY) {
+			double max_velocity = MAX_VELOCITY;
+
+			if (key_states.sprint) {
+				max_velocity *= 5;
+			}
+
+			if (velocity <= max_velocity) {
 				velocity += INCREMENT;
+			} else {
+				velocity -= INCREMENT;
 			}
 		} else {
 			velocity -= INCREMENT;
@@ -153,7 +172,7 @@ int main(int argc, char** argv) {
 		Matrix rotationAboutY = Matrix::makeRotationMatrix((Vector){0, scene.camera.rotation.y, 0, 0});
 		scene.camera.translation = scene.camera.translation.add(rotationAboutY.multiplyVector(movement));
 
-		printFPS();
+		logFPS();
 	}
 
 	device::tearDown();
