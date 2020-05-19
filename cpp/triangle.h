@@ -1,12 +1,15 @@
 #ifndef BUFFDOG_TRIANGLE
 #define BUFFDOG_TRIANGLE
 
+#include <cmath>
+
 #include "device.h"
 #include "line.h"
 #include "vector.h"
 
-#define THREE_MIN(x0, x1, x2) x0 < x1 ? (x2 < x0 ? x2 : x0) : (x2 < x1 ? x2 : x1)
-#define THREE_MAX(x0, x1, x2) x0 > x1 ? (x2 > x0 ? x2 : x0) : (x2 > x1 ? x2 : x1)
+#define min(a, b) (a < b ? a : b)
+#define max(a, b) (a > b ? a : b)
+
 
 // Logic for drawing 2D triangles
 
@@ -40,12 +43,11 @@ void drawShadedLine(
 		double h2,
 		double z1,
 		double z2,
-		double u1,
-		double v1,
-		double u2,
-		double v2,
+		double inv_u1,
+		double inv_v1,
+		double inv_u2,
+		double inv_v2,
 		Vector color,
-		bool has_texture,
 		Texture* texture) {
 	int start_x;
 	int end_x;
@@ -56,11 +58,11 @@ void drawShadedLine(
 	double z;
 	double q;
 
-	double u;
-	double v;
+	double inv_u;
+	double inv_v;
 
-	double uq;
-	double vq;
+	double inv_uq;
+	double inv_vq;
 
 	if (x1 < x2) {
 		start_x = (int)x1;
@@ -74,11 +76,11 @@ void drawShadedLine(
 		z = z1;
 		q = (z2 - z1) / dx;
 
-		u = u1;
-		uq = (u2 - u1) / dx;
+		inv_u = inv_u1;
+		inv_uq = (inv_u2 - inv_u1) / dx;
 
-		v = v1;
-		vq = (v2 - v1) / dx;
+		inv_v = inv_v1;
+		inv_vq = (inv_v2 - inv_v1) / dx;
 	} else {
 		start_x = (int)x2;
 		end_x = (int)x1;
@@ -91,11 +93,11 @@ void drawShadedLine(
 		z = z2;
 		q = (z1 - z2) / dx;
 
-		u = u2;
-		uq = (u1 - u2) / dx;
+		inv_u = inv_u2;
+		inv_uq = (inv_u1 - inv_u2) / dx;
 
-		v = v2;
-		vq = (v1 - v2) / dx;
+		inv_v = inv_v2;
+		inv_vq = (inv_v1 - inv_v2) / dx;
 	}
 
 	for (int x = start_x; x < end_x; x++) {
@@ -104,8 +106,8 @@ void drawShadedLine(
 		if (z < z_buffer_value) {
 			uint32_t final_color;
 
-			if (has_texture) {
-				Vector vec_color = texture->vectorColorFromUV(u / z, v / z);
+			if (texture) {
+				Vector vec_color = texture->vectorColorFromUV(inv_u / z, inv_v / z);
 				final_color = colorFromVector(vec_color.scalarMultiply(h));
 			} else {
 				final_color = colorFromVector(color.scalarMultiply(h));
@@ -118,9 +120,22 @@ void drawShadedLine(
 		h += a;
 		z += q;
 
-		u += uq;
-		v += vq;
+		inv_u += inv_uq;
+		inv_v += inv_vq;
 	}
+}
+
+Vector getBarycentricWeights(Point p0, Point p1, Point p2, int x, int y) {
+	Vector px = {(double)p2.x - p0.x, (double)p1.x - p0.x, (double)p0.x - x};
+	Vector py = {(double)p2.y - p0.y, (double)p1.y - p0.y, (double)p0.y - y};
+
+	Vector u = px.crossProduct(py);
+
+	if (fabs(u.z) < 1) {
+		return (Vector){-1, 1, 1};
+	}
+
+	return (Vector){1.0 - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z};
 }
 
 struct Triangle2D {
@@ -140,7 +155,6 @@ struct Triangle2D {
 	double v1;
 	double u2;
 	double v2;
-	bool has_texture = false;
 	Texture* texture;
 
 	void draw() {
@@ -149,85 +163,6 @@ struct Triangle2D {
 		drawLineFromPoints(this->p1, this->p2, color);
 		drawLineFromPoints(this->p2, this->p0, color);
 	}
-
-	// void fill() {
-	// 	int color = colorFromVector(this->color);
-	//
-	// 	// sort from highest (p2) to lowest (p0)
-	// 	Point temp;
-	// 	if (this->p0.y > this->p1.y) {
-	// 		temp = this->p0;
-	// 		this->p0 = this->p1;
-	// 		this->p1 = temp;
-	// 	}
-	//
-	// 	if (this->p0.y > this->p2.y) {
-	// 		temp = this->p0;
-	// 		this->p0 = this->p2;
-	// 		this->p2 = temp;
-	// 	}
-	//
-	// 	if (this->p1.y > this->p2.y) {
-	// 		temp = this->p2;
-	// 		this->p2 = this->p1;
-	// 		this->p1 = temp;
-	// 	}
-	//
-	// 	// po to p2 is the long vertical side
-	// 	double dy02 = this->p2.y - this->p0.y;
-	//
-	// 	if (dy02 == 0) {
-	// 		// the whole thing is flat horizontally
-	// 		// draw a horizontal line from the min x to the max x
-	// 		int min_x = THREE_MIN(this->p0.x, this->p1.x, this->p2.x);
-	// 		int max_x = THREE_MAX(this->p0.x, this->p1.x, this->p2.x);
-	//
-	// 		drawHorizontalLine(this->p2.y, min_x, max_x, color);
-	// 		return;
-	// 	}
-	//
-	// 	int dx02 = this->p2.x - this->p0.x;
-	// 	double m02 = dx02 / dy02;
-	// 	// the x value for line p2 - p0 changes constantly over the whole triangle
-	// 	double x02 = this->p0.x;
-	//
-	// 	// p0 to p1 is the bottom half
-	// 	double dy01 = this->p1.y - this->p0.y;
-	//
-	// 	if (dy01 == 0) {
-	// 		// the bottom part is flat horizontally
-	// 		drawHorizontalLine(this->p1.y, this->p0.x, this->p1.x, color);
-	// 	} else {
-	// 		int dx01 = this->p1.x - this->p0.x;
-	// 		double m01 = dx01 / dy01;
-	// 		double x01 = this->p0.x;
-	//
-	// 		for (int y = this->p0.y; y < this->p1.y; y++) {
-	// 			drawHorizontalLine(y, (int)x01, (int)x02, color);
-	//
-	// 			x01 += m01;
-	// 			x02 += m02;
-	// 		}
-	// 	}
-	//
-	// 	double dy12 = this->p2.y - this->p1.y;
-	//
-	// 	if (dy12 == 0) {
-	// 		// the top part is flat horizontally
-	// 		drawHorizontalLine(this->p2.y, this->p1.x, this->p2.x, color);
-	// 	} else {
-	// 		int dx12 = this->p2.x - this->p1.x;
-	// 		double m12 = dx12 / dy12;
-	// 		double x12 = this->p1.x;
-	//
-	// 		for (int y = this->p1.y; y <= this->p2.y; y++) {
-	// 			drawHorizontalLine(y, (int)x12, (int)x02, color);
-	//
-	// 			x12 += m12;
-	// 			x02 += m02;
-	// 		}
-	// 	}
-	// }
 
 	void fillShaded() {
 		// sort from highest (p2) to lowest (p0)
@@ -317,12 +252,6 @@ struct Triangle2D {
 		double dy02 = this->p2.y - this->p0.y;
 
 		if (dy02 == 0) {
-			// the whole thing is flat horizontally
-			// draw a horizontal line from the min x to the max x
-			// int min_x = THREE_MIN(this->p0.x, this->p1.x, this->p2.x);
-			// int max_x = THREE_MAX(this->p0.x, this->p1.x, this->p2.x);
-
-			// this is kind of dumb
 			drawShadedLine(
 					this->p1.y,
 					this->p0.x,
@@ -336,7 +265,6 @@ struct Triangle2D {
 					inv_v0,
 					inv_v1,
 					this->color,
-					this->has_texture,
 					this->texture);
 
 			drawShadedLine(
@@ -352,7 +280,6 @@ struct Triangle2D {
 					inv_v1,
 					inv_v2,
 					this->color,
-					this->has_texture,
 					this->texture);
 			return;
 		}
@@ -385,7 +312,6 @@ struct Triangle2D {
 
 		if (dy01 == 0) {
 			// the bottom part is flat horizontally
-
 			drawShadedLine(
 					this->p1.y,
 					this->p0.x,
@@ -399,7 +325,6 @@ struct Triangle2D {
 					inv_u1,
 					inv_v1,
 					this->color,
-					this->has_texture,
 					this->texture);
 
 		} else {
@@ -410,7 +335,7 @@ struct Triangle2D {
 			double vq01 = (inv_v1 - inv_v0) / dy01;
 
 			for (int y = this->p0.y; y < this->p1.y; y++) {
-				drawShadedLine(y, x01, x02, h01, h02, z01, z02, u01, v01, u02, v02, this->color, this->has_texture, this->texture);
+				drawShadedLine(y, x01, x02, h01, h02, z01, z02, u01, v01, u02, v02, this->color, this->texture);
 
 				x01 += m01;
 				x02 += m02;
@@ -445,7 +370,6 @@ struct Triangle2D {
 					inv_u2,
 					inv_v2,
 					this->color,
-					this->has_texture,
 					this->texture);
 		} else {
 			double m12 = (this->p2.x - this->p1.x) / dy12;
@@ -455,7 +379,7 @@ struct Triangle2D {
 			double vq12 = (inv_v2 - inv_v1) / dy12;
 
 			for (int y = this->p1.y; y <= this->p2.y; y++) {
-				drawShadedLine(y, x12, x02, h12, h02, z12, z02, u12, v12, u02, v02, this->color, this->has_texture, this->texture);
+				drawShadedLine(y, x12, x02, h12, h02, z12, z02, u12, v12, u02, v02, this->color, this->texture);
 
 				x12 += m12;
 				x02 += m02;
@@ -471,6 +395,57 @@ struct Triangle2D {
 
 				v12 += vq12;
 				v02 += vq02;
+			}
+		}
+	}
+
+	void fillBarycentric() {
+		double inv_u0 = this->u0 * this->invZ0;
+		double inv_v0 = this->v0 * this->invZ0;
+
+		double inv_u1 = this->u1 * this->invZ1;
+		double inv_v1 = this->v1 * this->invZ1;
+
+		double inv_u2 = this->u2 * this->invZ2;
+		double inv_v2 = this->v2 * this->invZ2;
+
+		// define the bounding box containing the triangle
+		Point bmin = {
+				min(this->p0.x, min(this->p1.x, this->p2.x)),
+				min(this->p0.y, min(this->p1.y, this->p2.y))};
+		Point bmax = {
+				max(this->p0.x, max(this->p1.x, this->p2.x)),
+				max(this->p0.y, max(this->p1.y, this->p2.y))};
+
+		for (int x = bmin.x; x <= bmax.x; x++) {
+			for (int y = bmin.y; y <= bmax.y; y++) {
+				Vector bc_weights = getBarycentricWeights(this->p0, this->p1, this->p2, x, y);
+
+				if (bc_weights.x < 0 || bc_weights.y < 0 || bc_weights.z < 0) {
+					continue;
+				}
+
+				double h = this->h0 * bc_weights.x + this->h1 * bc_weights.y + this->h2 * bc_weights.z;
+				double inv_z = this->invZ0 * bc_weights.x + this->invZ1 * bc_weights.y + this->invZ2 * bc_weights.z;
+				double inv_u = inv_u0 * bc_weights.x + inv_u1 * bc_weights.y + inv_u2 * bc_weights.z;
+				double inv_v = inv_v0 * bc_weights.x + inv_v1 * bc_weights.y + inv_v2 * bc_weights.z;
+
+				double& z_buffer_value = device::zBufferAt(x, y);
+
+				if (inv_z < z_buffer_value) {
+					uint32_t final_color;
+
+					if (this->texture) {
+						Vector vec_color = texture->vectorColorFromUV(inv_u / inv_z, inv_v / inv_z);
+						final_color = colorFromVector(vec_color.scalarMultiply(h));
+					} else {
+						final_color = colorFromVector(color.scalarMultiply(h));
+					}
+
+					device::setPixel(x, y, final_color);
+
+					z_buffer_value = inv_z;
+				}
 			}
 		}
 	}

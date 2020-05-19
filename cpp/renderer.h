@@ -253,8 +253,6 @@ struct Renderer {
 				// triangle.v2.light_intensity = applyLighting(triangle.normal, lights);
 			}
 
-
-
 			if (isVertexVisible[triangle.v0.index] &&
 					isVertexVisible[triangle.v1.index] &&
 					isVertexVisible[triangle.v2.index]) {
@@ -276,10 +274,11 @@ struct Renderer {
 						item.uvs[triangle.v1.uv].second,
 						item.uvs[triangle.v2.uv].first,
 						item.uvs[triangle.v2.uv].second,
-						item.has_texture,
-						item.texture};
+						item.has_texture ? item.texture : NULL};
 
+				// tri.draw();
 				tri.fillShaded();
+				// tri.fillBarycentric();
 			} else {
 				// not all vertices are visible
 				// it's clipping time
@@ -338,10 +337,11 @@ struct Renderer {
 							poly.v_values[i],
 							poly.u_values[i + 1],
 							poly.v_values[i + 1],
-							item.has_texture,
-							item.texture};
+							item.has_texture ? item.texture : NULL};
 
+					// new_triangle.draw();
 					new_triangle.fillShaded();
+					// new_triangle.fillBarycentric();
 				}
 			}
 		}
@@ -362,6 +362,7 @@ struct Renderer {
 		}
 
 		// transform triangle normals (is using finalMatrix here really okay?)
+		// apparently it's not okay because this is totally busted
 		for (auto& triangle : item.triangles) {
 			triangle.normal = finalMatrix.multiplyVector(triangle.normal);
 		}
