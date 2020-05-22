@@ -372,8 +372,9 @@ struct Renderer {
 			vertex = finalMatrix.multiplyVector(vertex);
 		}
 
+		// transform normals
 		Matrix normalTransformationMatrix =
-				Matrix::makeRotationMatrix(item.rotation).multiplyMatrix(this->cameraMatrix);
+				this->cameraMatrix.multiplyMatrix(Matrix::makeRotationMatrix(item.rotation));
 
 		for (auto& normal : item.normals) {
 			normal = normalTransformationMatrix.multiplyVector(normal);
