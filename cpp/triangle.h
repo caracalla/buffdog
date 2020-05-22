@@ -13,6 +13,12 @@
 
 // Logic for drawing 2D triangles
 
+// stupid naming conventions:
+//   h represents lighting intensity
+//   a is the step size between lighting intensities
+//   q is a step size, generally for inverted z
+//   qu and qv are texture coordinate step sizes
+
 struct Point {
 	int x;
 	int y;
@@ -41,8 +47,8 @@ void drawShadedLine(
 		double x2,
 		double h1,
 		double h2,
-		double z1,
-		double z2,
+		double inv_z1,
+		double inv_z2,
 		double inv_u1,
 		double inv_v1,
 		double inv_u2,
@@ -55,7 +61,7 @@ void drawShadedLine(
 	double h;
 	double a;
 
-	double z;
+	double inv_z;
 	double q;
 
 	double inv_u;
@@ -73,8 +79,8 @@ void drawShadedLine(
 		h = h1;
 		a = (h2 - h1) / dx;
 
-		z = z1;
-		q = (z2 - z1) / dx;
+		inv_z = inv_z1;
+		q = (inv_z2 - inv_z1) / dx;
 
 		inv_u = inv_u1;
 		inv_uq = (inv_u2 - inv_u1) / dx;
@@ -90,8 +96,8 @@ void drawShadedLine(
 		h = h2;
 		a = (h1 - h2) / dx;
 
-		z = z2;
-		q = (z1 - z2) / dx;
+		inv_z = inv_z2;
+		q = (inv_z1 - inv_z2) / dx;
 
 		inv_u = inv_u2;
 		inv_uq = (inv_u1 - inv_u2) / dx;
@@ -103,22 +109,22 @@ void drawShadedLine(
 	for (int x = start_x; x < end_x; x++) {
 		double& z_buffer_value = device::zBufferAt(x, y);
 
-		if (z < z_buffer_value) {
+		if (inv_z < z_buffer_value) {
 			uint32_t final_color;
 
 			if (texture) {
-				Vector vec_color = texture->vectorColorFromUV(inv_u / z, inv_v / z);
+				Vector vec_color = texture->vectorColorFromUV(inv_u / inv_z, inv_v / inv_z);
 				final_color = colorFromVector(vec_color.scalarMultiply(h));
 			} else {
 				final_color = colorFromVector(color.scalarMultiply(h));
 			}
 			device::setPixel(x, y, final_color);
 
-			z_buffer_value = z;
+			z_buffer_value = inv_z;
 		}
 
 		h += a;
-		z += q;
+		inv_z += q;
 
 		inv_u += inv_uq;
 		inv_v += inv_vq;
@@ -261,8 +267,8 @@ struct Triangle2D {
 					this->invZ0,
 					this->invZ1,
 					inv_u0,
-					inv_u1,
 					inv_v0,
+					inv_u1,
 					inv_v1,
 					this->color,
 					this->texture);
@@ -276,8 +282,8 @@ struct Triangle2D {
 					this->invZ1,
 					this->invZ2,
 					inv_u1,
-					inv_u2,
 					inv_v1,
+					inv_u2,
 					inv_v2,
 					this->color,
 					this->texture);
@@ -450,12 +456,5 @@ struct Triangle2D {
 		}
 	}
 };
-
-typedef struct {
-	Point p0;
-	Point p1;
-	Point p2;
-	int color;
-} tri2d;
 
 #endif

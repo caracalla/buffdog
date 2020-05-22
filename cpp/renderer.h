@@ -126,45 +126,61 @@ struct Renderer {
 				double vt_u2 = original_poly->u_values[current];
 				double vt_v2 = original_poly->v_values[current];
 
+				#define addCurrentVertex(vertex, vt_u, vt_v) \
+						({ \
+							new_poly->vertices[new_poly_vertex_count] = vertex; \
+							new_poly->shades[new_poly_vertex_count] = \
+									original_poly->shades[current]; \
+							new_poly->u_values[new_poly_vertex_count] = vt_u; \
+							new_poly->v_values[new_poly_vertex_count] = vt_v; \
+							new_poly_vertex_count++; \
+						})
+
 				if (insidePlane(v1, plane)) {
 					if (insidePlane(v2, plane)) {
 						// just add current
-						new_poly->vertices[new_poly_vertex_count] = v2;
-						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
-						new_poly->u_values[new_poly_vertex_count] = vt_u2;
-						new_poly->v_values[new_poly_vertex_count] = vt_v2;
-						new_poly_vertex_count++;
+						addCurrentVertex(v2, vt_u2, vt_v2);
 					} else {
 						// add the intersect
-						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
-						new_poly->vertices[new_poly_vertex_count] =
-								v1.add(v2.subtract(v1).scalarMultiply(t));
-						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
-						new_poly->u_values[new_poly_vertex_count] =
-								(vt_u1 + (vt_u2 - vt_u1) * t);
-						new_poly->v_values[new_poly_vertex_count] =
-								(vt_v1 + (vt_v2 - vt_v1) * t);
-						new_poly_vertex_count++;
+						double nDotV = plane.dotProduct(v1.subtract(v2));
+
+						// nDotV is 0 if v1->v2 is parallel to the plane.  This shouldn't be
+						// possible if one is in and one is out, but who knows.  As a fallback,
+						// we'll just add the current vertex since it's basically inside anyways
+						// ... right?
+						if (nDotV != 0) {
+							double t = plane.dotProduct(v1) / nDotV;
+							new_poly->vertices[new_poly_vertex_count] =
+									v1.add(v2.subtract(v1).scalarMultiply(t));
+							new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
+							new_poly->u_values[new_poly_vertex_count] =
+									(vt_u1 + (vt_u2 - vt_u1) * t);
+							new_poly->v_values[new_poly_vertex_count] =
+									(vt_v1 + (vt_v2 - vt_v1) * t);
+							new_poly_vertex_count++;
+						} else {
+							addCurrentVertex(v2, vt_u2, vt_v2);
+						}
 					}
 				} else {
 					if (insidePlane(v2, plane)) {
 						// add the intersect
-						double t = plane.dotProduct(v1) / plane.dotProduct(v1.subtract(v2));
-						new_poly->vertices[new_poly_vertex_count] =
-								v1.add(v2.subtract(v1).scalarMultiply(t));
-						new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
-						new_poly->u_values[new_poly_vertex_count] =
-								(vt_u1 + (vt_u2 - vt_u1) * t);
-						new_poly->v_values[new_poly_vertex_count] =
-								(vt_v1 + (vt_v2 - vt_v1) * t);
-						new_poly_vertex_count++;
+						double nDotV = plane.dotProduct(v1.subtract(v2));
+
+						if (nDotV != 0) {
+							double t = plane.dotProduct(v1) / nDotV;
+							new_poly->vertices[new_poly_vertex_count] =
+									v1.add(v2.subtract(v1).scalarMultiply(t));
+							new_poly->shades[new_poly_vertex_count] = s1 + (s2 - s1) * t;
+							new_poly->u_values[new_poly_vertex_count] =
+									(vt_u1 + (vt_u2 - vt_u1) * t);
+							new_poly->v_values[new_poly_vertex_count] =
+									(vt_v1 + (vt_v2 - vt_v1) * t);
+							new_poly_vertex_count++;
+						}
 
 						// then add current
-						new_poly->vertices[new_poly_vertex_count] = v2;
-						new_poly->shades[new_poly_vertex_count] = original_poly->shades[current];
-						new_poly->u_values[new_poly_vertex_count] = vt_u2;
-						new_poly->v_values[new_poly_vertex_count] = vt_v2;
-						new_poly_vertex_count++;
+						addCurrentVertex(v2, vt_u2, vt_v2);
 					} else {
 						// both previous and current are outside the plane, do nothing
 					}
@@ -236,7 +252,6 @@ struct Renderer {
 		for (auto& triangle : item.triangles) {
 			if (isBackFace(triangle.normal, item.vertices[triangle.v0.index])) {
 				// this is a back face, don't draw
-				// triangle.color = device::color(0, 0, 0);
 				continue;
 			}
 
@@ -248,9 +263,9 @@ struct Renderer {
 				triangle.v2.light_intensity = applyLighting(
 						item.normals[triangle.v2.normal], lights);
 			} else {
-				// triangle.v0.light_intensity = applyLighting(triangle.normal, lights);
-				// triangle.v1.light_intensity = applyLighting(triangle.normal, lights);
-				// triangle.v2.light_intensity = applyLighting(triangle.normal, lights);
+				triangle.v0.light_intensity = applyLighting(triangle.normal, lights);
+				triangle.v1.light_intensity = applyLighting(triangle.normal, lights);
+				triangle.v2.light_intensity = applyLighting(triangle.normal, lights);
 			}
 
 			if (isVertexVisible[triangle.v0.index] &&
@@ -357,14 +372,15 @@ struct Renderer {
 			vertex = finalMatrix.multiplyVector(vertex);
 		}
 
+		Matrix normalTransformationMatrix =
+				Matrix::makeRotationMatrix(item.rotation).multiplyMatrix(this->cameraMatrix);
+
 		for (auto& normal : item.normals) {
-			normal = finalMatrix.multiplyVector(normal);
+			normal = normalTransformationMatrix.multiplyVector(normal);
 		}
 
-		// transform triangle normals (is using finalMatrix here really okay?)
-		// apparently it's not okay because this is totally busted
 		for (auto& triangle : item.triangles) {
-			triangle.normal = finalMatrix.multiplyVector(triangle.normal);
+			triangle.normal = normalTransformationMatrix.multiplyVector(triangle.normal);
 		}
 
 		return item;

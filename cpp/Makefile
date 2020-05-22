@@ -1,6 +1,6 @@
 P=buffdog
 OBJECTS=device.cpp line.cpp
-CXXFLAGS=-g -Wall -O3 -std=c++17
+CXXFLAGS=-g -Wall -std=c++17
 LDLIBS=-lm -lSDL2
 CC=clang++
 
