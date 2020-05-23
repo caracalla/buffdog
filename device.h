@@ -1,9 +1,8 @@
 #ifndef BUFFDOG_DEVICE
 #define BUFFDOG_DEVICE
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 
 #define RES_X 640
@@ -11,13 +10,17 @@
 
 #define spit(x) printf("%s\n", x)
 
+#define terminateFatal(message) device::selfDestruct(message, __LINE__, __FILE__)
+
 
 typedef enum {
 	no_key,
 	up,
 	down,
 	left,
-	right
+	right,
+	x_key,
+	z_key
 } key_input;
 
 typedef struct {
@@ -25,43 +28,59 @@ typedef struct {
 	int y;
 } mouse_input;
 
+typedef struct {
+	bool up;
+	bool down;
+	bool left;
+	bool right;
+	bool yup;
+	bool ydown;
+	bool sprint;
+} key_states_t;
 
-// This must be called first
-// returns false on failure
-bool set_up_device();
+namespace device {
+	double& zBufferAt(size_t x, size_t);
 
-// Should be called before exiting the program
-void close_device();
+	key_states_t get_key_states();
 
-bool running();
+	// This must be called first
+	// returns false on failure
+	bool setUp();
 
-// must be called, otherwise there is no way to quit
-// call before rendering on each frame
-void process_input();
+	// Should be called before exiting the program
+	void tearDown();
 
-// get the last key pressed
-// TODO: handle multiple key presses, keyup and keydown events separately
-key_input get_next_key();
+	// if it all goes wrong somewhere
+	void selfDestruct(const char *message, int line, const char* file);
 
-mouse_input get_mouse_motion();
+	bool running();
 
-// converts color values into a pixel color value
-// red, green, and blue must be between 0.0 and 1.0
-uint32_t color(double red, double green, double blue);
+	// must be called, otherwise there is no way to quit
+	// call before rendering on each frame
+	void processInput();
 
-// draw background
-void clear_screen(int color);
+	// get the last key pressed
+	// TODO: handle multiple key presses, keyup and keydown events separately
+	key_input get_next_key();
 
-// TODO: document the layout of the arguments
-// (0, 0) is bottom left of the screen
-void draw_pixel(int x, int y, int color);
+	mouse_input getMouseMotion();
 
-// call after drawing the background and all desired pixels
-void update_screen();
+	// converts color values into a pixel color value
+	// red, green, and blue must be between 0.0 and 1.0
+	uint32_t color(double red, double green, double blue);
 
-unsigned int get_xres();
-unsigned int get_yres();
+	// draw background
+	void clearScreen(int color);
 
+	// TODO: document the layout of the arguments
+	// (0, 0) is bottom left of the screen
+	void setPixel(int x, int y, int color);
 
+	// call after drawing the background and all desired pixels
+	void updateScreen();
+
+	unsigned int getXRes();
+	unsigned int getYRes();
+}
 
 #endif

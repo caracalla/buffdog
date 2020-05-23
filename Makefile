@@ -1,21 +1,14 @@
 P=buffdog
-OBJECTS=device.c line.c vec3.c sphere.c light.c util.c
-CFLAGS=-g -Wall -O3
+OBJECTS=device.cpp line.cpp
+CXXFLAGS=-g -Wall -std=c++17
 LDLIBS=-lm -lSDL2
-CC=clang
+CC=clang++
 
 $(P): $(OBJECTS)
 
-run: $(P)
+run: clean $(P)
 	./$(P)
 
-spinner: $(OBJECTS)
-
-ray_tracer: $(OBJECTS)
-
-tri: $(OBJECTS)
-
 clean:
-	rm -f spinner
-	rm -f ray_tracer
+	rm -f buffdog
 	rm -rf *.dSYM
