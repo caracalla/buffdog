@@ -367,7 +367,7 @@ struct Renderer {
 				item.scale, item.rotation, item.translation);
 		Matrix finalMatrix = this->cameraMatrix.multiplyMatrix(worldMatrix);
 
-		// transform vertices
+		// transform vertices into camera space
 		for (auto& vertex : item.vertices) {
 			vertex = finalMatrix.multiplyVector(vertex);
 		}
@@ -405,7 +405,7 @@ struct Renderer {
 		}
 
 		for (const auto& model : scene.models) {
-			drawModel(transformModel(model), scene.camera.viewport, lights);
+			drawModel(transformModel(*model), scene.camera.viewport, lights);
 		}
 	}
 };
