@@ -1,7 +1,3 @@
-// usleep
-#define _BSD_SOURCE
-#include <unistd.h>
-
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
@@ -150,7 +146,7 @@ int main(int argc, char** argv) {
 	Level level = {
 		city,
 		Vector::direction(38, 0, 38),
-		Vector::direction(0, 0, 0)
+		Vector::direction(0, M_PI_2, 0)
 	};
 
 	level.init();
@@ -164,8 +160,6 @@ int main(int argc, char** argv) {
 	Model tetra = buildTetrahedron(0.5, Vector::direction(0, 0, 0), Vector::direction(0, 0, 0));
 
 	while (device::running()) {
-		usleep(DELAY_US);
-
 		cube.rotation.x += 0.005;
 		cube.rotation.y += 0.007;
 		cube.rotation.z += 0.009;
