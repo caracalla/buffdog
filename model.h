@@ -206,10 +206,10 @@ Model buildTetrahedron(double scale, Vector translation, Vector rotation) {
 	double squirt3 = sqrt(3);
 
 	item.vertices = {
-			Vector::point( 0, squirt3,  0),
-			Vector::point( 0, 0,        2 / squirt3),
-			Vector::point( 1, 0,       -1 / squirt3),
-			Vector::point(-1, 0,       -1 / squirt3)};
+			Vector::point( 0, 0,  0),
+			Vector::point( 0, -squirt3,        2 / squirt3),
+			Vector::point( 1, -squirt3,       -1 / squirt3),
+			Vector::point(-1, -squirt3,       -1 / squirt3)};
 
 	item.normals = {
 			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[2]),

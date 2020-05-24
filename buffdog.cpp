@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 			1.0, Vector::direction(48, 2, 40), Vector::direction(0, 0, 0));
 	BMPTexture crate_texture = BMPTexture::load("textures/crate.bmp");
 	cube.addTexture(&crate_texture);
-	scene.addModel(&cube);
+	scene.addModel(cube);
 
 	Model city = parseOBJFile("models/city.obj");
 	PPMTexture city_texture = PPMTexture::load("textures/city.ppm");
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
 	Level level = {
 		city,
-		Vector::direction(38, 0, 38),
+		Vector::point(38, 0, 38),
 		Vector::direction(0, M_PI_2, 0)
 	};
 
@@ -80,51 +80,35 @@ int main(int argc, char** argv) {
 	double velocity = 0;
 
 	Model tetra = buildTetrahedron(0.5, Vector::direction(0, 0, 0), Vector::direction(0, 0, 0));
-	scene.addModel(&tetra);
 
 	while (device::running()) {
 		cube.rotation.x += 0.005;
 		cube.rotation.y += 0.007;
 		cube.rotation.z += 0.009;
 
-		Vector view_normal = Matrix::makeRotationMatrix(scene.camera.rotation).
-				multiplyVector(Vector::direction(0, 0, -1));
-		Vector camera_pos = scene.camera.translation;
-		camera_pos.w = 1;
-
-		Triangle3D* collided_triangle = nullptr;
-		Triangle3D** collided_triangle_ptr = &collided_triangle;
-
-		tetra.translation = scene.level.collisionPoint(camera_pos, view_normal, collided_triangle_ptr);
-
-		if (collided_triangle) {
-			collided_triangle->special = true;
-		}
-
-		tetra.rotation = scene.camera.rotation;
-		tetra.rotation.x += M_PI + M_PI_2; // align top to point at cameras
-
 		renderer.drawScene(scene);
 
 		device::updateScreen();
 		device::processInput();
 
-		if (collided_triangle) {
-			collided_triangle->special = false;
-		}
+		key_input next_key = device::get_next_key();
 
-		// key_input next_key = device::get_next_key();
-		//
-		// if (next_key) {
-		// 	switch(next_key) {
-		// 		case x_key:
-		// 			cameraMatrix.log();
-		// 			break;
-		//
-		// 		default:
-		// 			break;
-		// 	}
-		// }
+		if (next_key) {
+			Vector view_normal = Matrix::makeRotationMatrix(scene.camera.rotation).multiplyVector(Vector::direction(0, 0, -1));
+
+			switch(next_key) {
+				case x_key:
+					tetra.translation = scene.level.collisionPoint(scene.camera.translation, view_normal);
+
+					tetra.rotation = scene.camera.rotation;
+					tetra.rotation.x += -M_PI - M_PI_2; // align top to point at cameras
+					scene.addModel(tetra);
+					break;
+
+				default:
+					break;
+			}
+		}
 
 		mouse_input mouse_motion = device::getMouseMotion();
 

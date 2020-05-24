@@ -30,7 +30,7 @@ struct Level {
 	}
 
 	// for each triangle,  find the plane that contains it. if the plane is in front of the ray, determine if the point of intersection is within the triangle itself this is probably slow and could be done better by subdividing the world (BSP?)
-	Vector collisionPoint(Vector ray_origin, Vector ray_direction, Triangle3D** collided_triangle) {
+	Vector collisionPoint(Vector ray_origin, Vector ray_direction) {
 		Vector result = Vector::point(0, 0, 0);
 		double min_t = INFINITY;
 
@@ -66,7 +66,6 @@ struct Level {
 					if (t < min_t) {
 						min_t = t;
 						result = plane_intersect;
-						*collided_triangle = &triangle;
 					}
 				}
 			}

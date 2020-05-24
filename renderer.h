@@ -427,7 +427,7 @@ struct Renderer {
 		drawModel(transformLevel(scene.level.model), scene.camera.viewport, lights);
 
 		for (const auto& model : scene.models) {
-			drawModel(transformModel(*model), scene.camera.viewport, lights);
+			drawModel(transformModel(model), scene.camera.viewport, lights);
 		}
 	}
 };

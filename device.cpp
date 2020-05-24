@@ -217,6 +217,10 @@ namespace device {
 
 					break;
 
+				case SDL_MOUSEBUTTONDOWN:
+					last_key = x_key;
+					break;
+
 				case SDL_MOUSEMOTION:
 					mouse_motion.x = event.motion.xrel;
 					mouse_motion.y = event.motion.yrel;

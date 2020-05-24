@@ -44,7 +44,7 @@ struct Light {
 
 struct Scene {
 	Level level;
-	std::vector<Model*> models;
+	std::vector<Model> models;
 	Camera camera;
 	std::vector<Light> lights;
 
@@ -70,7 +70,7 @@ struct Scene {
 		return scene;
 	}
 
-	void addModel(Model* item) {
+	void addModel(Model item) {
 		this->models.push_back(item);
 	}
 
