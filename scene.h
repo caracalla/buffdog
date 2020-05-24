@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "device.h"
+#include "level.h"
 #include "model.h"
 #include "vector.h"
 
@@ -42,6 +43,7 @@ struct Light {
 
 
 struct Scene {
+	Level level;
 	std::vector<Model*> models;
 	Camera camera;
 	std::vector<Light> lights;
@@ -69,7 +71,15 @@ struct Scene {
 	}
 
 	void addModel(Model* item) {
-		models.push_back(item);
+		this->models.push_back(item);
+	}
+
+	void setLevel(Level level) {
+		this->level = level;
+		this->level.init();
+
+		this->camera.translation = this->level.player_start_position;
+		this->camera.rotation = this->level.player_start_rotation;
 	}
 
 	// int getBackgroundColor() {

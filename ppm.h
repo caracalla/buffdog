@@ -61,7 +61,7 @@ ppm_info_t readPPMFile(const char* filename) {
 
 	int line_number = 0;
 
-	while(fgets(str, MAXCHAR, file) != NULL) {
+	while(fgets(str, MAXCHAR, file) != nullptr) {
 		line_number += 1;
 		size_t index = 0;
 

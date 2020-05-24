@@ -49,6 +49,16 @@ struct Vector {
 		return direction(r, g, b);
 	}
 
+	// find the plane for a given normal and point, in vector format
+	static Vector plane(Vector normal, Vector point) {
+		return (Vector){
+			normal.x,
+			normal.y,
+			normal.z,
+			normal.scalarMultiply(-1).dotProduct(point)
+		};
+	}
+
 	// can't be marked const because at() returns a reference
 	double dotProduct(Vector other) {
 		double result = 0;

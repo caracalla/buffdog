@@ -157,7 +157,7 @@ Model parseOBJFile(const char* filename) {
 		terminateFatal(message);
 	}
 
-	while (fgets(str, MAXCHAR, file) != NULL) {
+	while (fgets(str, MAXCHAR, file) != nullptr) {
 		size_t index = 0;
 
 		if (str[index] == '\n' || str[index] == '#') {

@@ -29,6 +29,7 @@ struct Triangle3D {
 	Vertex v2;
 	Vector color;
 	Vector normal;
+	bool special = false;
 
 	Vertex& at(size_t index) {
 		switch(index) {
@@ -211,7 +212,7 @@ Model buildTetrahedron(double scale, Vector translation, Vector rotation) {
 			Vector::point(-1, 0,       -1 / squirt3)};
 
 	item.normals = {
-			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[3]),
+			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[2]),
 			triangleNormal(item.vertices[0], item.vertices[3], item.vertices[1]),
 			triangleNormal(item.vertices[0], item.vertices[2], item.vertices[3]),
 			triangleNormal(item.vertices[1], item.vertices[3], item.vertices[2])};

@@ -289,7 +289,7 @@ struct Renderer {
 						item.uvs[triangle.v1.uv].second,
 						item.uvs[triangle.v2.uv].first,
 						item.uvs[triangle.v2.uv].second,
-						item.has_texture ? item.texture : NULL};
+						item.has_texture && !triangle.special ? item.texture : nullptr};
 
 				// tri.draw();
 				tri.fillShaded();
@@ -352,7 +352,7 @@ struct Renderer {
 							poly.v_values[i],
 							poly.u_values[i + 1],
 							poly.v_values[i + 1],
-							item.has_texture ? item.texture : NULL};
+							item.has_texture && !triangle.special ? item.texture : nullptr};
 
 					// new_triangle.draw();
 					new_triangle.fillShaded();
@@ -387,6 +387,25 @@ struct Renderer {
 		return item;
 	}
 
+	Model transformLevel(Model level) {
+		// levels are already in world space, so just do a camera transformations
+
+		// transform vertices into camera space
+		for (auto& vertex : level.vertices) {
+			vertex = this->cameraMatrix.multiplyVector(vertex);
+		}
+
+		for (auto& normal : level.normals) {
+			normal = this->cameraMatrix.multiplyVector(normal);
+		}
+
+		for (auto& triangle : level.triangles) {
+			triangle.normal = this->cameraMatrix.multiplyVector(triangle.normal);
+		}
+
+		return level;
+	}
+
 	void drawScene(Scene& scene) {
 		// update camera matrix (should we check if it has changed first?)
 		this->cameraMatrix = Matrix::makeCameraMatrix(
@@ -403,6 +422,9 @@ struct Renderer {
 				light.direction = this->cameraMatrix.multiplyVector(light.direction);
 			}
 		}
+
+		// the level geometry is handled differently from the models
+		drawModel(transformLevel(scene.level.model), scene.camera.viewport, lights);
 
 		for (const auto& model : scene.models) {
 			drawModel(transformModel(*model), scene.camera.viewport, lights);

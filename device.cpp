@@ -47,14 +47,14 @@ namespace device {
 				RES_Y,
 				SDL_WINDOW_SHOWN);
 
-		if (window == NULL) {
+		if (window == nullptr) {
 			SDL_Log("Unable to create SDL window: %s", SDL_GetError());
 			return false;
 		}
 
 		renderer = SDL_CreateRenderer(window, -1, 0);
 
-		if (renderer == NULL) {
+		if (renderer == nullptr) {
 			SDL_Log("Unable to create SDL renderer: %s", SDL_GetError());
 			return false;
 		}
@@ -66,7 +66,7 @@ namespace device {
 				RES_X,
 				RES_Y);
 
-		if (texture == NULL) {
+		if (texture == nullptr) {
 			SDL_Log("Unable to create SDL texture: %s", SDL_GetError());
 			return false;
 		}
@@ -288,12 +288,12 @@ namespace device {
 	void updateScreen() {
 		SDL_UpdateTexture(
 				texture,
-				NULL,
+				nullptr,
 				pixels.data,
 				RES_X * sizeof(uint32_t));
 
 		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, texture, NULL, NULL);
+		SDL_RenderCopy(renderer, texture, nullptr, nullptr);
 		SDL_RenderPresent(renderer);
 	}
 
