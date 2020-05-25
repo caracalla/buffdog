@@ -20,11 +20,11 @@ struct Viewport {
 
 
 // camera is always at final render origin
-// translation is distance from world origin
+// position is distance from world origin
 // rotation is about x and y world axes
 struct Camera {
 	Viewport viewport;
-	Vector translation;
+	Vector position;
 	Vector rotation; // z is ignored
 };
 
@@ -58,7 +58,7 @@ struct Scene {
 		scene.camera.viewport.near_plane_distance = -0.1;
 		scene.camera.viewport.far_plane_distance = -100;
 
-		scene.camera.translation = Vector::point(0, 0, 0);
+		scene.camera.position = Vector::point(0, 0, 0);
 		scene.camera.rotation = Vector::direction(0, 0, 0);
 
 		Light ambient = {LightType::ambient, Vector::direction(0, 0, 0), 0.2};
@@ -78,7 +78,7 @@ struct Scene {
 		this->level = level;
 		this->level.init();
 
-		this->camera.translation = this->level.player_start_position;
+		this->camera.position = this->level.player_start_position;
 		this->camera.rotation = this->level.player_start_rotation;
 	}
 

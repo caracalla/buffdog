@@ -14,7 +14,7 @@ struct Level {
 		for (auto& vertex : model.vertices) {
 			// transform to world space
 			Matrix worldMatrix = Matrix::makeWorldMatrix(
-					model.scale, model.rotation, model.translation);
+					model.scale, model.rotation, model.position);
 			vertex = worldMatrix.multiplyVector(vertex);
 		}
 

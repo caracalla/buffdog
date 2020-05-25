@@ -3,8 +3,6 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <sys/time.h>
-
 #include "bmp.h"
 #include "device.h"
 #include "level.h"
@@ -26,6 +24,9 @@
 #define MAX_VELOCITY 0.0625
 
 
+#ifndef _MSC_VER
+#include <sys/time.h>
+
 int fps = 0;
 struct timespec lastPrintTimeSpec;
 
@@ -41,14 +42,19 @@ void logFPS() {
 		fps = 0;
 	}
 }
+#endif
+
+
 
 int main(int argc, char** argv) {
 	if (!device::setUp()) {
 		return 1;
 	}
 
+#ifndef _MSC_VER
 	// for FPS determination
 	clock_gettime(CLOCK_REALTIME, &lastPrintTimeSpec);
+#endif
 
 	Scene scene = Scene::create();
 	Renderer renderer = Renderer::create(scene.camera.viewport);
@@ -63,7 +69,7 @@ int main(int argc, char** argv) {
 	PPMTexture city_texture = PPMTexture::load("textures/city.ppm");
 	city.addTexture(&city_texture);
 	city.scale = 12.0;
-	city.translation = Vector::direction(0, 0, 0);
+	city.position = Vector::direction(0, 0, 0);
 	city.rotation = Vector::direction(0, 0, 0);
 	city.setTriangleNormals();
 
@@ -75,7 +81,7 @@ int main(int argc, char** argv) {
 
 	scene.setLevel(level);
 
-	scene.camera.translation.y = 1.7; // player height
+	scene.camera.position.y = 1.7; // player height
 
 	double velocity = 0;
 
@@ -98,7 +104,7 @@ int main(int argc, char** argv) {
 
 			switch(next_key) {
 				case x_key:
-					tetra.translation = scene.level.collisionPoint(scene.camera.translation, view_normal);
+					tetra.position = scene.level.collisionPoint(scene.camera.position, view_normal);
 
 					tetra.rotation = scene.camera.rotation;
 					tetra.rotation.x += -M_PI - M_PI_2; // align top to point at cameras
@@ -162,9 +168,11 @@ int main(int argc, char** argv) {
 
 		// the direction of motion is determined only by the rotation about the y axis
 		Matrix rotationAboutY = Matrix::makeRotationMatrix((Vector){0, scene.camera.rotation.y, 0, 0});
-		scene.camera.translation = scene.camera.translation.add(rotationAboutY.multiplyVector(movement));
+		scene.camera.position = scene.camera.position.add(rotationAboutY.multiplyVector(movement));
 
+#ifndef _MSC_VER
 		logFPS();
+#endif
 	}
 
 	device::tearDown();

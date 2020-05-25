@@ -364,7 +364,7 @@ struct Renderer {
 
 	Model transformModel(Model item) {
 		Matrix worldMatrix = Matrix::makeWorldMatrix(
-				item.scale, item.rotation, item.translation);
+				item.scale, item.rotation, item.position);
 		Matrix finalMatrix = this->cameraMatrix.multiplyMatrix(worldMatrix);
 
 		// transform vertices into camera space
@@ -409,7 +409,7 @@ struct Renderer {
 	void drawScene(Scene& scene) {
 		// update camera matrix (should we check if it has changed first?)
 		this->cameraMatrix = Matrix::makeCameraMatrix(
-				scene.camera.rotation, scene.camera.translation);
+				scene.camera.rotation, scene.camera.position);
 
 		// draw the background
 		// TODO: make this more interesting/dynamic

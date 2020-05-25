@@ -7,8 +7,12 @@
 #include "line.h"
 #include "vector.h"
 
-#define min(a, b) (a < b ? a : b)
-#define max(a, b) (a > b ? a : b)
+
+// #define min(a, b) (a < b ? a : b)
+// #define max(a, b) (a > b ? a : b)
+
+int min(int a, int b) { return (a < b ? a : b); }
+int max(int a, int b) { return (a > b ? a : b); }
 
 
 // Logic for drawing 2D triangles
