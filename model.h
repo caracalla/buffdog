@@ -124,65 +124,65 @@ Model buildCube(double scale, Vector position, Vector rotation) {
 			std::make_pair(1.0, 1.0)};
 
 	item.triangles = {
-			(Triangle3D){
-					(Vertex){0, 0, 0, 1.0},
-					(Vertex){1, 0, 2, 1.0},
-					(Vertex){2, 0, 3, 1.0},
+			Triangle3D{
+					Vertex{0, 0, 0, 1.0},
+					Vertex{1, 0, 2, 1.0},
+					Vertex{2, 0, 3, 1.0},
 					red},
-			(Triangle3D){
-					(Vertex){0, 0, 0, 1.0},
-					(Vertex){2, 0, 3, 1.0},
-					(Vertex){3, 0, 1, 1.0},
+			Triangle3D{
+					Vertex{0, 0, 0, 1.0},
+					Vertex{2, 0, 3, 1.0},
+					Vertex{3, 0, 1, 1.0},
 					red},
-			(Triangle3D){
-					(Vertex){4, 1, 0, 1.0},
-					(Vertex){0, 1, 2, 1.0},
-					(Vertex){3, 1, 3, 1.0},
+			Triangle3D{
+					Vertex{4, 1, 0, 1.0},
+					Vertex{0, 1, 2, 1.0},
+					Vertex{3, 1, 3, 1.0},
 					green},
-			(Triangle3D){
-					(Vertex){4, 1, 0, 1.0},
-					(Vertex){3, 1, 3, 1.0},
-					(Vertex){7, 1, 1, 1.0},
+			Triangle3D{
+					Vertex{4, 1, 0, 1.0},
+					Vertex{3, 1, 3, 1.0},
+					Vertex{7, 1, 1, 1.0},
 					green},
-			(Triangle3D){
-					(Vertex){5, 2, 0, 1.0},
-					(Vertex){4, 2, 2, 1.0},
-					(Vertex){7, 2, 3, 1.0},
+			Triangle3D{
+					Vertex{5, 2, 0, 1.0},
+					Vertex{4, 2, 2, 1.0},
+					Vertex{7, 2, 3, 1.0},
 					blue},
-			(Triangle3D){
-					(Vertex){5, 2, 0, 1.0},
-					(Vertex){7, 2, 3, 1.0},
-					(Vertex){6, 2, 1, 1.0},
+			Triangle3D{
+					Vertex{5, 2, 0, 1.0},
+					Vertex{7, 2, 3, 1.0},
+					Vertex{6, 2, 1, 1.0},
 					blue},
-			(Triangle3D){
-					(Vertex){1, 3, 0, 1.0},
-					(Vertex){5, 3, 2, 1.0},
-					(Vertex){6, 3, 3, 1.0},
+			Triangle3D{
+					Vertex{1, 3, 0, 1.0},
+					Vertex{5, 3, 2, 1.0},
+					Vertex{6, 3, 3, 1.0},
 					yellow},
-			(Triangle3D){
-					(Vertex){1, 3, 0, 1.0},
-					(Vertex){6, 3, 3, 1.0},
-					(Vertex){2, 3, 1, 1.0},
+			Triangle3D{
+					Vertex{1, 3, 0, 1.0},
+					Vertex{6, 3, 3, 1.0},
+					Vertex{2, 3, 1, 1.0},
 					yellow},
-			(Triangle3D){
-					(Vertex){4, 4, 0, 1.0},
-					(Vertex){5, 4, 2, 1.0},
-					(Vertex){1, 4, 3, 1.0},
+			Triangle3D{
+					Vertex{4, 4, 0, 1.0},
+					Vertex{5, 4, 2, 1.0},
+					Vertex{1, 4, 3, 1.0},
 					purple},
-			(Triangle3D){
-					(Vertex){4, 4, 0, 1.0},
-					(Vertex){1, 4, 3, 1.0},
-					(Vertex){0, 4, 1, 1.0},
+			Triangle3D{
+					Vertex{4, 4, 0, 1.0},
+					Vertex{1, 4, 3, 1.0},
+					Vertex{0, 4, 1, 1.0},
 					purple},
-			(Triangle3D){
-					(Vertex){2, 5, 0, 1.0},
-					(Vertex){6, 5, 2, 1.0},
-					(Vertex){7, 5, 3, 1.0},
+			Triangle3D{
+					Vertex{2, 5, 0, 1.0},
+					Vertex{6, 5, 2, 1.0},
+					Vertex{7, 5, 3, 1.0},
 					cyan},
-			(Triangle3D){
-					(Vertex){2, 5, 0, 1.0},
-					(Vertex){7, 5, 3, 1.0},
-					(Vertex){3, 5, 1, 1.0},
+			Triangle3D{
+					Vertex{2, 5, 0, 1.0},
+					Vertex{7, 5, 3, 1.0},
+					Vertex{3, 5, 1, 1.0},
 					cyan},
 	};
 
@@ -223,25 +223,25 @@ Model buildTetrahedron(double scale, Vector position, Vector rotation) {
 			std::make_pair(0.5, 1.0)};
 
 	item.triangles = {
-			(Triangle3D){
-					(Vertex){0, 0, 0, 1.0},
-					(Vertex){1, 0, 1, 1.0},
-					(Vertex){2, 0, 2, 1.0},
+			Triangle3D{
+					Vertex{0, 0, 0, 1.0},
+					Vertex{1, 0, 1, 1.0},
+					Vertex{2, 0, 2, 1.0},
 					red},
-			(Triangle3D){
-					(Vertex){0, 1, 0, 1.0},
-					(Vertex){3, 1, 1, 1.0},
-					(Vertex){1, 1, 2, 1.0},
+			Triangle3D{
+					Vertex{0, 1, 0, 1.0},
+					Vertex{3, 1, 1, 1.0},
+					Vertex{1, 1, 2, 1.0},
 					green},
-			(Triangle3D){
-					(Vertex){0, 2, 0, 1.0},
-					(Vertex){2, 2, 1, 1.0},
-					(Vertex){3, 2, 2, 1.0},
+			Triangle3D{
+					Vertex{0, 2, 0, 1.0},
+					Vertex{2, 2, 1, 1.0},
+					Vertex{3, 2, 2, 1.0},
 					blue},
-			(Triangle3D){
-					(Vertex){1, 3, 0, 1.0},
-					(Vertex){3, 3, 1, 1.0},
-					(Vertex){2, 3, 2, 1.0},
+			Triangle3D{
+					Vertex{1, 3, 0, 1.0},
+					Vertex{3, 3, 1, 1.0},
+					Vertex{2, 3, 2, 1.0},
 					purple}};
 
 	item.scale = scale;

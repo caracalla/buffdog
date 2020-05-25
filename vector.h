@@ -37,11 +37,11 @@ struct Vector {
 	}
 
 	static Vector point(double x, double y, double z) {
-		return (Vector){x, y, z, 1};
+		return Vector{x, y, z, 1};
 	}
 
 	static Vector direction(double x, double y, double z) {
-		return (Vector){x, y, z, 0};
+		return Vector{x, y, z, 0};
 	}
 
 	static Vector color(double r, double g, double b) {
@@ -51,7 +51,7 @@ struct Vector {
 
 	// find the plane for a given normal and point, in vector format
 	static Vector plane(Vector normal, Vector point) {
-		return (Vector){
+		return Vector{
 			normal.x,
 			normal.y,
 			normal.z,
@@ -105,7 +105,7 @@ struct Vector {
 		double length = this->length();
 
 		if (length == 0) {
-			return (Vector){0, 0, 0, 0};
+			return Vector{0, 0, 0, 0};
 		}
 
 		return scalarMultiply(1 / length);

@@ -142,10 +142,10 @@ Vector getBarycentricWeights(Point p0, Point p1, Point p2, int x, int y) {
 	Vector u = px.crossProduct(py);
 
 	if (fabs(u.z) < 1) {
-		return (Vector){-1, 1, 1};
+		return Vector{-1, 1, 1};
 	}
 
-	return (Vector){1.0 - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z};
+	return Vector{1.0 - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z};
 }
 
 struct Triangle2D {

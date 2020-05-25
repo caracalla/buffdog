@@ -1,4 +1,5 @@
 #include <cctype>
+#define _USE_MATH_DEFINES // M_PI et al
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -167,7 +168,8 @@ int main(int argc, char** argv) {
 		Vector movement = translation.unit().scalarMultiply(velocity);
 
 		// the direction of motion is determined only by the rotation about the y axis
-		Matrix rotationAboutY = Matrix::makeRotationMatrix((Vector){0, scene.camera.rotation.y, 0, 0});
+		Matrix rotationAboutY = Matrix::makeRotationMatrix(
+				Vector::direction(0, scene.camera.rotation.y, 0));
 		scene.camera.position = scene.camera.position.add(rotationAboutY.multiplyVector(movement));
 
 #ifndef _MSC_VER

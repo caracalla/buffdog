@@ -297,7 +297,7 @@ struct Renderer {
 			} else {
 				// not all vertices are visible
 				// it's clipping time
-				ClippedPolygon triangle_poly = (ClippedPolygon){
+				ClippedPolygon triangle_poly = ClippedPolygon{
 						{
 							item.vertices[triangle.v0.index],
 							item.vertices[triangle.v1.index],
