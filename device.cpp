@@ -1,8 +1,9 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
+#include <string>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "device.h"
 

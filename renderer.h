@@ -15,6 +15,8 @@
 // the max potential vertices for a triangle clipped against six planes is 9
 #define MAX_CLIPPED_POLYGON_VERTICES 9
 
+#define BIGNUM 1024
+
 
 // position of the camera after all transforms is always at the origin
 const Vector kOrigin = {0, 0, 0, 1};
@@ -127,14 +129,12 @@ struct Renderer {
 				double vt_v2 = original_poly->v_values[current];
 
 				#define addCurrentVertex(vertex, vt_u, vt_v) \
-						({ \
 							new_poly->vertices[new_poly_vertex_count] = vertex; \
 							new_poly->shades[new_poly_vertex_count] = \
 									original_poly->shades[current]; \
 							new_poly->u_values[new_poly_vertex_count] = vt_u; \
 							new_poly->v_values[new_poly_vertex_count] = vt_v; \
-							new_poly_vertex_count++; \
-						})
+							new_poly_vertex_count++;
 
 				if (insidePlane(v1, plane)) {
 					if (insidePlane(v2, plane)) {
@@ -238,8 +238,8 @@ struct Renderer {
 	}
 
 	void drawModel(Model item, Viewport& viewport, std::vector<Light>& lights) {
-		bool isVertexVisible[item.vertices.size()];
-		Point projectedVertices[item.vertices.size()];
+		bool isVertexVisible[BIGNUM];
+		Point projectedVertices[BIGNUM];
 
 		for (int i = 0; i < item.vertices.size(); i++) {
 			isVertexVisible[i] = insideFrustum(item.vertices[i]);
@@ -272,7 +272,7 @@ struct Renderer {
 					isVertexVisible[triangle.v1.index] &&
 					isVertexVisible[triangle.v2.index]) {
 				// all vertices are visible
-				Triangle2D tri = {
+				Triangle2D tri = Triangle2D{
 						projectedVertices[triangle.v0.index],
 						projectedVertices[triangle.v1.index],
 						projectedVertices[triangle.v2.index],
@@ -327,7 +327,7 @@ struct Renderer {
 					continue;
 				}
 
-				Point projectedVertices[poly.vertex_count];
+				Point projectedVertices[BIGNUM];
 
 				for (int i = 0; i < poly.vertex_count; i++) {
 					projectedVertices[i] = projectVertexToScreen(poly.vertices[i], viewport);
@@ -335,7 +335,7 @@ struct Renderer {
 
 				// triangulate the resulting polygon, with all triangles starting at v0
 				for (int i = 1; i < poly.vertex_count - 1; i++) {
-					Triangle2D new_triangle = {
+					Triangle2D new_triangle = Triangle2D{
 							projectedVertices[0],
 							projectedVertices[i],
 							projectedVertices[i + 1],
