@@ -131,11 +131,10 @@ struct BMPTexture : public Texture {
 		unsigned char green = bmp_info.pixel_buffer[index + 1];
 		unsigned char red = bmp_info.pixel_buffer[index + 2];
 
-		return ((Vector) {
+		return Vector::color(
 				(double)red / 255,
 				(double)green / 255,
-				(double)blue / 255,
-				0});
+				(double)blue / 255);
 	}
 
 	static BMPTexture load(const char* filename) {

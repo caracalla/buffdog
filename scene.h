@@ -25,7 +25,7 @@ struct Viewport {
 struct Camera {
 	Viewport viewport;
 	Vector position;
-	Vector rotation; // z is ignored
+	Vector rotation; // only rotation about x and y axes matters
 };
 
 

@@ -18,7 +18,6 @@
 #include "vector.h"
 
 
-#define DELAY_US 10000
 #define INCREMENT 0.005
 #define MOUSE_SENSITIVITY_FACTOR 1000
 // TODO: tie velocity to FPS
