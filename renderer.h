@@ -16,6 +16,11 @@
 // the max potential vertices for a triangle clipped against six planes is 9
 #define MAX_CLIPPED_POLYGON_VERTICES 9
 
+// Visual C++ is unhappy with dynamic automatic array sizes, so I'll just do
+// this for now.  This is effectively the upper limit on the number of vertices
+// that can be displayed
+#define TEMP_ARRAY_SIZE 4096
+
 
 // position of the camera after all transforms is always at the origin
 const Vector kOrigin = {0, 0, 0, 1};
@@ -237,8 +242,10 @@ struct Renderer {
 	}
 
 	void drawModel(Model item, Viewport& viewport, std::vector<Light>& lights) {
-		bool is_vertex_visible[item.vertices.size()];
-		Point projected_vertices[item.vertices.size()];
+		// bool is_vertex_visible[item.vertices.size()];
+		// Point projected_vertices[item.vertices.size()];
+		bool is_vertex_visible[TEMP_ARRAY_SIZE];
+		Point projected_vertices[TEMP_ARRAY_SIZE];
 
 		for (int i = 0; i < item.vertices.size(); i++) {
 			is_vertex_visible[i] = insideFrustum(item.vertices[i]);
@@ -326,7 +333,8 @@ struct Renderer {
 					continue;
 				}
 
-				Point projected_vertices[poly.vertex_count];
+				// Point projected_vertices[poly.vertex_count];
+				Point projected_vertices[TEMP_ARRAY_SIZE];
 
 				for (int i = 0; i < poly.vertex_count; i++) {
 					projected_vertices[i] = projectVertexToScreen(poly.vertices[i], viewport);
