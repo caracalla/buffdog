@@ -1,0 +1,24 @@
+﻿  buffdog.cpp
+C:\Users\james\source\repos\buffdog\bmp.h(87,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\james\source\repos\buffdog\bmp.h(34,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\james\source\repos\buffdog\bmp.h(125,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\james\source\repos\buffdog\bmp.h(126,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\james\source\repos\buffdog\triangle.h(114,49): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\Users\james\source\repos\buffdog\triangle.h(125,24): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\james\source\repos\buffdog\obj.h(147,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\james\source\repos\buffdog\ppm.h(49,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\james\source\repos\buffdog\ppm.h(142,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\james\source\repos\buffdog\ppm.h(143,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\james\source\repos\buffdog\renderer.h(91,53): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\james\source\repos\buffdog\renderer.h(92,54): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\james\source\repos\buffdog\renderer.h(121,19): warning C4018: '<': signed/unsigned mismatch
+C:\Users\james\source\repos\buffdog\renderer.h(250,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\james\source\repos\buffdog\renderer.h(339,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\james\source\repos\buffdog\renderer.h(344,23): warning C4018: '<': signed/unsigned mismatch
+  device.cpp
+C:\Users\james\source\repos\buffdog\device.cpp(251,27): warning C4244: 'initializing': conversion from 'double' to 'unsigned char', possible loss of data
+C:\Users\james\source\repos\buffdog\device.cpp(252,29): warning C4244: 'initializing': conversion from 'double' to 'unsigned char', possible loss of data
+C:\Users\james\source\repos\buffdog\device.cpp(253,28): warning C4244: 'initializing': conversion from 'double' to 'unsigned char', possible loss of data
+  line.cpp
+  Generating Code...
+  buffdog.vcxproj -> C:\Users\james\source\repos\buffdog\Debug\buffdog.exe

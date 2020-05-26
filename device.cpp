@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
+#include <string>
 
 #ifdef _MSC_VER
 #include <SDL.h>
