@@ -7,6 +7,10 @@
 
 struct Level {
 	Model model;
+	double model_scale;
+	Vector model_position;
+	Vector model_rotation;
+
 	Vector player_start_position;
 	Vector player_start_rotation;
 
@@ -14,11 +18,11 @@ struct Level {
 		for (auto& vertex : model.vertices) {
 			// transform to world space
 			Matrix worldMatrix = Matrix::makeWorldMatrix(
-					model.scale, model.rotation, model.position);
+					model_scale, model_rotation, model_position);
 			vertex = worldMatrix.multiplyVector(vertex);
 		}
 
-		Matrix normalTransformationMatrix = Matrix::makeRotationMatrix(model.rotation);
+		Matrix normalTransformationMatrix = Matrix::makeRotationMatrix(model_rotation);
 
 		for (auto& normal : model.normals) {
 			normal = normalTransformationMatrix.multiplyVector(normal);

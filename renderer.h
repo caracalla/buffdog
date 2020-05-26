@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "device.h"
+#include "entity.h"
 #include "matrix.h"
 #include "model.h"
 #include "scene.h"
@@ -32,7 +33,7 @@ struct ClippedPolygon {
 
 struct Renderer {
 	Vector frustum_planes[NUM_FRUSTUM_PLANES];
-	Matrix cameraMatrix;
+	Matrix camera_matrix;
 
 	static Renderer create(Viewport& viewport) {
 		Renderer renderer;
@@ -97,10 +98,10 @@ struct Renderer {
 
 	// Sutherland-Hodgman algorithm
 	ClippedPolygon clipTriangle(ClippedPolygon triangle) {
-		ClippedPolygon final_poly = {{}, {}, {}, {}, 0};
+		ClippedPolygon temp_poly = {{}, {}, {}, {}, 0};
 
 		ClippedPolygon* original_poly = &triangle;
-		ClippedPolygon* new_poly = &final_poly;
+		ClippedPolygon* new_poly = &temp_poly;
 
 		int new_poly_vertex_count = 0;
 
@@ -127,14 +128,12 @@ struct Renderer {
 				double vt_v2 = original_poly->v_values[current];
 
 				#define addCurrentVertex(vertex, vt_u, vt_v) \
-						({ \
-							new_poly->vertices[new_poly_vertex_count] = vertex; \
-							new_poly->shades[new_poly_vertex_count] = \
-									original_poly->shades[current]; \
-							new_poly->u_values[new_poly_vertex_count] = vt_u; \
-							new_poly->v_values[new_poly_vertex_count] = vt_v; \
-							new_poly_vertex_count++; \
-						})
+						new_poly->vertices[new_poly_vertex_count] = vertex; \
+						new_poly->shades[new_poly_vertex_count] = \
+								original_poly->shades[current]; \
+						new_poly->u_values[new_poly_vertex_count] = vt_u; \
+						new_poly->v_values[new_poly_vertex_count] = vt_v; \
+						new_poly_vertex_count++; \
 
 				if (insidePlane(v1, plane)) {
 					if (insidePlane(v2, plane)) {
@@ -214,9 +213,9 @@ struct Renderer {
 	}
 
 	bool isBackFace(Vector triangle_normal, Vector vertex) {
-		Vector vectorToCamera = kOrigin.subtract(vertex);
+		Vector vertex_to_camera = kOrigin.subtract(vertex);
 
-		return vectorToCamera.dotProduct(triangle_normal) <= 0;
+		return vertex_to_camera.dotProduct(triangle_normal) <= 0;
 	}
 
 	double applyLighting(Vector& normal, std::vector<Light>& lights) {
@@ -238,14 +237,14 @@ struct Renderer {
 	}
 
 	void drawModel(Model item, Viewport& viewport, std::vector<Light>& lights) {
-		bool isVertexVisible[item.vertices.size()];
-		Point projectedVertices[item.vertices.size()];
+		bool is_vertex_visible[item.vertices.size()];
+		Point projected_vertices[item.vertices.size()];
 
 		for (int i = 0; i < item.vertices.size(); i++) {
-			isVertexVisible[i] = insideFrustum(item.vertices[i]);
+			is_vertex_visible[i] = insideFrustum(item.vertices[i]);
 
-			if (isVertexVisible[i]) {
-				projectedVertices[i] = projectVertexToScreen(item.vertices[i], viewport);
+			if (is_vertex_visible[i]) {
+				projected_vertices[i] = projectVertexToScreen(item.vertices[i], viewport);
 			}
 		}
 
@@ -268,14 +267,14 @@ struct Renderer {
 				triangle.v2.light_intensity = applyLighting(triangle.normal, lights);
 			}
 
-			if (isVertexVisible[triangle.v0.index] &&
-					isVertexVisible[triangle.v1.index] &&
-					isVertexVisible[triangle.v2.index]) {
+			if (is_vertex_visible[triangle.v0.index] &&
+					is_vertex_visible[triangle.v1.index] &&
+					is_vertex_visible[triangle.v2.index]) {
 				// all vertices are visible
 				Triangle2D tri = {
-						projectedVertices[triangle.v0.index],
-						projectedVertices[triangle.v1.index],
-						projectedVertices[triangle.v2.index],
+						projected_vertices[triangle.v0.index],
+						projected_vertices[triangle.v1.index],
+						projected_vertices[triangle.v2.index],
 						triangle.color,
 						triangle.v0.light_intensity,
 						triangle.v1.light_intensity,
@@ -327,18 +326,18 @@ struct Renderer {
 					continue;
 				}
 
-				Point projectedVertices[poly.vertex_count];
+				Point projected_vertices[poly.vertex_count];
 
 				for (int i = 0; i < poly.vertex_count; i++) {
-					projectedVertices[i] = projectVertexToScreen(poly.vertices[i], viewport);
+					projected_vertices[i] = projectVertexToScreen(poly.vertices[i], viewport);
 				}
 
 				// triangulate the resulting polygon, with all triangles starting at v0
 				for (int i = 1; i < poly.vertex_count - 1; i++) {
 					Triangle2D new_triangle = {
-							projectedVertices[0],
-							projectedVertices[i],
-							projectedVertices[i + 1],
+							projected_vertices[0],
+							projected_vertices[i],
+							projected_vertices[i + 1],
 							triangle.color,
 							poly.shades[0],
 							poly.shades[i],
@@ -362,29 +361,31 @@ struct Renderer {
 		}
 	}
 
-	Model transformModel(Model item) {
+	Model buildModel(Entity& item) {
+		Model result = *item.model;
+
 		Matrix worldMatrix = Matrix::makeWorldMatrix(
 				item.scale, item.rotation, item.position);
-		Matrix finalMatrix = this->cameraMatrix.multiplyMatrix(worldMatrix);
+		Matrix finalMatrix = this->camera_matrix.multiplyMatrix(worldMatrix);
 
 		// transform vertices into camera space
-		for (auto& vertex : item.vertices) {
+		for (auto& vertex : result.vertices) {
 			vertex = finalMatrix.multiplyVector(vertex);
 		}
 
 		// transform normals
 		Matrix normalTransformationMatrix =
-				this->cameraMatrix.multiplyMatrix(Matrix::makeRotationMatrix(item.rotation));
+				this->camera_matrix.multiplyMatrix(Matrix::makeRotationMatrix(item.rotation));
 
-		for (auto& normal : item.normals) {
+		for (auto& normal : result.normals) {
 			normal = normalTransformationMatrix.multiplyVector(normal);
 		}
 
-		for (auto& triangle : item.triangles) {
+		for (auto& triangle : result.triangles) {
 			triangle.normal = normalTransformationMatrix.multiplyVector(triangle.normal);
 		}
 
-		return item;
+		return result;
 	}
 
 	Model transformLevel(Model level) {
@@ -392,15 +393,15 @@ struct Renderer {
 
 		// transform vertices into camera space
 		for (auto& vertex : level.vertices) {
-			vertex = this->cameraMatrix.multiplyVector(vertex);
+			vertex = this->camera_matrix.multiplyVector(vertex);
 		}
 
 		for (auto& normal : level.normals) {
-			normal = this->cameraMatrix.multiplyVector(normal);
+			normal = this->camera_matrix.multiplyVector(normal);
 		}
 
 		for (auto& triangle : level.triangles) {
-			triangle.normal = this->cameraMatrix.multiplyVector(triangle.normal);
+			triangle.normal = this->camera_matrix.multiplyVector(triangle.normal);
 		}
 
 		return level;
@@ -408,26 +409,28 @@ struct Renderer {
 
 	void drawScene(Scene& scene) {
 		// update camera matrix (should we check if it has changed first?)
-		this->cameraMatrix = Matrix::makeCameraMatrix(
+		this->camera_matrix = Matrix::makeCameraMatrix(
 				scene.camera.rotation, scene.camera.position);
 
 		// draw the background
 		// TODO: make this more interesting/dynamic
 		device::clearScreen(device::color(1, 1, 1));
 
+		// move the lights into camera space
 		std::vector<Light> lights = scene.lights;
 
 		for (auto& light : lights) {
 			if (light.type == LightType::directional) {
-				light.direction = this->cameraMatrix.multiplyVector(light.direction);
+				light.direction = this->camera_matrix.multiplyVector(light.direction);
 			}
 		}
 
 		// the level geometry is handled differently from the models
 		drawModel(transformLevel(scene.level.model), scene.camera.viewport, lights);
 
-		for (const auto& model : scene.models) {
-			drawModel(transformModel(model), scene.camera.viewport, lights);
+		// move models into camera space and draw
+		for (auto& entity : scene.entities) {
+			drawModel(buildModel(entity), scene.camera.viewport, lights);
 		}
 	}
 };

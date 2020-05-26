@@ -67,10 +67,6 @@ struct Model {
 
 	std::vector<Triangle3D> triangles;
 
-	double scale;
-	Vector position;
-	Vector rotation; // represented as radians around each axis
-
 	Texture* texture;
 	bool has_texture = false;
 
@@ -89,7 +85,7 @@ struct Model {
 	}
 };
 
-Model buildCube(double scale, Vector position, Vector rotation) {
+Model buildCube() {
 	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
@@ -186,16 +182,12 @@ Model buildCube(double scale, Vector position, Vector rotation) {
 					cyan},
 	};
 
-	item.scale = scale;
-	item.position = position;
-	item.rotation = rotation;
-
 	item.setTriangleNormals();
 
 	return item;
 }
 
-Model buildTetrahedron(double scale, Vector position, Vector rotation) {
+Model buildTetrahedron() {
 	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
@@ -243,10 +235,6 @@ Model buildTetrahedron(double scale, Vector position, Vector rotation) {
 					Vertex{3, 3, 1, 1.0},
 					Vertex{2, 3, 2, 1.0},
 					purple}};
-
-	item.scale = scale;
-	item.position = position;
-	item.rotation = rotation;
 
 	item.setTriangleNormals();
 

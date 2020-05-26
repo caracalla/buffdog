@@ -18,9 +18,8 @@ typedef struct {
 
 
 pixeldata pixels = {
-	{0},
-	RES_X * 4
-};
+		{0},
+		RES_X * 4};
 
 SDL_Window *window;
 SDL_Renderer *renderer;
