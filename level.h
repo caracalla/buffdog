@@ -5,6 +5,8 @@
 #include "model.h"
 #include "vector.h"
 
+#define MAX_NO_COLLISION_DISTANCE 50
+
 struct Level {
 	Model model;
 	double model_scale;
@@ -33,9 +35,16 @@ struct Level {
 		}
 	}
 
-	// for each triangle,  find the plane that contains it. if the plane is in front of the ray, determine if the point of intersection is within the triangle itself this is probably slow and could be done better by subdividing the world (BSP?)
+	// for each triangle,  find the plane that contains it. if the plane is in
+	// front of the ray, determine if the point of intersection is within the
+	// triangle itself this is probably slow and could be done better by
+	// subdividing the world (BSP?)
 	Vector collisionPoint(Vector ray_origin, Vector ray_direction) {
-		Vector result = Vector::point(0, 0, 0);
+		// start with a default result representing a "collision" an arbitrary
+		// distance from the start
+		// TODO: tell the caller that no actual collision was detected
+		Vector result = ray_origin.add(
+				ray_direction.scalarMultiply(MAX_NO_COLLISION_DISTANCE));
 		double min_t = INFINITY;
 
 		for (auto& triangle : this->model.triangles) {

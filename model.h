@@ -196,12 +196,14 @@ Model buildTetrahedron() {
 	Model item;
 
 	double squirt3 = sqrt(3);
+	double height = squirt3;
+	double base_width = 0.5;
 
 	item.vertices = {
-			Vector::point( 0, 0,  0),
-			Vector::point( 0, -squirt3,        2 / squirt3),
-			Vector::point( 1, -squirt3,       -1 / squirt3),
-			Vector::point(-1, -squirt3,       -1 / squirt3)};
+			Vector::point( 0,          0,       0),
+			Vector::point( 0,          -height,  2 * base_width / squirt3),
+			Vector::point( base_width, -height, -base_width / squirt3),
+			Vector::point(-base_width, -height, -base_width / squirt3)};
 
 	item.normals = {
 			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[2]),

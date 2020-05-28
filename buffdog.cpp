@@ -91,12 +91,16 @@ int main(int argc, char** argv) {
 	});
 
 	while (device::running()) {
-
+		// draw the level and models
 		renderer.drawScene(scene);
 
+		// paint the screen
 		device::updateScreen();
+
+		// grab keyboard and mouse input
 		device::processInput();
 
+		// update player, models, and level by one time step
 		scene.step();
 
 		logFPS();

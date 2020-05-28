@@ -1,19 +1,14 @@
 #ifndef BUFFDOG_SCENE
 #define BUFFDOG_SCENE
 
-// #include <functional>
 #include <vector>
 
 #include "device.h"
 #include "entity.h"
 #include "level.h"
 #include "model.h"
+#include "player.h"
 #include "vector.h"
-
-#define INCREMENT 0.005
-#define MOUSE_SENSITIVITY_FACTOR 1000
-// TODO: tie velocity to FPS
-#define MAX_VELOCITY 0.0625
 
 
 // define viewport
@@ -48,19 +43,6 @@ struct Light {
 	double intensity;
 };
 
-struct Player {
-	double height = 1.7;
-	double eye_height = 1.5; // distance from base
-	Vector position; // of base
-	Vector rotation;
-
-	Vector weapon_position; // relative to base
-
-	double velocity = 0;
-
-	Model marker;
-};
-
 
 struct Scene {
 	Camera camera;
@@ -81,12 +63,13 @@ struct Scene {
 		scene.player.position = scene.level.player_start_position;
 		scene.player.rotation = scene.level.player_start_rotation;
 
-		scene.player.marker = buildTetrahedron();
+		// scene.player.weapon_position = Vector::direction(0.5, -0.7, 0);
+		scene.player.bullet = buildTetrahedron();
 
 		// set up camera
-		scene.camera.position = scene.player.position;
-		scene.camera.position.y = scene.player.eye_height;
-		scene.camera.rotation = scene.player.rotation;
+		// scene.camera.position = scene.player.position;
+		// scene.camera.position.y = scene.player.eye_height;
+		// scene.camera.rotation = scene.player.rotation;
 
 		scene.camera.viewport.width = 4;
 		scene.camera.viewport.height = 3;
@@ -127,20 +110,43 @@ struct Scene {
 		if (next_key) {
 			// the camera is always pointing down the z axis in the negative direction
 			// by default
+			// to be able to fire this from player.weapon_position, we need to calculate
+			// a new rotation based on uhhhh actually I'm not sure
 			Vector view_normal = Matrix::makeRotationMatrix(this->camera.rotation).
 					multiplyVector(Vector::direction(0, 0, -1));
 			Vector tetra_rotation = this->camera.rotation;
-			tetra_rotation.x -= M_PI + M_PI_2; // align top to point at cameras
+			tetra_rotation.x -= M_PI + M_PI_2; // align top to point away from camera
 
 			Entity tetra_ent{
-					&this->player.marker,
+					&this->player.bullet,
 					0.5,
-					this->level.collisionPoint(this->camera.position, view_normal),
+					this->player.weapon_position, // this->camera.position,
 					tetra_rotation};
+
+			Vector collision_point =
+					this->level.collisionPoint(this->player.weapon_position, view_normal);
+					// this->level.collisionPoint(this->camera.position, view_normal);
 
 			switch(next_key) {
 				case x_key:
-					this->addEntity(tetra_ent);
+					this->addEntityWithAction(
+							tetra_ent,
+							[collision_point, view_normal](Entity* self) {
+								// double distance = collision.subtract(self->position).length();
+								double distance =
+										collision_point.subtract(self->position).dotProduct(view_normal);
+
+								if (distance > 0) {
+									self->position = self->position.add(view_normal);
+								} else {
+									if (distance < 0) {
+										self->position = collision_point;
+									}
+
+									// stop processing this entity's action
+									self->has_action = false;
+								}
+							});
 					break;
 
 				default:
@@ -148,60 +154,11 @@ struct Scene {
 			}
 		}
 
-		mouse_input mouse_motion = device::getMouseMotion();
+		this->player.move();
 
-		this->camera.rotation.x += (double)mouse_motion.y / MOUSE_SENSITIVITY_FACTOR;
-		this->camera.rotation.y += (double)mouse_motion.x / MOUSE_SENSITIVITY_FACTOR;
-
-		key_states_t key_states = device::get_key_states();
-
-		Vector translation = {0, 0, 0, 0};
-
-		if (key_states.up || key_states.down || key_states.left || key_states.right || key_states.yup || key_states.ydown) {
-			double max_velocity = MAX_VELOCITY;
-
-			if (key_states.sprint) {
-				max_velocity *= 5;
-			}
-
-			if (this->player.velocity <= max_velocity) {
-				this->player.velocity += INCREMENT;
-			} else {
-				this->player.velocity -= INCREMENT;
-			}
-		} else {
-			this->player.velocity -= INCREMENT;
-
-			if (this->player.velocity < 0) {
-				this->player.velocity = 0;
-			}
-		}
-
-		if (key_states.up) {
-			translation.z -= 1;
-		}
-		if (key_states.down) {
-			translation.z += 1;
-		}
-		if (key_states.left) {
-			translation.x -= 1;
-		}
-		if (key_states.right) {
-			translation.x += 1;
-		}
-		if (key_states.yup) {
-			translation.y += 1;
-		}
-		if (key_states.ydown) {
-			translation.y -= 1;
-		}
-
-		Vector movement = translation.unit().scalarMultiply(this->player.velocity);
-
-		// the direction of motion is determined only by the rotation about the y axis
-		Matrix rotationAboutY = Matrix::makeRotationMatrix(
-				Vector::direction(0, this->camera.rotation.y, 0));
-		this->camera.position = this->camera.position.add(rotationAboutY.multiplyVector(movement));
+		this->camera.position = this->player.position;
+		this->camera.position.y += this->player.eye_height;
+		this->camera.rotation = this->player.rotation;
 	}
 
 	// int getBackgroundColor() {

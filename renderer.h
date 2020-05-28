@@ -21,6 +21,9 @@
 // that can be displayed
 #define TEMP_ARRAY_SIZE 4096
 
+// set this to 1 to draw triangles with the fillBarycentric method
+#define USE_BARYCENTRIC 0
+
 
 // position of the camera after all transforms is always at the origin
 const Vector kOrigin = {0, 0, 0, 1};
@@ -298,8 +301,11 @@ struct Renderer {
 						item.has_texture && !triangle.special ? item.texture : nullptr};
 
 				// tri.draw();
+#if USE_BARYCENTRIC
+				tri.fillBarycentric();
+#else
 				tri.fillShaded();
-				// tri.fillBarycentric();
+#endif
 			} else {
 				// not all vertices are visible
 				// it's clipping time
@@ -362,8 +368,11 @@ struct Renderer {
 							item.has_texture && !triangle.special ? item.texture : nullptr};
 
 					// new_triangle.draw();
-					new_triangle.fillShaded();
-					// new_triangle.fillBarycentric();
+					#if USE_BARYCENTRIC
+									new_triangle.fillBarycentric();
+					#else
+									new_triangle.fillShaded();
+					#endif
 				}
 			}
 		}
