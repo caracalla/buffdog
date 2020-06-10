@@ -21,6 +21,7 @@ struct Player {
 	double velocity = 0;
 
 	Model bullet;
+	Model explosion;
 
 	void move() {
 		// handle mouse movement

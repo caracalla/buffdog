@@ -69,9 +69,15 @@ int main(int argc, char** argv) {
 			Vector::point(38, 0, 38), // player position
 			Vector::direction(0, M_PI_2, 0)}; // player rotation
 
+	spit("Level added successfully");
+
 	Scene scene = Scene::create(level);
 
+	spit("Scene created successfully");
+
 	Renderer renderer = Renderer::create(scene.camera.viewport);
+
+	spit("Renderer created successfully");
 
 	// add spinning cube
 	Model cube = buildCube();
@@ -90,9 +96,18 @@ int main(int argc, char** argv) {
 		self->rotation.z += 0.009;
 	});
 
+	spit("Spinning crate created successfully");
+
+	int count = 0;
+
 	while (device::running()) {
 		// draw the level and models
 		renderer.drawScene(scene);
+
+		if (count % 10 == 0) {
+			spit("hey we drew stuff");
+		}
+		count += 1;
 
 		// paint the screen
 		device::updateScreen();

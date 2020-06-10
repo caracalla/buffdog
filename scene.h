@@ -51,7 +51,6 @@ struct Scene {
 	std::vector<Entity> entities;
 	std::vector<Light> lights;
 
-
 	static Scene create(Level level) {
 		Scene scene;
 
@@ -65,6 +64,7 @@ struct Scene {
 
 		// scene.player.weapon_position = Vector::direction(0.5, -0.7, 0);
 		scene.player.bullet = buildTetrahedron();
+		scene.player.explosion = buildCube();
 
 		// set up camera
 		// scene.camera.position = scene.player.position;
@@ -88,6 +88,7 @@ struct Scene {
 	}
 
 	void addEntity(Entity entity) {
+		entity.scene = this;
 		this->entities.push_back(entity);
 	}
 
@@ -117,11 +118,11 @@ struct Scene {
 			Vector tetra_rotation = this->camera.rotation;
 			tetra_rotation.x -= M_PI + M_PI_2; // align top to point away from camera
 
-			Entity tetra_ent{
-					&this->player.bullet,
-					0.5,
-					this->player.weapon_position, // this->camera.position,
-					tetra_rotation};
+			// Entity tetra_ent{
+			// 		&this->player.bullet,
+			// 		0.5,
+			// 		this->player.weapon_position, // this->camera.position,
+			// 		tetra_rotation};
 
 			Vector collision_point =
 					this->level.collisionPoint(this->player.weapon_position, view_normal);
@@ -130,7 +131,11 @@ struct Scene {
 			switch(next_key) {
 				case x_key:
 					this->addEntityWithAction(
-							tetra_ent,
+							Entity{
+									&this->player.bullet,
+									0.5,
+									this->player.weapon_position, // this->camera.position,
+									tetra_rotation},
 							[collision_point, view_normal](Entity* self) {
 								// double distance = collision.subtract(self->position).length();
 								double distance =
@@ -145,6 +150,26 @@ struct Scene {
 
 									// stop processing this entity's action
 									self->has_action = false;
+									self->visible = false;
+
+									// TODO:
+									// spawn an "explosion" entity
+									// remove self from entity list
+
+									self->scene->addEntityWithAction(
+											Entity{
+													&self->scene->player.explosion,
+													0.1,
+													collision_point,
+													Vector::direction(0, 0, 0)},
+											[](Entity* self) {
+												self->scale += 0.05;
+
+												if (self->scale > 1.0) {
+													self->has_action = false;
+													self->visible = false;
+												}
+											});
 								}
 							});
 					break;

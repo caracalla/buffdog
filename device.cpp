@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
@@ -43,6 +44,8 @@ namespace device {
 			return false;
 		}
 
+		SDL_Log("Initialization successful");
+
 		window = SDL_CreateWindow(
 				"buffdog",
 				SDL_WINDOWPOS_UNDEFINED,
@@ -56,12 +59,16 @@ namespace device {
 			return false;
 		}
 
+		SDL_Log("Window created successfully");
+
 		renderer = SDL_CreateRenderer(window, -1, 0);
 
 		if (renderer == nullptr) {
 			SDL_Log("Unable to create SDL renderer: %s", SDL_GetError());
 			return false;
 		}
+
+		SDL_Log("Renderer created successfully");
 
 		texture = SDL_CreateTexture(
 				renderer,
@@ -75,11 +82,17 @@ namespace device {
 			return false;
 		}
 
+		SDL_Log("Texture created successfully");
+
 		// capture mouse
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 
+		SDL_Log("Grabbed mouse successfully");
+
 		// wait for the window to be exposed
 		{
+			auto start_time = std::chrono::steady_clock::now();
+
 			do {
 				SDL_PollEvent(&event);
 
@@ -88,8 +101,19 @@ namespace device {
 						event.window.event == SDL_WINDOWEVENT_SHOWN) {
 					is_running = true;
 				}
+
+				auto time_spent_waiting =
+						std::chrono::duration_cast<std::chrono::milliseconds>(
+								std::chrono::steady_clock::now() - start_time);
+
+				SDL_Log(
+						"time spent waiting for window to appear: %lld",
+						time_spent_waiting.count());
+
 			} while (!is_running);
 		}
+
+		SDL_Log("Device setup successful!");
 
 		return true;
 	}
@@ -266,6 +290,7 @@ namespace device {
 
 	void clearScreen(int color) {
 		zBufferReset();
+
 		for (int y = 0; y < RES_Y; ++y) {
 			for (int x = 0; x < RES_X; ++x) {
 				setPixel(x, y, color);

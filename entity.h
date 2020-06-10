@@ -7,6 +7,7 @@
 
 
 struct Entity;
+struct Scene;
 
 typedef std::function<void(Entity*)> EntityAction;
 
@@ -20,6 +21,8 @@ struct Entity {
 	// action represents something that happens to the entity on each step
 	EntityAction action;
 	bool has_action = false;
+	bool visible = true;
+	Scene* scene;
 };
 
 #endif

@@ -447,7 +447,9 @@ struct Renderer {
 
 		// move models into camera space and draw
 		for (auto& entity : scene.entities) {
-			drawModel(buildModel(entity), scene.camera.viewport, lights);
+			if (entity.visible) {
+				drawModel(buildModel(entity), scene.camera.viewport, lights);
+			}
 		}
 	}
 };
