@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 	// for FPS determination
 	clock_gettime(CLOCK_REALTIME, &lastPrintTimeSpec);
 #else
-	spit("not printing FPS because we're on windows");
+	spit("not logging FPS because we're on windows");
 #endif
 
 	// add level geometry
@@ -98,16 +98,9 @@ int main(int argc, char** argv) {
 
 	spit("Spinning crate created successfully");
 
-	int count = 0;
-
 	while (device::running()) {
 		// draw the level and models
 		renderer.drawScene(scene);
-
-		if (count % 10 == 0) {
-			spit("hey we drew stuff");
-		}
-		count += 1;
 
 		// paint the screen
 		device::updateScreen();

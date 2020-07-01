@@ -431,7 +431,7 @@ struct Renderer {
 
 		// draw the background
 		// TODO: make this more interesting/dynamic
-		device::clearScreen(device::color(1, 1, 1));
+		device::clearScreen(device::color(1.0, 1.0, 1.0));
 
 		// move the lights into camera space
 		std::vector<Light> lights = scene.lights;

@@ -12,3 +12,8 @@ run: clean $(P)
 clean:
 	rm -f buffdog
 	rm -rf *.dSYM
+
+spinner: $(OBJECTS)
+
+spin:
+	rm -f spinner && make spinner && ./spinner
