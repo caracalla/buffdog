@@ -5,6 +5,7 @@
 
 #include "device.h"
 #include "line.h"
+#include "texture.h"
 #include "vector.h"
 
 
@@ -28,6 +29,7 @@ struct Point {
 	int y;
 };
 
+
 void drawLineFromPoints(Point start, Point end, int color) {
 	drawLine(start.x, start.y, end.x, end.y, color);
 }
@@ -37,9 +39,9 @@ int colorFromVector(Vector vec) {
 }
 
 // mostly for debugging
-void drawPoint(Point p, int color) {
-	for (int i = p.x - 2; i < p.x + 2; i++) {
-		for (int j = p.y - 2; j < p.y + 2; j++) {
+void drawPoint(Point point, int color) {
+	for (int i = point.x - 2; i < point.x + 2; i++) {
+		for (int j = point.y - 2; j < point.y + 2; j++) {
 			device::setPixel(i, j, color);
 		}
 	}
@@ -148,6 +150,7 @@ Vector getBarycentricWeights(Point p0, Point p1, Point p2, int x, int y) {
 	return Vector{1.0 - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z};
 }
 
+
 struct Triangle2D {
 	Point p0;
 	Point p1;
@@ -172,6 +175,30 @@ struct Triangle2D {
 		drawLineFromPoints(this->p0, this->p1, color);
 		drawLineFromPoints(this->p1, this->p2, color);
 		drawLineFromPoints(this->p2, this->p0, color);
+	}
+
+	void fill() {
+		int color = colorFromVector(this->color);
+
+		// define the bounding box containing the triangle
+		Point bmin = {
+				min(this->p0.x, min(this->p1.x, this->p2.x)),
+				min(this->p0.y, min(this->p1.y, this->p2.y))};
+		Point bmax = {
+				max(this->p0.x, max(this->p1.x, this->p2.x)),
+				max(this->p0.y, max(this->p1.y, this->p2.y))};
+
+		for (int x = bmin.x; x <= bmax.x; x++) {
+			for (int y = bmin.y; y <= bmax.y; y++) {
+				Vector bc_weights = getBarycentricWeights(this->p0, this->p1, this->p2, x, y);
+
+				if (bc_weights.x < 0 || bc_weights.y < 0 || bc_weights.z < 0) {
+					continue;
+				}
+
+				device::setPixel(x, y, color);
+			}
+		}
 	}
 
 	void fillShaded() {

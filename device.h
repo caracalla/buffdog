@@ -8,6 +8,8 @@
 #define RES_X 640
 #define RES_Y 480
 
+#define DEFAULT_BACKGROUND_COLOR device::color(0.1, 0.1, 0.1)
+
 #define spit(x) printf("%s\n", x)
 
 #define terminateFatal(message) device::selfDestruct(message, __LINE__, __FILE__)
@@ -19,13 +21,15 @@ typedef enum {
 	down,
 	left,
 	right,
-	x_key,
+	x_key,  // also secretly the mousedown key
 	z_key
 } key_input;
 
 typedef struct {
 	int x;
 	int y;
+	int pos_x;
+	int pos_y;
 } mouse_input;
 
 typedef struct {
@@ -81,6 +85,8 @@ namespace device {
 
 	unsigned int getXRes();
 	unsigned int getYRes();
+
+	bool insideViewport(int x, int y);
 }
 
 #endif

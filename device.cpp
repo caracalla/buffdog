@@ -39,6 +39,8 @@ double zbuffer[RES_X * RES_Y];
 namespace device {
 
 	bool setUp() {
+		clearScreen(DEFAULT_BACKGROUND_COLOR);
+
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
 			SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 			return false;
@@ -107,7 +109,7 @@ namespace device {
 								std::chrono::steady_clock::now() - start_time);
 
 				SDL_Log(
-						"time spent waiting for window to appear: %lld",
+						"time spent waiting for window to appear: %lld ms",
 						time_spent_waiting.count());
 
 			} while (!is_running);
@@ -252,6 +254,11 @@ namespace device {
 				case SDL_MOUSEMOTION:
 					mouse_motion.x = event.motion.xrel;
 					mouse_motion.y = event.motion.yrel;
+
+					// printf("x pos: %d\n", event.motion.x);
+
+					mouse_motion.pos_x = event.motion.x;
+					mouse_motion.pos_y = event.motion.y;
 					break;
 
 				default:
@@ -336,5 +343,17 @@ namespace device {
 
 	unsigned int getYRes() {
 		return RES_Y;
+	}
+
+	// this is here because I was using this with drawPoint and the mouse, and
+	// drawPoint draws around the cursor
+	#define VIEWPORT_BUFFER 5
+
+	bool insideViewport(int x, int y) {
+		return
+				x > VIEWPORT_BUFFER &&
+				y > VIEWPORT_BUFFER &&
+				x < RES_X - VIEWPORT_BUFFER &&
+				y < RES_Y - VIEWPORT_BUFFER;
 	}
 }
