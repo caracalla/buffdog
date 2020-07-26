@@ -100,7 +100,17 @@ struct Scene {
 	}
 
 	void step() {
-		for (auto& entity : this->entities) {
+		// Stepping through the entity vector this way, sometimes the entities and/or
+		// their actions get unallocated when the vector is resized
+		// TODO: don't use vectors for everything
+		// for (auto& entity : this->entities) {
+		// 	if (entity.has_action) {
+		// 		entity.action(&entity);
+		// 	}
+		// }
+
+		for (int i = 0; i < this->entities.size(); i++) {
+			auto& entity = this->entities[i];
 			if (entity.has_action) {
 				entity.action(&entity);
 			}

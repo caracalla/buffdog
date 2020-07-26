@@ -306,17 +306,22 @@ namespace device {
 	}
 
 	void setPixel(int x, int y, int color) {
-		// if (x < 0 || y < 0 || x >= RES_X || y >= RES_Y) {
-		// 	char message[1024];
-		// 	snprintf(
-		// 			message,
-		// 			sizeof(message),
-		// 			"trying to draw a pixel at x=%d and y=%d which is crazy illegal!!!\n",
-		// 			x,
-		// 			y);
-		//
-		// 	terminateFatal(message);
-		// }
+// 		if (x < 0 || y < 0 || x >= RES_X || y >= RES_Y) {
+// 			char message[1024];
+// 			snprintf(
+// 					message,
+// 					sizeof(message),
+// 					"trying to draw a pixel at x=%d and y=%d which is crazy illegal!!!\n",
+// 					x,
+// 					y);
+//
+// #if 1
+// 			terminateFatal(message);
+// #else
+// 			printf("%s", message);
+// 			return;
+// #endif
+// 		}
 
 		// invert y since it starts at the top
 		y = RES_Y - y - 1;

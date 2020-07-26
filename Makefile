@@ -10,10 +10,15 @@ run: clean $(P)
 	./$(P)
 
 clean:
-	rm -f buffdog
+	rm -f buffdog spinner delaunay
 	rm -rf *.dSYM
 
 spinner: $(OBJECTS)
 
-spin:
-	rm -f spinner && make spinner && ./spinner
+spin: clean
+	make spinner && ./spinner
+
+delaunay: $(OBJECTS)
+
+dt: clean
+	make delaunay && ./delaunay

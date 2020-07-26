@@ -4,6 +4,7 @@
 // #include "model.h"
 #include "vector.h"
 
+// TODO: move this mouse logic to device
 #define INCREMENT 0.005
 #define MOUSE_SENSITIVITY_FACTOR 1000
 // TODO: tie velocity to FPS
