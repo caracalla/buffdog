@@ -5,12 +5,11 @@
 #include <cstdio>
 
 
-#define RES_X 640
-#define RES_Y 480
-
+// the color of the "sky" (for now)
 #define DEFAULT_BACKGROUND_COLOR device::color(0.1, 0.1, 0.1)
 
-#define spit(x) printf("%s\n", x)
+// easy debug printing
+#define spit(message) printf("%s\n", message)
 
 #define terminateFatal(message) device::selfDestruct(message, __LINE__, __FILE__)
 
@@ -43,9 +42,9 @@ typedef struct {
 } key_states_t;
 
 namespace device {
-	double& zBufferAt(size_t x, size_t);
-
-	key_states_t get_key_states();
+	// ***************************************************************************
+	// device management
+	// ***************************************************************************
 
 	// This must be called first
 	// returns false on failure
@@ -54,10 +53,25 @@ namespace device {
 	// Should be called before exiting the program
 	void tearDown();
 
-	// if it all goes wrong somewhere
+	// if it all goes wrong somewhere, this lets us tearDown and exit safely
+	// (I think)
 	void selfDestruct(const char *message, int line, const char* file);
 
 	bool running();
+
+	// draw background
+	void clearScreen(int color);
+
+	// TODO: document the layout of the arguments
+	// (0, 0) is bottom left of the screen
+	void setPixel(int x, int y, int color);
+
+	// call after drawing the background and all desired pixels
+	void updateScreen();
+
+	// ***************************************************************************
+	// IO
+	// ***************************************************************************
 
 	// must be called, otherwise there is no way to quit
 	// call before rendering on each frame
@@ -69,19 +83,18 @@ namespace device {
 
 	mouse_input getMouseMotion();
 
+	key_states_t get_key_states();
+
+	// ***************************************************************************
+	// utility and other
+	// ***************************************************************************
+
 	// converts color values into a pixel color value
 	// red, green, and blue must be between 0.0 and 1.0
 	uint32_t color(double red, double green, double blue);
 
-	// draw background
-	void clearScreen(int color);
-
-	// TODO: document the layout of the arguments
-	// (0, 0) is bottom left of the screen
-	void setPixel(int x, int y, int color);
-
-	// call after drawing the background and all desired pixels
-	void updateScreen();
+	// get/set z buffer value for pixel
+	double& zBufferAt(size_t x, size_t y);
 
 	unsigned int getXRes();
 	unsigned int getYRes();

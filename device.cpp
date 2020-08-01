@@ -13,15 +13,21 @@
 #include "device.h"
 
 
+#define RES_X 640
+#define RES_Y 480
+
+
+// the framebuffer
 typedef struct {
 	uint32_t data[RES_X * RES_Y];
-	int bytes_per_line;
+	int bytes_per_line;  // not actually used anywhere
 } pixeldata;
-
 
 pixeldata pixels = {
 		{0},
 		RES_X * 4};
+
+double zbuffer[RES_X * RES_Y];
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -30,13 +36,16 @@ SDL_Event event;
 
 bool is_running = false;
 
+// IO info storage
 key_input key_queue[64];
 key_input last_key;
+key_states_t key_states;
 mouse_input mouse_motion;
 
-double zbuffer[RES_X * RES_Y];
-
 namespace device {
+	// ***************************************************************************
+	// device management
+	// ***************************************************************************
 
 	bool setUp() {
 		clearScreen(DEFAULT_BACKGROUND_COLOR);
@@ -137,11 +146,65 @@ namespace device {
 		return is_running;
 	}
 
-	key_states_t key_states;
-
-	key_states_t get_key_states() {
-		return key_states;
+	void zBufferReset() {
+		memset(zbuffer, 0, RES_X * RES_Y * sizeof(double));
 	}
+
+	void clearScreen(int color) {
+		zBufferReset();
+
+		for (int y = 0; y < RES_Y; ++y) {
+			for (int x = 0; x < RES_X; ++x) {
+				setPixel(x, y, color);
+			}
+		}
+	}
+
+#define DEBUG_ALLOW_OOB 0
+#define DEBUG_CHECK_OOB 0
+
+	void setPixel(int x, int y, int color) {
+#if DEBUG_ALLOW_OOB
+		if (x < 0 || y < 0 || x >= RES_X || y >= RES_Y) {
+			char message[1024];
+			snprintf(
+					message,
+					sizeof(message),
+					"trying to draw a pixel at x=%d and y=%d which is crazy illegal!!!\n",
+					x,
+					y);
+
+#if DEBUG_CHECK_OOB
+			terminateFatal(message);
+#else
+			printf("%s", message);
+			return;
+#endif
+		}
+#endif
+
+		// invert y since it starts at the top
+		y = RES_Y - y - 1;
+		size_t index = y * RES_X + x;
+
+		pixels.data[index] = color;
+	}
+
+	void updateScreen() {
+		SDL_UpdateTexture(
+				texture,
+				nullptr,
+				pixels.data,
+				RES_X * sizeof(uint32_t));
+
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+		SDL_RenderPresent(renderer);
+	}
+
+	// ***************************************************************************
+	// IO
+	// ***************************************************************************
 
 	void processInput() {
 		last_key = no_key;
@@ -276,6 +339,14 @@ namespace device {
 		return mouse_motion;
 	}
 
+	key_states_t get_key_states() {
+		return key_states;
+	}
+
+	// ***************************************************************************
+	// utility and other
+	// ***************************************************************************
+
 	uint32_t color(double red, double green, double blue) {
 		#define clampToZero(value) (value >= 0.0 ? value : 0.0)
 
@@ -291,57 +362,6 @@ namespace device {
 		return zbuffer[index];
 	}
 
-	void zBufferReset() {
-		memset(zbuffer, 0, RES_X * RES_Y * sizeof(double));
-	}
-
-	void clearScreen(int color) {
-		zBufferReset();
-
-		for (int y = 0; y < RES_Y; ++y) {
-			for (int x = 0; x < RES_X; ++x) {
-				setPixel(x, y, color);
-			}
-		}
-	}
-
-	void setPixel(int x, int y, int color) {
-// 		if (x < 0 || y < 0 || x >= RES_X || y >= RES_Y) {
-// 			char message[1024];
-// 			snprintf(
-// 					message,
-// 					sizeof(message),
-// 					"trying to draw a pixel at x=%d and y=%d which is crazy illegal!!!\n",
-// 					x,
-// 					y);
-//
-// #if 1
-// 			terminateFatal(message);
-// #else
-// 			printf("%s", message);
-// 			return;
-// #endif
-// 		}
-
-		// invert y since it starts at the top
-		y = RES_Y - y - 1;
-		size_t index = y * RES_X + x;
-
-		pixels.data[index] = color;
-	}
-
-	void updateScreen() {
-		SDL_UpdateTexture(
-				texture,
-				nullptr,
-				pixels.data,
-				RES_X * sizeof(uint32_t));
-
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, texture, nullptr, nullptr);
-		SDL_RenderPresent(renderer);
-	}
-
 	unsigned int getXRes() {
 		return RES_X;
 	}
@@ -351,7 +371,8 @@ namespace device {
 	}
 
 	// this is here because I was using this with drawPoint and the mouse, and
-	// drawPoint draws around the cursor
+	// drawPoint draws a few pixels around the cursor, causing issues when the
+	// cursor is near the edge of the viewport
 	#define VIEWPORT_BUFFER 5
 
 	bool insideViewport(int x, int y) {

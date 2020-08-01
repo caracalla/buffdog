@@ -4,8 +4,8 @@
 
 
 namespace spinner {
-	int x_mid = RES_X / 2;
-	int y_mid = RES_Y / 2;
+	int x_mid = device::getXRes() / 2;
+	int y_mid = device::getYRes() / 2;
 
 	double theta = 0;
 
