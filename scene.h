@@ -1,6 +1,7 @@
 #ifndef BUFFDOG_SCENE
 #define BUFFDOG_SCENE
 
+#include <chrono>
 #include <vector>
 
 #include "device.h"
@@ -44,6 +45,9 @@ struct Light {
 };
 
 
+std::vector<Entity> new_entity_buffer;
+
+
 struct Scene {
 	Camera camera;
 	Level level;
@@ -63,8 +67,8 @@ struct Scene {
 		scene.player.rotation = scene.level.player_start_rotation;
 
 		// scene.player.weapon_position = Vector::direction(0.5, -0.7, 0);
-		scene.player.bullet = buildTetrahedron();
-		scene.player.explosion = buildCube();
+		scene.player.bullet_model = buildTetrahedron();
+		scene.player.explosion_model = buildCube();
 
 		// set up camera
 		// scene.camera.position = scene.player.position;
@@ -87,9 +91,12 @@ struct Scene {
 		return scene;
 	}
 
+	// don't want to mess with the vector of entities before the frame step is
+	// over, so we put them in new_entity_buffer and flush that to entities when
+	// the step is over
 	void addEntity(Entity entity) {
 		entity.scene = this;
-		this->entities.push_back(entity);
+		new_entity_buffer.push_back(entity);
 	}
 
 	void addEntityWithAction(Entity entity, EntityAction action) {
@@ -99,18 +106,17 @@ struct Scene {
 		this->addEntity(entity);
 	}
 
-	void step() {
-		// Stepping through the entity vector this way, sometimes the entities and/or
-		// their actions get unallocated when the vector is resized
-		// TODO: don't use vectors for everything
-		// for (auto& entity : this->entities) {
-		// 	if (entity.has_action) {
-		// 		entity.action(&entity);
-		// 	}
-		// }
+	void flushEntityBuffer() {
+		std::move(
+				new_entity_buffer.begin(),
+				new_entity_buffer.end(),
+				std::back_inserter(this->entities));
 
-		for (int i = 0; i < this->entities.size(); i++) {
-			auto& entity = this->entities[i];
+		new_entity_buffer.clear();
+	}
+
+	void step(std::chrono::microseconds frame_duration) {
+		for (auto& entity : this->entities) {
 			if (entity.has_action) {
 				entity.action(&entity);
 			}
@@ -128,12 +134,6 @@ struct Scene {
 			Vector tetra_rotation = this->camera.rotation;
 			tetra_rotation.x -= M_PI + M_PI_2; // align top to point away from camera
 
-			// Entity tetra_ent{
-			// 		&this->player.bullet,
-			// 		0.5,
-			// 		this->player.weapon_position, // this->camera.position,
-			// 		tetra_rotation};
-
 			Vector collision_point =
 					this->level.collisionPoint(this->player.weapon_position, view_normal);
 					// this->level.collisionPoint(this->camera.position, view_normal);
@@ -142,7 +142,7 @@ struct Scene {
 				case x_key:
 					this->addEntityWithAction(
 							Entity{
-									&this->player.bullet,
+									&this->player.bullet_model,
 									0.5,
 									this->player.weapon_position, // this->camera.position,
 									tetra_rotation},
@@ -163,12 +163,12 @@ struct Scene {
 									self->visible = false;
 
 									// TODO:
-									// spawn an "explosion" entity
-									// remove self from entity list
+									// after spawning the "explosion" entity,
+									// remove self (the bullet) from entity vector
 
 									self->scene->addEntityWithAction(
 											Entity{
-													&self->scene->player.explosion,
+													&self->scene->player.explosion_model,
 													0.1,
 													collision_point,
 													Vector::direction(0, 0, 0)},
@@ -194,6 +194,8 @@ struct Scene {
 		this->camera.position = this->player.position;
 		this->camera.position.y += this->player.eye_height;
 		this->camera.rotation = this->player.rotation;
+
+		this->flushEntityBuffer();
 	}
 
 	// int getBackgroundColor() {

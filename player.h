@@ -1,6 +1,7 @@
 #ifndef BUFFDOG_PLAYER
 #define BUFFDOG_PLAYER
 
+#include "device.h"
 // #include "model.h"
 #include "vector.h"
 
@@ -21,8 +22,8 @@ struct Player {
 
 	double velocity = 0;
 
-	Model bullet;
-	Model explosion;
+	Model bullet_model;
+	Model explosion_model;
 
 	void move() {
 		// handle mouse movement

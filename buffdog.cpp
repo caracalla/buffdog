@@ -1,8 +1,9 @@
 #include <cctype>
+#include <chrono>
 #define _USE_MATH_DEFINES // M_PI et al
 #include <cmath>
 #include <cstdlib>
-#include <ctime>
+// #include <ctime>
 
 #include "bmp.h"
 #include "device.h"
@@ -19,27 +20,21 @@
 #include "vector.h"
 
 
-#ifndef _MSC_VER
-#include <sys/time.h>
-
 int fps = 0;
-struct timespec lastPrintTimeSpec;
+std::chrono::steady_clock::time_point last_print_time;
 
 void logFPS() {
 	fps++;
+	auto now = std::chrono::steady_clock::now();
+	auto time_since_last_print = now - last_print_time;
 
-	struct timespec now;
-	clock_gettime(CLOCK_REALTIME, &now);
-
-	if (now.tv_sec - lastPrintTimeSpec.tv_sec >= 1) {
+	if (time_since_last_print >= std::chrono::seconds(1)) {
 		printf("FPS: %d\n", fps);
-		lastPrintTimeSpec = now;
+
+		last_print_time = now;
 		fps = 0;
 	}
 }
-#else
-void logFPS() {}
-#endif
 
 
 
@@ -48,12 +43,8 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-#ifndef _MSC_VER
-	// for FPS determination
-	clock_gettime(CLOCK_REALTIME, &lastPrintTimeSpec);
-#else
-	spit("not logging FPS because we're on windows");
-#endif
+	last_print_time = std::chrono::steady_clock::now();
+	auto last_frame_time = std::chrono::steady_clock::now();
 
 	// add level geometry
 	Model city = parseOBJFile("models/city.obj");
@@ -109,7 +100,12 @@ int main(int argc, char** argv) {
 		device::processInput();
 
 		// update player, models, and level by one time step
-		scene.step();
+		auto now = std::chrono::steady_clock::now();
+		auto frame_duration =
+				std::chrono::duration_cast<std::chrono::microseconds>(now - last_frame_time);
+		last_frame_time = now;
+
+		scene.step(frame_duration);
 
 		logFPS();
 	}
