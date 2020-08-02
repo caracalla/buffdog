@@ -1,6 +1,7 @@
 #ifndef BUFFDOG_ENTITY
 #define BUFFDOG_ENTITY
 
+#include <chrono>
 #include <functional>
 
 #include "model.h"
@@ -42,6 +43,15 @@ struct Entity {
 
 		// clear out forces
 		this->force = Vector{0, 0, 0};
+	}
+
+	#define MICROSECONDS 1000000.0
+
+	// parameter value should be in meters per second
+	void applyForce(Vector new_force) {
+		new_force = new_force.scalarMultiply(1 / (MICROSECONDS * MICROSECONDS));
+
+		this->force = this->force.add(new_force);
 	}
 };
 

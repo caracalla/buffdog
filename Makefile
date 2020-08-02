@@ -1,5 +1,5 @@
 P=buffdog
-OBJECTS=device.cpp line.cpp
+OBJECTS=device.cpp line.cpp scene.cpp model.cpp triangle.cpp player.cpp
 CXXFLAGS=-g -Wall -std=c++17
 LDLIBS=-lm -lSDL2
 CC=clang++

@@ -1,99 +1,31 @@
 #ifndef BUFFDOG_PLAYER
 #define BUFFDOG_PLAYER
 
+#include <chrono>
+
 #include "device.h"
-// #include "model.h"
+#include "entity.h"
+#include "model.h"
 #include "vector.h"
 
-// TODO: move this mouse logic to device
-#define INCREMENT 0.005
-#define MOUSE_SENSITIVITY_FACTOR 1000
-// TODO: tie velocity to FPS
-#define MAX_VELOCITY 0.0625
 
-
-struct Player {
+struct Player : public Entity {
 	double height = 1.7;
 	double eye_height = 1.5; // distance from base
-	Vector position; // of base
-	Vector rotation;
 
 	Vector weapon_position; // relative to base
 
-	double velocity = 0;
+	double velocity_value = 0;
 
 	Model bullet_model;
 	Model explosion_model;
 
-	void move() {
-		// handle mouse movement
-		mouse_input mouse_motion = device::getMouseMotion();
+	void move();
 
-		this->rotation.x += (double)mouse_motion.y / MOUSE_SENSITIVITY_FACTOR;
-		this->rotation.y += (double)mouse_motion.x / MOUSE_SENSITIVITY_FACTOR;
-		if (this->rotation.x < -M_PI_2) {
-			this->rotation.x = -M_PI_2;
-		} else if (this->rotation.x > M_PI_2) {
-			this->rotation.x = M_PI_2;
-		}
+	Vector bulletDirection();
 
-		// handle key inputs
-		key_states_t key_states = device::get_key_states();
-
-		Vector translation = {0, 0, 0, 0};
-
-		if (key_states.forward ||
-				key_states.reverse ||
-				key_states.left ||
-				key_states.right ||
-				key_states.yup ||
-				key_states.ydown) {
-			double max_velocity = MAX_VELOCITY;
-
-			if (key_states.sprint) {
-				max_velocity *= 5;
-			}
-
-			if (this->velocity <= max_velocity) {
-				this->velocity += INCREMENT;
-			} else {
-				this->velocity -= INCREMENT;
-			}
-		} else {
-			this->velocity -= INCREMENT;
-
-			if (this->velocity < 0) {
-				this->velocity = 0;
-			}
-		}
-
-		if (key_states.forward) {
-			translation.z -= 1;
-		}
-		if (key_states.reverse) {
-			translation.z += 1;
-		}
-		if (key_states.left) {
-			translation.x -= 1;
-		}
-		if (key_states.right) {
-			translation.x += 1;
-		}
-		if (key_states.yup) {
-			translation.y += 1;
-		}
-		if (key_states.ydown) {
-			translation.y -= 1;
-		}
-
-		Vector movement = translation.unit().scalarMultiply(this->velocity);
-
-		// the direction of motion is determined only by the rotation about the y axis
-		Matrix rotationAboutY = Matrix::makeRotationMatrix(
-				Vector::direction(0, this->rotation.y, 0));
-		this->position = this->position.add(rotationAboutY.multiplyVector(movement));
-		this->weapon_position = this->position.add(Vector::direction(0, 1.2, 0));
-	}
+	void fireBullet(std::chrono::microseconds frame_duration);
+	void fireSpewBullet(std::chrono::microseconds frame_duration);
 };
 
 #endif

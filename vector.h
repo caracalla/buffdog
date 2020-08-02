@@ -1,7 +1,10 @@
 #ifndef BUFFDOG_VEC4
 #define BUFFDOG_VEC4
 
+#include <cmath>
+
 #include "device.h"
+
 
 struct Vector {
 	double x;

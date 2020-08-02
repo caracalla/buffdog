@@ -49,20 +49,28 @@ int main(int argc, char** argv) {
 	// add level geometry
 	Model city = parseOBJFile("models/city.obj");
 	PPMTexture city_texture = PPMTexture::load("textures/city.ppm");
-	city.addTexture(&city_texture);
+	city.setTexture(&city_texture);
 	city.setTriangleNormals();
 
-	Level level{
-			city,
-			12.0, // model scale
-			Vector::direction(0, 0, 0), // model position
-			Vector::direction(0, 0, 0), // model rotation
-			Vector::point(38, 0, 38), // player position
-			Vector::direction(0, M_PI_2, 0)}; // player rotation
+	Level level;
+	level.model = city;
+	level.model_scale = 12.0;
+	level.model_position = Vector::direction(0, 0, 0);
+	level.model_rotation = Vector::direction(0, 0, 0);
+	level.player_start_position = Vector::point(38, 0, 38);
+	level.player_start_rotation = Vector::direction(0, M_PI_2, 0);
+	level.init();
 
-	spit("Level added successfully");
+	spit("Level created successfully");
 
-	Scene scene = Scene::create(level);
+	Player player;
+	player.bullet_model = buildTetrahedron();
+	player.explosion_model = buildCube();
+
+	spit("Player created successfully");
+
+	Scene scene;
+	scene.init(std::move(level), std::move(player));
 
 	spit("Scene created successfully");
 
@@ -73,7 +81,7 @@ int main(int argc, char** argv) {
 	// add spinning cube
 	Model cube = buildCube();
 	BMPTexture crate_texture = BMPTexture::load("textures/crate.bmp");
-	cube.addTexture(&crate_texture);
+	cube.setTexture(&crate_texture);
 
 	Entity cube_ent{
 			&cube,
