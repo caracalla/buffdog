@@ -32,13 +32,14 @@ typedef struct {
 } mouse_input;
 
 typedef struct {
-	bool up;
-	bool down;
+	bool forward;
+	bool reverse;
 	bool left;
 	bool right;
 	bool yup;
 	bool ydown;
 	bool sprint;
+	bool spew;
 } key_states_t;
 
 namespace device {
@@ -100,6 +101,10 @@ namespace device {
 	unsigned int getYRes();
 
 	bool insideViewport(int x, int y);
+
+	// [lower_bound, upper_bound)
+	double randomDouble(double lower_bound, double upper_bound);
+	int randomInt(int lower_bound, int upper_bound);
 }
 
 #endif

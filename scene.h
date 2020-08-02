@@ -115,28 +115,28 @@ struct Scene {
 		new_entity_buffer.clear();
 	}
 
-	void step(std::chrono::microseconds frame_duration) {
-		for (auto& entity : this->entities) {
-			if (entity.has_action) {
-				entity.action(&entity);
-			}
-		}
+	// TODO: make input handling a device responsibility
+	//       the player and other entities should read input from device
+	#define MICROSECONDS 1000000.0
 
+	void readInput(std::chrono::microseconds frame_duration) {
 		key_input next_key = device::get_next_key();
 
+		// the camera is always pointing down the z axis in the negative direction
+		// by default
+		// to be able to fire this from player.weapon_position, we need to calculate
+		// a new rotation based on uhhhh actually I'm not sure
+		Vector view_normal = Matrix::makeRotationMatrix(this->player.rotation).
+				multiplyVector(Vector::direction(0, 0, -1));
+
+		// rudimentary "rocket" mechanics
 		if (next_key) {
-			// the camera is always pointing down the z axis in the negative direction
-			// by default
-			// to be able to fire this from player.weapon_position, we need to calculate
-			// a new rotation based on uhhhh actually I'm not sure
-			Vector view_normal = Matrix::makeRotationMatrix(this->camera.rotation).
-					multiplyVector(Vector::direction(0, 0, -1));
-			Vector tetra_rotation = this->camera.rotation;
+			Vector tetra_rotation = this->player.rotation;
 			tetra_rotation.x -= M_PI + M_PI_2; // align top to point away from camera
 
 			Vector collision_point =
 					this->level.collisionPoint(this->player.weapon_position, view_normal);
-					// this->level.collisionPoint(this->camera.position, view_normal);
+			Vector initial_velocity = view_normal.scalarMultiply(20 / MICROSECONDS);
 
 			switch(next_key) {
 				case x_key:
@@ -144,15 +144,17 @@ struct Scene {
 							Entity{
 									&this->player.bullet_model,
 									0.5,
-									this->player.weapon_position, // this->camera.position,
-									tetra_rotation},
-							[collision_point, view_normal](Entity* self) {
-								// double distance = collision.subtract(self->position).length();
+									this->player.weapon_position,
+									tetra_rotation,
+									initial_velocity,
+									Vector::direction(0, 0, 0),
+									1.0},
+							[collision_point, view_normal, frame_duration](Entity* self) {
 								double distance =
 										collision_point.subtract(self->position).dotProduct(view_normal);
 
 								if (distance > 0) {
-									self->position = self->position.add(view_normal);
+									self->applyPhysics(frame_duration);
 								} else {
 									if (distance < 0) {
 										self->position = collision_point;
@@ -161,6 +163,7 @@ struct Scene {
 									// stop processing this entity's action
 									self->has_action = false;
 									self->visible = false;
+									spit("bullet done");
 
 									// TODO:
 									// after spawning the "explosion" entity,
@@ -188,6 +191,53 @@ struct Scene {
 					break;
 			}
 		}
+
+		// shoot a bunch of tetrahedrons out that will fall and disappear
+		key_states_t key_states = device::get_key_states();
+
+		if (key_states.spew) {
+			// shoot an entity down the view normal with physics
+			#define JITTER_AMOUNT 0.05
+			Vector random_jitter = Vector{
+					device::randomDouble(-JITTER_AMOUNT, JITTER_AMOUNT),
+					device::randomDouble(-JITTER_AMOUNT, JITTER_AMOUNT),
+					device::randomDouble(-JITTER_AMOUNT, JITTER_AMOUNT)};
+
+			Vector initial_velocity = view_normal.add(random_jitter).scalarMultiply(35 / MICROSECONDS);
+
+			this->addEntityWithAction(
+					Entity{
+							&this->player.bullet_model,
+							0.5,
+							this->player.weapon_position,
+							Vector::direction(0, 0, 0),
+							initial_velocity,
+							Vector::direction(0, 0, 0),
+							25.0},
+					[frame_duration](Entity* self) {
+						#define GRAVITY 9.8 / (MICROSECONDS * MICROSECONDS)
+
+						self->force.y -= self->mass * GRAVITY;
+						self->applyPhysics(frame_duration);
+
+						if (self->position.y <= 0.5) {
+							self->position.y = sqrt(3) / 2;
+							self->velocity = Vector::direction(0, 0, 0);
+
+							self->has_action = false;
+						}
+					});
+		}
+	}
+
+	void step(std::chrono::microseconds frame_duration) {
+		for (auto& entity : this->entities) {
+			if (entity.has_action) {
+				entity.action(&entity);
+			}
+		}
+
+		this->readInput(frame_duration);
 
 		this->player.move();
 

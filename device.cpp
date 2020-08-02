@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
+#include <random>
 #include <string>
 
 #ifdef _MSC_VER
@@ -29,6 +30,10 @@ pixeldata pixels = {
 
 double zbuffer[RES_X * RES_Y];
 
+void zBufferReset() {
+	memset(zbuffer, 0, RES_X * RES_Y * sizeof(double));
+}
+
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Texture *texture;
@@ -42,12 +47,20 @@ key_input last_key;
 key_states_t key_states;
 mouse_input mouse_motion;
 
+std::mt19937 mt;
+
+void initRandom() {
+	std::random_device rd;
+	mt = std::mt19937(rd());
+}
+
 namespace device {
 	// ***************************************************************************
 	// device management
 	// ***************************************************************************
 
 	bool setUp() {
+		initRandom();
 		clearScreen(DEFAULT_BACKGROUND_COLOR);
 
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
@@ -146,10 +159,6 @@ namespace device {
 		return is_running;
 	}
 
-	void zBufferReset() {
-		memset(zbuffer, 0, RES_X * RES_Y * sizeof(double));
-	}
-
 	void clearScreen(int color) {
 		zBufferReset();
 
@@ -223,13 +232,13 @@ namespace device {
 						case SDL_SCANCODE_UP:
 						case SDL_SCANCODE_W:
 							last_key = up;
-							key_states.up = true;
+							key_states.forward = true;
 							break;
 
 						case SDL_SCANCODE_DOWN:
 						case SDL_SCANCODE_S:
 							last_key = down;
-							key_states.down = true;
+							key_states.reverse = true;
 							break;
 
 						case SDL_SCANCODE_LEFT:
@@ -256,6 +265,10 @@ namespace device {
 							key_states.sprint = true;
 							break;
 
+						case SDL_SCANCODE_T:
+							key_states.spew = true;
+							break;
+
 						case SDL_SCANCODE_X:
 							last_key = x_key;
 							break;
@@ -274,12 +287,12 @@ namespace device {
 					switch(event.key.keysym.scancode) {
 						case SDL_SCANCODE_UP:
 						case SDL_SCANCODE_W:
-							key_states.up = false;
+							key_states.forward = false;
 							break;
 
 						case SDL_SCANCODE_DOWN:
 						case SDL_SCANCODE_S:
-							key_states.down = false;
+							key_states.reverse = false;
 							break;
 
 						case SDL_SCANCODE_LEFT:
@@ -302,6 +315,10 @@ namespace device {
 
 						case SDL_SCANCODE_LSHIFT:
 							key_states.sprint = false;
+							break;
+
+						case SDL_SCANCODE_T:
+							key_states.spew = false;
 							break;
 
 						default:
@@ -381,5 +398,15 @@ namespace device {
 				y > VIEWPORT_BUFFER &&
 				x < RES_X - VIEWPORT_BUFFER &&
 				y < RES_Y - VIEWPORT_BUFFER;
+	}
+
+	double randomDouble(double lower_bound, double upper_bound) {
+		std::uniform_real_distribution<double> dist(lower_bound, upper_bound);
+
+		return dist(mt);
+	}
+
+	int randomInt(int lower_bound, int upper_bound) {
+		return (int)randomDouble(lower_bound, upper_bound);
 	}
 }

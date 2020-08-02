@@ -31,14 +31,19 @@ struct Player {
 
 		this->rotation.x += (double)mouse_motion.y / MOUSE_SENSITIVITY_FACTOR;
 		this->rotation.y += (double)mouse_motion.x / MOUSE_SENSITIVITY_FACTOR;
+		if (this->rotation.x < -M_PI_2) {
+			this->rotation.x = -M_PI_2;
+		} else if (this->rotation.x > M_PI_2) {
+			this->rotation.x = M_PI_2;
+		}
 
 		// handle key inputs
 		key_states_t key_states = device::get_key_states();
 
 		Vector translation = {0, 0, 0, 0};
 
-		if (key_states.up ||
-				key_states.down ||
+		if (key_states.forward ||
+				key_states.reverse ||
 				key_states.left ||
 				key_states.right ||
 				key_states.yup ||
@@ -62,10 +67,10 @@ struct Player {
 			}
 		}
 
-		if (key_states.up) {
+		if (key_states.forward) {
 			translation.z -= 1;
 		}
-		if (key_states.down) {
+		if (key_states.reverse) {
 			translation.z += 1;
 		}
 		if (key_states.left) {
