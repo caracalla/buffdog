@@ -10,7 +10,7 @@
 #define MAX_VELOCITY 0.0625
 
 
-void Player::move() {
+void Player::move(std::chrono::microseconds frame_duration) {
 	// handle mouse movement
 	mouse_input mouse_motion = device::getMouseMotion();
 
@@ -100,14 +100,21 @@ Entity makeBullet(
 	bullet.position = position;
 	bullet.rotation = rotation;
 	bullet.velocity = direction.scalarMultiply(20 / MICROSECONDS);
-	bullet.mass = 1.0;
+	bullet.mass = 0.0; // shouldn't be affected by gravity
 
 	return bullet;
 }
 
-// this is technically incorrect, since the bullet's action will always use
-// the initial frame duration to do physics calculations
-void Player::fireBullet(std::chrono::microseconds frame_duration) {
+Entity makeExplosion(Model* model, Vector position) {
+	Entity explosion;
+	explosion.model = model;
+	explosion.scale = 0.1;
+	explosion.position = position;
+
+	return explosion;
+}
+
+void Player::fireBullet() {
 	Vector view_normal = this->bulletDirection();
 	Vector collision_point =
 			this->scene->level.collisionPoint(
@@ -123,37 +130,29 @@ void Player::fireBullet(std::chrono::microseconds frame_duration) {
 					this->weapon_position,
 					this->bulletDirection(),
 					bullet_rotation),
-			[collision_point, view_normal, frame_duration](Entity* self) {
+			[collision_point, view_normal](Entity* self) {
 				double distance =
 						collision_point.subtract(self->position).dotProduct(view_normal);
 
-				if (distance > 0) {
-					self->applyPhysics(frame_duration);
-				} else {
-					if (distance < 0) {
-						self->position = collision_point;
-					}
-
-					// stop processing this entity's action
+				if (distance <= 0) {
+					// it's hit, stop processing this entity's action
+					self->position = collision_point;
 					self->has_action = false;
-					self->visible = false;
+					self->active = false;
+					spit("bullet done");
 
 					// TODO:
 					// after spawning the "explosion" entity,
 					// remove self (the bullet) from entity vector
 
 					self->scene->addEntityWithAction(
-							Entity{
-									&self->scene->player.explosion_model,
-									0.1,
-									collision_point,
-									Vector::direction(0, 0, 0)},
+							makeExplosion(&self->scene->player.explosion_model, collision_point),
 							[](Entity* self) {
 								self->scale += 0.05;
 
 								if (self->scale > 1.0) {
 									self->has_action = false;
-									self->visible = false;
+									self->active = false;
 								}
 							});
 				}
@@ -182,17 +181,17 @@ Entity makeSpewBullet(Model* model, Vector position, Vector direction) {
 	return spewBullet;
 }
 
-void Player::fireSpewBullet(std::chrono::microseconds frame_duration) {
+void Player::fireSpewBullet() {
 	this->scene->addEntityWithAction(
 			makeSpewBullet(
 					&this->bullet_model, this->weapon_position, this->bulletDirection()),
-			[frame_duration](Entity* self) {
-				self->applyForce(Vector::direction(0, -9.8 * self->mass, 0));
-				self->applyPhysics(frame_duration);
+			[](Entity* self) {
+				double tetra_height = sqrt(3) / 2;
 
-				if (self->position.y <= sqrt(3) / 2) {
-					self->position.y = sqrt(3) / 2;
+				if (self->position.y <= tetra_height) {
+					self->position.y = tetra_height;
 					self->velocity = Vector::direction(0, 0, 0);
+					self->mass = 0.0; // stop gravity from applying
 
 					self->has_action = false;
 				}

@@ -20,12 +20,12 @@ struct Player : public Entity {
 	Model bullet_model;
 	Model explosion_model;
 
-	void move();
+	void move(std::chrono::microseconds frame_duration);
 
 	Vector bulletDirection();
 
-	void fireBullet(std::chrono::microseconds frame_duration);
-	void fireSpewBullet(std::chrono::microseconds frame_duration);
+	void fireBullet();
+	void fireSpewBullet();
 };
 
 #endif

@@ -16,29 +16,36 @@ typedef std::function<void(Entity*)> EntityAction;
 struct Entity {
 	Model* model;
 	double scale;
-	Vector position;
-	Vector rotation; // represented as radians around each axis
+	Vector position = Vector::point(0, 0, 0);
+	Vector rotation = Vector::direction(0, 0, 0); // represented as radians around each axis
 
 	// physics
-	Vector velocity;
-	Vector force;
-	double mass; // in kilograms?
+	Vector velocity = Vector::direction(0, 0, 0);
+	Vector force = Vector::direction(0, 0, 0);
+	double mass = 0.0; // in kilograms?
 
 	// action represents something that happens to the entity on each step
 	EntityAction action;
 	bool has_action = false;
-	bool visible = true;
+
+	// if false, it's no longer part of the scene, it's not rendered and physics
+	// are not applied
+	bool active = true;
 	Scene* scene;
 
 	void applyPhysics(std::chrono::microseconds frame_duration) {
 		auto dt = frame_duration.count();
 
-		// apply forces to velocity
-		auto delta_v = this->force.scalarMultiply(1 / this->mass).scalarMultiply(dt);
-		this->velocity = this->velocity.add(delta_v);
+		if (this->mass > 0) {
+			this->applyForce(Vector::direction(0, -9.8 * this->mass, 0));
+
+			// apply forces to velocity
+			Vector delta_v = this->force.scalarMultiply(1 / this->mass).scalarMultiply(dt);
+			this->velocity = this->velocity.add(delta_v);
+		}
 
 		// apply velocity to position
-		auto delta_p = this->velocity.scalarMultiply(dt);
+		Vector delta_p = this->velocity.scalarMultiply(dt);
 		this->position = this->position.add(delta_p);
 
 		// clear out forces

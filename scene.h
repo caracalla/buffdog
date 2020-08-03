@@ -58,11 +58,11 @@ struct Scene {
 	void addEntity(Entity entity);
 	void addEntityWithAction(Entity entity, EntityAction action);
 
+	void step(std::chrono::microseconds frame_duration);
+
 	// TODO: make input handling a device responsibility
 	//       the player and other entities should read input from device
-	void readInput(std::chrono::microseconds frame_duration);
-
-	void step(std::chrono::microseconds frame_duration);
+	void readInput();
 
 	// int getBackgroundColor() {
 	// 	return device::color(backgroundColor.x, backgroundColor.y, backgroundColor.z);

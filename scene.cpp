@@ -55,14 +55,18 @@ void flushEntityBuffer(std::vector<Entity>& entities) {
 
 void Scene::step(std::chrono::microseconds frame_duration) {
 	for (auto& entity : this->entities) {
-		if (entity.has_action) {
-			entity.action(&entity);
+		if (entity.active) {
+			if (entity.has_action) {
+				entity.action(&entity);
+			}
+
+			entity.applyPhysics(frame_duration);
 		}
 	}
 
-	this->readInput(frame_duration);
+	this->readInput();
 
-	this->player.move();
+	this->player.move(frame_duration);
 
 	this->camera.position = this->player.position;
 	this->camera.position.y += this->player.eye_height;
@@ -71,14 +75,14 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 	flushEntityBuffer(this->entities);
 }
 
-void Scene::readInput(std::chrono::microseconds frame_duration) {
+void Scene::readInput() {
 	key_input next_key = device::get_next_key();
 
 	if (next_key) {
 		switch(next_key) {
 			case x_key:
 				// rudimentary "gun" mechanics
-				this->player.fireBullet(frame_duration);
+				this->player.fireBullet();
 				break;
 
 			default:
@@ -90,6 +94,6 @@ void Scene::readInput(std::chrono::microseconds frame_duration) {
 
 	if (key_states.spew) {
 		// continuously shoot bullets down the view normal with basic physics
-		this->player.fireSpewBullet(frame_duration);
+		this->player.fireSpewBullet();
 	}
 }
