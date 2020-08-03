@@ -382,7 +382,7 @@ struct Renderer {
 		Model result = *item.model;
 
 		Matrix worldMatrix = Matrix::makeWorldMatrix(
-				item.scale, item.rotation, item.position);
+				item.scale, item.actualRotation(), item.position);
 		Matrix finalMatrix = this->camera_matrix.multiplyMatrix(worldMatrix);
 
 		// transform vertices into camera space

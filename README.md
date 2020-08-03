@@ -3,7 +3,7 @@
 ## TODO
 * tie velocity/movement to FPS
 * make the triangle drawing code less hideous
-* basic physics (collisions, gravity)
+* basic physics (collisions, angular momentum)
 
 ## Setup (non-Windows)
 1. Install SDL2
@@ -14,7 +14,7 @@
 1. Open the project in Visual Studio (I used 2019)
 
 ## Targets
-* `buffdog` - Whatever I'm working on.  Currently, a real time rasterizer.
+* `buffdog` - Whatever I'm working on.  Currently, a real time rasterizer-cum-game engine.
 
 ### Legacy Targets (non-Windows only)
 * `spinner` - A simple spinning line, used to test that everything works.

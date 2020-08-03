@@ -31,7 +31,15 @@ struct Entity {
 	// if false, it's no longer part of the scene, it's not rendered and physics
 	// are not applied
 	bool active = true;
+
+	// newly created entities should always be added to the scene through
+	// addEntity() or addEntityWithAction(), which will set scene and action
+	// appropriately
 	Scene* scene;
+
+	Vector actualRotation() {
+		return this->model->initial_rotation.add(this->rotation);
+	}
 
 	void applyPhysics(std::chrono::microseconds frame_duration) {
 		auto dt = frame_duration.count();

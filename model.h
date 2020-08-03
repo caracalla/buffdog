@@ -61,6 +61,12 @@ struct Model {
 	Texture* texture;
 	bool has_texture = false;
 
+	// this should be a vector indicating how the model should be rotated
+	// initially to in a "neutral" position
+	// what constitutes "neutral" is open to interpretation; i.e. is a bullet
+	// "neutral" when it's lying on its side, or when the tip is pointing up?
+	Vector initial_rotation;
+
 	void setTriangleNormals();
 
 	void setTexture(Texture* texture) {

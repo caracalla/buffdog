@@ -175,5 +175,8 @@ Model buildTetrahedron() {
 
 	item.setTriangleNormals();
 
+	// keep it pointing up
+	item.initial_rotation = Vector::direction(0, 0, 0);
+
 	return item;
 }
