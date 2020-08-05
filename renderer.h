@@ -230,7 +230,7 @@ struct Renderer {
 		double result = 0;
 
 		for (auto& light : lights) {
-			if (light.type == LightType::directional) {
+			if (light.type == Light::Type::directional) {
 				double directional_light = normal.dotProduct(light.direction);
 
 				if (directional_light > 0) {
@@ -437,7 +437,7 @@ struct Renderer {
 		std::vector<Light> lights = scene.lights;
 
 		for (auto& light : lights) {
-			if (light.type == LightType::directional) {
+			if (light.type == Light::Type::directional) {
 				light.direction = this->camera_matrix.multiplyVector(light.direction);
 			}
 		}

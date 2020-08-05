@@ -18,13 +18,9 @@ void Scene::init(Level level, Player player) {
 	this->camera.viewport.far_plane_distance = -100;
 
 	// set up lights
-	Light ambient = {LightType::ambient, Vector::direction(0, 0, 0), 0.2};
-	Light directional = {
-			LightType::directional,
-			Vector::direction(-1, 1, 1).unit(), 0.8};
-
-	this->lights.push_back(ambient);
-	this->lights.push_back(directional);
+	this->lights.push_back(Light::ambient(0.2));
+	this->lights.push_back(
+			Light::directional(0.8, Vector::direction(-1, 1, 1).unit()));
 }
 
 // we don't want to mess with the vector of entities before the frame step is

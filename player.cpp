@@ -7,7 +7,7 @@
 
 // walking speed of 2 meters per second
 #define MAX_WALKING_VELOCITY (2 / MICROSECONDS)
-#define WALKING_VELOCITY_INCREMENT (MAX_WALKING_VELOCITY * 0.08)
+#define WALKING_VELOCITY_INCREMENT (MAX_WALKING_VELOCITY * 0.1)
 #define SPRINTING_VELOCITY_FACTOR 5
 
 
@@ -172,10 +172,11 @@ void Player::fireBullet() {
 #define SPEW_JITTER_AMOUNT 0.05
 
 Entity makeSpewBullet(Model* model, Vector position, Vector direction) {
+	// fire at random within a circle
 	Vector random_jitter = Vector{
-			device::randomDouble(-SPEW_JITTER_AMOUNT, SPEW_JITTER_AMOUNT),
-			device::randomDouble(-SPEW_JITTER_AMOUNT, SPEW_JITTER_AMOUNT),
-			device::randomDouble(-SPEW_JITTER_AMOUNT, SPEW_JITTER_AMOUNT)};
+			device::randomDouble(-1, 1),
+			device::randomDouble(-1, 1),
+			device::randomDouble(-1, 1)}.unit().scalarMultiply(SPEW_JITTER_AMOUNT);
 
 	Vector initial_velocity = direction.add(random_jitter).
 			scalarMultiply(35 / MICROSECONDS);

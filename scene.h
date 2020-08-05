@@ -32,16 +32,24 @@ struct Camera {
 };
 
 
-enum LightType {
-	ambient,
-	directional,
-	point
-};
-
 struct Light {
-	LightType type;
+	enum class Type {
+		ambient,
+		directional,
+		point
+	};
+
+	Type type;
 	Vector direction;
 	double intensity;
+
+	static Light ambient(double intensity) {
+		return Light{Type::ambient, Vector::direction(0, 0, 0), intensity};
+	}
+
+	static Light directional(double intensity, Vector direction) {
+		return Light{Type::directional, direction, intensity};
+	}
 };
 
 
