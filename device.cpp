@@ -14,8 +14,13 @@
 #include "device.h"
 
 
+// TODO: make this stuff configurable
 #define RES_X 640
 #define RES_Y 480
+
+// TODO: figure out what this should be for windows
+#define MOUSE_SENSITIVITY_FACTOR 1000
+
 
 
 // the framebuffer
@@ -332,8 +337,8 @@ namespace device {
 					break;
 
 				case SDL_MOUSEMOTION:
-					mouse_motion.x = event.motion.xrel;
-					mouse_motion.y = event.motion.yrel;
+					mouse_motion.x = (double)event.motion.xrel / MOUSE_SENSITIVITY_FACTOR;
+					mouse_motion.y = (double)event.motion.yrel / MOUSE_SENSITIVITY_FACTOR;
 
 					// printf("x pos: %d\n", event.motion.x);
 

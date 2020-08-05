@@ -15,6 +15,7 @@ struct Player : public Entity {
 
 	Vector weapon_position; // relative to base
 
+	// in meters per microsecond
 	double velocity_value = 0;
 
 	Model bullet_model;

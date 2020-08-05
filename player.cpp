@@ -3,19 +3,23 @@
 #include "scene.h"
 
 
-// TODO: move this mouse logic to device
-#define INCREMENT 0.005
-#define MOUSE_SENSITIVITY_FACTOR 1000
-// TODO: tie velocity to FPS
-#define MAX_VELOCITY 0.0625
+#define MICROSECONDS 1000000.0
+
+// walking speed of 2 meters per second
+#define MAX_WALKING_VELOCITY (2 / MICROSECONDS)
+#define WALKING_VELOCITY_INCREMENT (MAX_WALKING_VELOCITY * 0.08)
+#define SPRINTING_VELOCITY_FACTOR 5
 
 
+// player movement isn't handled like a generic Entity with applyPhysics
+// because that would be really hard to get feeling right
 void Player::move(std::chrono::microseconds frame_duration) {
 	// handle mouse movement
 	mouse_input mouse_motion = device::getMouseMotion();
 
-	this->rotation.x += (double)mouse_motion.y / MOUSE_SENSITIVITY_FACTOR;
-	this->rotation.y += (double)mouse_motion.x / MOUSE_SENSITIVITY_FACTOR;
+	this->rotation.x += mouse_motion.y;
+	this->rotation.y += mouse_motion.x;
+
 	if (this->rotation.x < -M_PI_2) {
 		this->rotation.x = -M_PI_2;
 	} else if (this->rotation.x > M_PI_2) {
@@ -33,45 +37,51 @@ void Player::move(std::chrono::microseconds frame_duration) {
 			key_states.right ||
 			key_states.yup ||
 			key_states.ydown) {
-		double max_velocity = MAX_VELOCITY;
+		double max_velocity = MAX_WALKING_VELOCITY;
 
 		if (key_states.sprint) {
-			max_velocity *= 5;
+			max_velocity *= SPRINTING_VELOCITY_FACTOR;
+		}
+
+		if (this->velocity_value > max_velocity) {
+			this->velocity_value = max_velocity;
 		}
 
 		if (this->velocity_value <= max_velocity) {
-			this->velocity_value += INCREMENT;
+			this->velocity_value += WALKING_VELOCITY_INCREMENT;
 		} else {
-			this->velocity_value -= INCREMENT;
+			this->velocity_value -= WALKING_VELOCITY_INCREMENT;
+		}
+
+		if (key_states.forward) {
+			translation.z -= 1;
+		}
+		if (key_states.reverse) {
+			translation.z += 1;
+		}
+		if (key_states.left) {
+			translation.x -= 1;
+		}
+		if (key_states.right) {
+			translation.x += 1;
+		}
+		if (key_states.yup) {
+			translation.y += 1;
+		}
+		if (key_states.ydown) {
+			translation.y -= 1;
 		}
 	} else {
-		this->velocity_value -= INCREMENT;
+		this->velocity_value -= WALKING_VELOCITY_INCREMENT;
 
 		if (this->velocity_value < 0) {
 			this->velocity_value = 0;
 		}
 	}
 
-	if (key_states.forward) {
-		translation.z -= 1;
-	}
-	if (key_states.reverse) {
-		translation.z += 1;
-	}
-	if (key_states.left) {
-		translation.x -= 1;
-	}
-	if (key_states.right) {
-		translation.x += 1;
-	}
-	if (key_states.yup) {
-		translation.y += 1;
-	}
-	if (key_states.ydown) {
-		translation.y -= 1;
-	}
+	double meters_moved = this->velocity_value * frame_duration.count();
 
-	Vector movement = translation.unit().scalarMultiply(this->velocity_value);
+	Vector movement = translation.unit().scalarMultiply(meters_moved);
 
 	// the direction of motion is determined only by the rotation about the y axis
 	Matrix rotationAboutY = Matrix::makeRotationMatrix(

@@ -24,9 +24,10 @@ typedef enum {
 	z_key
 } key_input;
 
+// x and y are adjusted by a sensitivity factor, see processInput definition
 typedef struct {
-	int x;
-	int y;
+	double x;
+	double y;
 	int pos_x;
 	int pos_y;
 } mouse_input;
