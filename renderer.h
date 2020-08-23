@@ -259,7 +259,9 @@ struct Renderer {
 		}
 
 		for (auto& triangle : item.triangles) {
-			if (isBackFace(triangle.normal, item.vertices[triangle.v0.index])) {
+			Vector triangleNormal = triangle.getNormal();
+
+			if (isBackFace(triangleNormal, item.vertices[triangle.v0.index])) {
 				// this is a back face, don't draw
 				continue;
 			}
@@ -272,9 +274,15 @@ struct Renderer {
 				triangle.v2.light_intensity = applyLighting(
 						item.normals[triangle.v2.normal], lights);
 			} else {
-				triangle.v0.light_intensity = applyLighting(triangle.normal, lights);
-				triangle.v1.light_intensity = applyLighting(triangle.normal, lights);
-				triangle.v2.light_intensity = applyLighting(triangle.normal, lights);
+				triangle.v0.light_intensity = applyLighting(triangleNormal, lights);
+				triangle.v1.light_intensity = applyLighting(triangleNormal, lights);
+				triangle.v2.light_intensity = applyLighting(triangleNormal, lights);
+			}
+
+			Texture* texture = nullptr;
+
+			if (item.has_texture && !triangle.ignore_texture) {
+				texture = item.texture;
 			}
 
 			if (is_vertex_visible[triangle.v0.index] &&
@@ -298,7 +306,7 @@ struct Renderer {
 						item.uvs[triangle.v1.uv].second,
 						item.uvs[triangle.v2.uv].first,
 						item.uvs[triangle.v2.uv].second,
-						item.has_texture && !triangle.special ? item.texture : nullptr};
+						texture};
 
 				// tri.draw();
 #if USE_BARYCENTRIC
@@ -365,7 +373,7 @@ struct Renderer {
 							poly.v_values[i],
 							poly.u_values[i + 1],
 							poly.v_values[i + 1],
-							item.has_texture && !triangle.special ? item.texture : nullptr};
+							texture};
 
 					// new_triangle.draw();
 					#if USE_BARYCENTRIC

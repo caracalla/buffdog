@@ -87,9 +87,19 @@ struct Matrix {
 		return result;
 	}
 
+	#define ROTATION_EPSILON 0.00001 * 0.00001 * 0.00001
+
 	static Matrix makeAxisRotationMatrix(double angle, axis about_axis) {
 		double s = sin(angle);
 		double c = cos(angle);
+
+		if (double abs_s = fabs(s); abs_s > 0 && abs_s < ROTATION_EPSILON) {
+			s = 0;
+		}
+
+		if (double abs_c = fabs(c); abs_c > 0 && abs_c < ROTATION_EPSILON) {
+			c = 0;
+		}
 
 		Matrix r;
 

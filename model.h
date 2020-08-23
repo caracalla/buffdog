@@ -27,7 +27,7 @@ struct Triangle3D {
 	Vertex v2;
 	Vector color;
 	Vector normal;
-	bool special = false;
+	bool ignore_texture = false; // draw as a solid color
 
 	Vertex& at(size_t index) {
 		switch(index) {
@@ -49,11 +49,13 @@ struct Triangle3D {
 				break;
 		}
 	}
+
+	Vector getNormal();
 };
 
 struct Model {
 	std::vector<Vector> vertices;
-	std::vector<Vector> normals;
+	std::vector<Vector> normals; // these are technically optional
 	std::vector<std::pair<double, double> > uvs;
 
 	std::vector<Triangle3D> triangles;
@@ -67,6 +69,8 @@ struct Model {
 	// "neutral" when it's lying on its side, or when the tip is pointing up?
 	Vector initial_rotation;
 
+	// TODO: does precomputing triangle normals make sense?
+	// maybe not, but it's hard to do otherwise sadly
 	void setTriangleNormals();
 
 	void setTexture(Texture* texture) {
@@ -77,5 +81,6 @@ struct Model {
 
 Model buildCube();
 Model buildTetrahedron();
+Model buildIcosahedron();
 
 #endif

@@ -149,7 +149,6 @@ void Player::fireBullet() {
 					self->position = collision_point;
 					self->has_action = false;
 					self->active = false;
-					spit("bullet done");
 
 					// TODO:
 					// after spawning the "explosion" entity,

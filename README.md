@@ -27,6 +27,7 @@
 * Peter Shirley's [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 * [The Quake source code](https://github.com/caracalla/quake)
 * [small3dlib](https://gitlab.com/drummyfish/small3dlib)
+* Dmitry Sokolov's [tinyrenderer](https://github.com/ssloy/tinyrenderer/wiki/Lesson-0-getting-started)
 
 ## Namesake
 
