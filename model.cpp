@@ -191,18 +191,18 @@ Model buildTetrahedron() {
 
 // generate a random color between red and yellow
 Vector randomExplosionColor() {
-	return Vector::color(1.0, device::randomDouble(1.0, 0.0), 0.0);
+	double max_color = device::randomDouble(1.0, 0.5);
+	return Vector::color(max_color, device::randomDouble(max_color, 0.0), 0.0);
 }
 
 Model buildIcosahedron() {
-	// generate a random
 	Model item;
 
-	// distance between two vertices
-	double edge_length = 1;
-
 	// distance between vertex to center of icosahedron
-	double radius = edge_length * sin(2 * M_PI / 5);
+	double radius = 1;
+
+	// distance between two vertices
+	double edge_length = radius / sin(2 * M_PI / 5);
 
 	// the distance from the center of the pentagon to a vertex
 	double pentagon_spoke_length = edge_length / (2 * sin(M_PI / 5));
@@ -211,7 +211,7 @@ Model buildIcosahedron() {
 	double alpha = acos(sqrt(0.5 + sqrt(5) / 10));
 
 	// distance from center of icosahedron to the pentagon containing v1 to v5
-	double pentagon_y = edge_length * sin(alpha);
+	double pentagon_y = radius - (edge_length * sin(alpha));
 
 	double v1_z = pentagon_spoke_length;
 
@@ -258,112 +258,114 @@ Model buildIcosahedron() {
 	item.triangles = {
 			// top pentagonal pyramid
 			Triangle3D{
-					Vertex{2, 0, 0, 1.0},
+					Vertex{0, 0, 0, 1.0},
 					Vertex{1, 0, 0, 1.0},
-					Vertex{0, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
-					Vertex{3, 0, 0, 1.0},
 					Vertex{2, 0, 0, 1.0},
-					Vertex{0, 0, 0, 1.0},
 					randomExplosionColor()},
 			Triangle3D{
-					Vertex{4, 0, 0, 1.0},
+					Vertex{0, 0, 0, 1.0},
+					Vertex{2, 0, 0, 1.0},
 					Vertex{3, 0, 0, 1.0},
-					Vertex{0, 0, 0, 1.0},
 					randomExplosionColor()},
 			Triangle3D{
-					Vertex{5, 0, 0, 1.0},
+					Vertex{0, 0, 0, 1.0},
+					Vertex{3, 0, 0, 1.0},
 					Vertex{4, 0, 0, 1.0},
-					Vertex{0, 0, 0, 1.0},
 					randomExplosionColor()},
 			Triangle3D{
-					Vertex{1, 0, 0, 1.0},
-					Vertex{5, 0, 0, 1.0},
 					Vertex{0, 0, 0, 1.0},
+					Vertex{4, 0, 0, 1.0},
+					Vertex{5, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{0, 0, 0, 1.0},
+					Vertex{5, 0, 0, 1.0},
+					Vertex{1, 0, 0, 1.0},
 					randomExplosionColor()},
 
 			// central pentagonal antiprism
 			Triangle3D{
 					Vertex{1, 0, 0, 1.0},
-					Vertex{2, 0, 0, 1.0},
-					Vertex{9, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
 					Vertex{9, 0, 0, 1.0},
 					Vertex{2, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{9, 0, 0, 1.0},
 					Vertex{10, 0, 0, 1.0},
+					Vertex{2, 0, 0, 1.0},
 					randomExplosionColor()},
 			Triangle3D{
 					Vertex{2, 0, 0, 1.0},
-					Vertex{3, 0, 0, 1.0},
-					Vertex{10, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
 					Vertex{10, 0, 0, 1.0},
 					Vertex{3, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{10, 0, 0, 1.0},
 					Vertex{6, 0, 0, 1.0},
+					Vertex{3, 0, 0, 1.0},
 					randomExplosionColor()},
 			Triangle3D{
 					Vertex{3, 0, 0, 1.0},
-					Vertex{4, 0, 0, 1.0},
-					Vertex{6, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
 					Vertex{6, 0, 0, 1.0},
 					Vertex{4, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{6, 0, 0, 1.0},
 					Vertex{7, 0, 0, 1.0},
+					Vertex{4, 0, 0, 1.0},
 					randomExplosionColor()},
 			Triangle3D{
 					Vertex{4, 0, 0, 1.0},
-					Vertex{5, 0, 0, 1.0},
-					Vertex{7, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
 					Vertex{7, 0, 0, 1.0},
 					Vertex{5, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{7, 0, 0, 1.0},
 					Vertex{8, 0, 0, 1.0},
+					Vertex{5, 0, 0, 1.0},
 					randomExplosionColor()},
 			Triangle3D{
 					Vertex{5, 0, 0, 1.0},
-					Vertex{1, 0, 0, 1.0},
-					Vertex{8, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
 					Vertex{8, 0, 0, 1.0},
 					Vertex{1, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{8, 0, 0, 1.0},
 					Vertex{9, 0, 0, 1.0},
+					Vertex{1, 0, 0, 1.0},
 					randomExplosionColor()},
 
 			// bottom pentagonal pyramid
 			Triangle3D{
-					Vertex{6, 0, 0, 1.0},
+					Vertex{11, 0, 0, 1.0},
 					Vertex{7, 0, 0, 1.0},
-					Vertex{11, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
-					Vertex{7, 0, 0, 1.0},
-					Vertex{8, 0, 0, 1.0},
-					Vertex{11, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
-					Vertex{8, 0, 0, 1.0},
-					Vertex{9, 0, 0, 1.0},
-					Vertex{11, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
-					Vertex{9, 0, 0, 1.0},
-					Vertex{10, 0, 0, 1.0},
-					Vertex{11, 0, 0, 1.0},
-					randomExplosionColor()},
-			Triangle3D{
-					Vertex{10, 0, 0, 1.0},
 					Vertex{6, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
 					Vertex{11, 0, 0, 1.0},
+					Vertex{8, 0, 0, 1.0},
+					Vertex{7, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{11, 0, 0, 1.0},
+					Vertex{9, 0, 0, 1.0},
+					Vertex{8, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{11, 0, 0, 1.0},
+					Vertex{10, 0, 0, 1.0},
+					Vertex{9, 0, 0, 1.0},
+					randomExplosionColor()},
+			Triangle3D{
+					Vertex{11, 0, 0, 1.0},
+					Vertex{6, 0, 0, 1.0},
+					Vertex{10, 0, 0, 1.0},
 					randomExplosionColor()}
 		};
 
 	item.setTriangleNormals();
+
+	item.compute_lighting = false;
 
 	return item;
 }

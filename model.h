@@ -62,6 +62,7 @@ struct Model {
 
 	Texture* texture;
 	bool has_texture = false;
+	bool compute_lighting = true;
 
 	// this should be a vector indicating how the model should be rotated
 	// initially to in a "neutral" position

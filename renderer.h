@@ -266,17 +266,19 @@ struct Renderer {
 				continue;
 			}
 
-			if (item.normals.size() > 0) {
-				triangle.v0.light_intensity = applyLighting(
-						item.normals[triangle.v0.normal], lights);
-				triangle.v1.light_intensity = applyLighting(
-						item.normals[triangle.v1.normal], lights);
-				triangle.v2.light_intensity = applyLighting(
-						item.normals[triangle.v2.normal], lights);
-			} else {
-				triangle.v0.light_intensity = applyLighting(triangleNormal, lights);
-				triangle.v1.light_intensity = applyLighting(triangleNormal, lights);
-				triangle.v2.light_intensity = applyLighting(triangleNormal, lights);
+			if (item.compute_lighting) {
+				if (item.normals.size() > 0) {
+					triangle.v0.light_intensity = applyLighting(
+							item.normals[triangle.v0.normal], lights);
+					triangle.v1.light_intensity = applyLighting(
+							item.normals[triangle.v1.normal], lights);
+					triangle.v2.light_intensity = applyLighting(
+							item.normals[triangle.v2.normal], lights);
+				} else {
+					triangle.v0.light_intensity = applyLighting(triangleNormal, lights);
+					triangle.v1.light_intensity = applyLighting(triangleNormal, lights);
+					triangle.v2.light_intensity = applyLighting(triangleNormal, lights);
+				}
 			}
 
 			Texture* texture = nullptr;
