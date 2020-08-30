@@ -107,11 +107,17 @@ struct Vector {
 	Vector unit() const {
 		double length = this->length();
 
+		// preserve w
+		double w = this->w;
+
 		if (length == 0) {
-			return Vector{0, 0, 0, 0};
+			return Vector{0, 0, 0, w};
 		}
 
-		return scalarMultiply(1 / length);
+		Vector result = this->scalarMultiply(1 / length);
+		result.w = w;
+
+		return result;
 	}
 
 	Vector add(Vector other) const {

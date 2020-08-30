@@ -3,7 +3,6 @@
 #define _USE_MATH_DEFINES // M_PI et al
 #include <cmath>
 #include <cstdlib>
-// #include <ctime>
 
 #include "bmp.h"
 #include "device.h"
@@ -65,7 +64,7 @@ int main(int argc, char** argv) {
 
 	Player player;
 	player.bullet_model = buildTetrahedron();
-	player.explosion_model = buildCube();
+	player.explosion_model = subdivide(subdivide(buildIcosahedron()));
 
 	spit("Player created successfully");
 

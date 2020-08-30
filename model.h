@@ -83,5 +83,6 @@ struct Model {
 Model buildCube();
 Model buildTetrahedron();
 Model buildIcosahedron();
+Model subdivide(Model model);
 
 #endif

@@ -369,3 +369,81 @@ Model buildIcosahedron() {
 
 	return item;
 }
+
+Vector midpoint(Vector& v1, Vector& v2) {
+	return Vector::point(
+		(v1.x + v2.x) / 2,
+		(v1.y + v2.y) / 2,
+		(v1.z + v2.z) / 2);
+}
+
+Model subdivide(Model model) {
+	// for each triangle
+	//   add vertex v01 between v0 and v1
+	//   add vertex v12 between v1 and v2
+	//   add vertex v20 between v2 and v0
+	//   make triangle v0  v01 v20
+	//   make triangle v01 v1  v12
+	//   make triangle v20 v12 v2
+	//   make triangle v01 v12 v20
+
+	std::vector<Triangle3D> new_triangles;
+	// new_triangles.reserve(model.triangles.size() * 4);
+
+	for (auto& triangle : model.triangles) {
+		size_t v0_index = triangle.v0.index;
+		size_t v1_index = triangle.v1.index;
+		size_t v2_index = triangle.v2.index;
+
+		Vector v0 = model.vertices[v0_index];
+		Vector v1 = model.vertices[v1_index];
+		Vector v2 = model.vertices[v2_index];
+
+		// this will create duplicate vertices.  Ideally, I would avoid this by
+		// keeping track of already created ones, but that would require sorting
+		// vertices somehow, making a map, etc
+		Vector v01 = midpoint(v0, v1).unit();
+		size_t v01_index = model.vertices.size();
+		model.vertices.push_back(v01);
+		Vector v12 = midpoint(v1, v2).unit();
+		size_t v12_index = model.vertices.size();
+		model.vertices.push_back(v12);
+		Vector v20 = midpoint(v2, v0).unit();
+		size_t v20_index = model.vertices.size();
+		model.vertices.push_back(v20);
+
+		new_triangles.push_back(
+				Triangle3D{
+						Vertex{v0_index,  0, 0, 1.0},
+						Vertex{v01_index, 0, 0, 1.0},
+						Vertex{v20_index, 0, 0, 1.0},
+						randomExplosionColor()});
+
+		new_triangles.push_back(
+				Triangle3D{
+						Vertex{v01_index, 0, 0, 1.0},
+						Vertex{v1_index,  0, 0, 1.0},
+						Vertex{v12_index, 0, 0, 1.0},
+						randomExplosionColor()});
+
+		new_triangles.push_back(
+				Triangle3D{
+						Vertex{v20_index, 0, 0, 1.0},
+						Vertex{v12_index, 0, 0, 1.0},
+						Vertex{v2_index,  0, 0, 1.0},
+						randomExplosionColor()});
+
+		new_triangles.push_back(
+				Triangle3D{
+						Vertex{v01_index, 0, 0, 1.0},
+						Vertex{v12_index, 0, 0, 1.0},
+						Vertex{v20_index, 0, 0, 1.0},
+						randomExplosionColor()});
+	}
+
+	model.triangles = std::move(new_triangles);
+
+	model.setTriangleNormals();
+
+	return model;
+}
