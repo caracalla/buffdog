@@ -15,6 +15,7 @@
 
 ## Targets
 * `buffdog` - Whatever I'm working on.  Currently, a real time rasterizer-cum-game engine.
+* `delaunay` - Interactive demonstration of Delaunay triangulation
 
 ### Legacy Targets (non-Windows only)
 * `spinner` - A simple spinning line, used to test that everything works.

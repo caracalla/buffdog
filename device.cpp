@@ -176,6 +176,7 @@ namespace device {
 
 #define DEBUG_ALLOW_OOB 0
 #define DEBUG_CHECK_OOB 0
+#define DEBUG_LOG_OOB 0
 
 	void setPixel(int x, int y, int color) {
 #if DEBUG_ALLOW_OOB
@@ -190,8 +191,10 @@ namespace device {
 
 #if DEBUG_CHECK_OOB
 			terminateFatal(message);
-#else
+#elif DEBUG_LOG_OOB
 			printf("%s", message);
+			return;
+#else
 			return;
 #endif
 		}
