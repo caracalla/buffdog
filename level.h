@@ -1,90 +1,41 @@
 #ifndef BUFFDOG_LEVEL
 #define BUFFDOG_LEVEL
 
+#include "entity.h"
 #include "matrix.h"
 #include "model.h"
 #include "vector.h"
 
-#define MAX_NO_COLLISION_DISTANCE 50
 
-struct Level {
-	Model model;
-	double model_scale;
-	Vector model_position;
-	Vector model_rotation;
+struct Level : public Entity {
+	Model level_model;
 
 	Vector player_start_position;
 	Vector player_start_rotation;
 
 	void init() {
-		for (auto& vertex : model.vertices) {
-			// transform to world space
-			Matrix worldMatrix = Matrix::makeWorldMatrix(
-					model_scale, model_rotation, model_position);
-			vertex = worldMatrix.multiplyVector(vertex);
-		}
+		// shitty hack because don't want this to double render or anything
+		this->active = false;
 
-		Matrix normalTransformationMatrix = Matrix::makeRotationMatrix(model_rotation);
+		// Matrix worldMatrix = Matrix::makeWorldMatrix(
+		// 		this->scale, this->rotation, this->position);
+		//
+		// for (auto& vertex : this->level_model.vertices) {
+		// 	// transform to world space
+		// 	vertex = worldMatrix.multiplyVector(vertex);
+		// }
+		//
+		// Matrix normalTransformationMatrix = Matrix::makeRotationMatrix(this->rotation);
+		//
+		// for (auto& normal : this->level_model.normals) {
+		// 	normal = normalTransformationMatrix.multiplyVector(normal);
+		// }
+		//
+		// for (auto& triangle : this->level_model.triangles) {
+		// 	triangle.normal = normalTransformationMatrix.multiplyVector(triangle.normal);
+		// }
 
-		for (auto& normal : model.normals) {
-			normal = normalTransformationMatrix.multiplyVector(normal);
-		}
-
-		for (auto& triangle : model.triangles) {
-			triangle.normal = normalTransformationMatrix.multiplyVector(triangle.normal);
-		}
-	}
-
-	// for each triangle,  find the plane that contains it. if the plane is in
-	// front of the ray, determine if the point of intersection is within the
-	// triangle itself this is probably slow and could be done better by
-	// subdividing the world (BSP?)
-	Vector collisionPoint(Vector ray_origin, Vector ray_direction) {
-		// start with a default result representing a "collision" an arbitrary
-		// distance from the start
-		// TODO: tell the caller that no actual collision was detected
-		Vector result = ray_origin.add(
-				ray_direction.scalarMultiply(MAX_NO_COLLISION_DISTANCE));
-		double min_t = INFINITY;
-
-		for (auto& triangle : this->model.triangles) {
-			Vector triangle_plane = Vector::plane(
-					triangle.normal,
-					this->model.vertices[triangle.v0.index]);
-
-			double plane_dot_direction = triangle_plane.dotProduct(ray_direction);
-
-			if (plane_dot_direction == 0) {
-				continue;
-			}
-
-			double t = -(triangle_plane.dotProduct(ray_origin)) / plane_dot_direction;
-
-			if (t > 0) {
-				// check if point is in triangle
-				Vector plane_intersect = ray_origin.add(ray_direction.scalarMultiply(t));
-				Vector r = plane_intersect.subtract(this->model.vertices[triangle.v0.index]);
-				Vector q1 = this->model.vertices[triangle.v1.index].subtract(this->model.vertices[triangle.v0.index]);
-				Vector q2 = this->model.vertices[triangle.v2.index].subtract(this->model.vertices[triangle.v0.index]);
-
-				double q1_sq = q1.squaredLength();
-				double q2_sq = q2.squaredLength();
-				double q1_dot_q2 = q1.dotProduct(q2);
-				double inv = 1 / (q1_sq * q2_sq - q1_dot_q2 * q1_dot_q2);
-
-				double w1 = (q2_sq * r.dotProduct(q1) - q1_dot_q2 * r.dotProduct(q2)) * inv;
-				double w2 = (q1_sq * r.dotProduct(q2) - q1_dot_q2 * r.dotProduct(q1)) * inv;
-
-				if (w1 > 0 && w2 > 0 && (1 - w1 - w2) > 0) {
-					if (t < min_t) {
-						min_t = t;
-						result = plane_intersect;
-					}
-				}
-			}
-		}
-
-		return result;
+		this->model_in_world = this->buildWorldModel(*(this->model));
 	}
 };
 

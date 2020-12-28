@@ -388,7 +388,7 @@ struct Renderer {
 		}
 	}
 
-	Model buildModel(Entity& item) {
+	Model buildCameraModel(Entity& item) {
 		Model result = *item.model;
 
 		Matrix worldMatrix = Matrix::makeWorldMatrix(
@@ -415,23 +415,23 @@ struct Renderer {
 		return result;
 	}
 
-	Model transformLevel(Model level) {
+	Model buildCameraModelFromWorldModel(Model model) {
 		// levels are already in world space, so just do a camera transformations
 
 		// transform vertices into camera space
-		for (auto& vertex : level.vertices) {
+		for (auto& vertex : model.vertices) {
 			vertex = this->camera_matrix.multiplyVector(vertex);
 		}
 
-		for (auto& normal : level.normals) {
+		for (auto& normal : model.normals) {
 			normal = this->camera_matrix.multiplyVector(normal);
 		}
 
-		for (auto& triangle : level.triangles) {
+		for (auto& triangle : model.triangles) {
 			triangle.normal = this->camera_matrix.multiplyVector(triangle.normal);
 		}
 
-		return level;
+		return model;
 	}
 
 	void drawScene(Scene& scene) {
@@ -453,12 +453,17 @@ struct Renderer {
 		}
 
 		// the level geometry is handled differently from the models
-		drawModel(transformLevel(scene.level.model), scene.camera.viewport, lights);
+		// drawModel(buildCameraModelFromWorldModel(
+		// 		scene.level.level_model), scene.camera.viewport, lights);
+		drawModel(buildCameraModelFromWorldModel(
+				scene.level.model_in_world), scene.camera.viewport, lights);
 
 		// move models into camera space and draw
 		for (auto& entity : scene.entities) {
 			if (entity.active) {
-				drawModel(buildModel(entity), scene.camera.viewport, lights);
+				// drawModel(buildCameraModel(entity), scene.camera.viewport, lights);
+				drawModel(buildCameraModelFromWorldModel(
+						entity.model_in_world), scene.camera.viewport, lights);
 			}
 		}
 	}

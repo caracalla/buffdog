@@ -27,6 +27,16 @@ struct Player : public Entity {
 
 	void fireBullet();
 	void fireSpewBullet();
+
+	Entity makeDud(Model* model, Vector position) {
+		Entity dud;
+		dud.model = model;
+		dud.scale = 0.5;
+		dud.position = position;
+		dud.mass = 0.0; // shouldn't be affected by gravity
+
+		return dud;
+	}
 };
 
 #endif

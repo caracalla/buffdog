@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <list>
 #include <map>
+#include <unordered_set>
 
 #include "device.h"
 #include "triangle.h"
@@ -104,9 +105,9 @@ struct TriangleDT {
 	}
 
 	// implemented below, since points are stored in a global vector
-	std::array<Point, 3> getPoints();
+	std::array<Point, 3> points();
 
-	std::array<HalfEdge*, 3> getHalfEdges() {
+	std::array<HalfEdge*, 3> halfEdges() {
 		return std::array<HalfEdge*, 3>{
 				this->half_edge_1,
 				this->half_edge_2,
@@ -115,7 +116,7 @@ struct TriangleDT {
 
 	bool contains(Point point) {
 		// define the bounding box containing the triangle
-		auto triangle_points = this->getPoints();
+		auto triangle_points = this->points();
 
 		Vector weights = getBarycentricWeights(
 				triangle_points[0],
@@ -156,7 +157,7 @@ struct TriangleDT {
 	}
 
 	Point circumcenter() {
-		auto points = this->getPoints();
+		auto points = this->points();
 		Point p1 = points[0];
 		Point p2 = points[1];
 		Point p3 = points[2];
@@ -192,7 +193,7 @@ struct TriangleDT {
 
 		result.center = this->circumcenter();
 
-		auto points = this->getPoints();
+		auto points = this->points();
 		// all points are equidistant from circumcenter
 		result.radius = distanceBetweenPoints(result.center, points[0]);
 
@@ -237,14 +238,29 @@ struct TriangleDT {
 
 	void insertPoint(size_t point_index);
 
+	std::unordered_set<TriangleDT*> leafTriangles() {
+		std::unordered_set<TriangleDT*> leaf_triangles;
+
+		if (this->child_triangles.size() == 0) {
+			leaf_triangles.emplace(this);
+		} else {
+			for (auto child_triangle : this->child_triangles) {
+				auto child_leaves = child_triangle->leafTriangles();
+				leaf_triangles.merge(child_leaves);
+			}
+		}
+
+		return leaf_triangles;
+	}
+
 	void draw() {
 		// only draw leaf triangles
 		if (this->child_triangles.size() == 0) {
 			if (!this->touchesBoundingPoint()) {
-				this->drawImpl(Vector{0.0, 0.0, 0.5}, true);
+				this->drawImpl(Vector{0.0, 0.0, 0.5}, false); // true);
 				this->drawImpl(Vector{0.8, 0.0, 0.0}, false);
 			} else {
-				// this->drawImpl(Vector{0.0, 0.8, 0.0}, false);
+				this->drawImpl(Vector{0.0, 0.8, 0.0}, false);
 			}
 
 
@@ -256,7 +272,9 @@ struct TriangleDT {
 	}
 
 	void drawImpl(Vector color, bool filled) {
-		auto points = this->getPoints();
+		auto points = this->points();
+
+		drawPoint(this->circumcenter(), device::color(1.0, 1.0, 1.0));
 
 		Triangle2D tri{
 				points[0],
@@ -289,25 +307,27 @@ std::vector<Point> generateDTPoints(int count) {
 	int xres = device::getXRes();
 	int yres = device::getYRes();
 
+	// the first three points will always be the bounding triangle
+#define BUILD_TRIANGLE_DEBUG 0
+
+#if BUILD_TRIANGLE_DEBUG
 	int min_x = xres / 16;
 	int min_y = yres / 16;
+	int max_x = xres - min_x;
+	int max_y = yres - min_y;
 
-	// the first three points will always be the bounding triangle
+	Point bounding1{max_x, min_y};
+	Point bounding2{min_x, max_y};
+	Point bounding3{min_x, min_y};
+#else
 	double bounding_scaling_factor = 9.0;
-
 	int bounding_x = xres * bounding_scaling_factor;
 	int bounding_y = yres * bounding_scaling_factor;
+
 	Point bounding1{bounding_x, 0};
 	Point bounding2{0, bounding_y};
 	Point bounding3{-bounding_x, -bounding_y};
-
-	// debug
-	// int max_x = xres - min_x;
-	// int max_y = yres - min_y;
-	//
-	// Point bounding1{max_x, min_y};
-	// Point bounding2{min_x, max_y};
-	// Point bounding3{min_x, min_y};
+#endif
 
 	result.push_back(bounding1);
 	result.push_back(bounding2);
@@ -492,7 +512,7 @@ void drawDT() {
 }
 
 
-std::array<Point, 3> TriangleDT::getPoints() {
+std::array<Point, 3> TriangleDT::points() {
 	return std::array<Point, 3>{
 		dt_points[half_edge_1->start_point],
 		dt_points[half_edge_2->start_point],

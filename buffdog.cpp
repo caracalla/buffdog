@@ -1,3 +1,7 @@
+// usleep
+#define _BSD_SOURCE
+#include <unistd.h>
+
 #include <cctype>
 #include <chrono>
 #define _USE_MATH_DEFINES // M_PI et al
@@ -52,10 +56,10 @@ int main(int argc, char** argv) {
 	city.setTriangleNormals();
 
 	Level level;
-	level.model = city;
-	level.model_scale = 12.0;
-	level.model_position = Vector::direction(0, 0, 0);
-	level.model_rotation = Vector::direction(0, 0, 0);
+	level.model = &city;
+	level.scale = 12.0;
+	level.position = Vector::direction(0, 0, 0);
+	level.rotation = Vector::direction(0, 0, 0);
 	level.player_start_position = Vector::point(38, 0, 38);
 	level.player_start_rotation = Vector::direction(0, M_PI_2, 0);
 	level.init();

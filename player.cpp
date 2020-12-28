@@ -93,14 +93,12 @@ void Player::move(std::chrono::microseconds frame_duration) {
 Vector Player::bulletDirection() {
 	// the camera is always pointing down the z axis in the negative direction
 	// by default
-	// to be able to get the nroaml from player.weapon_position, we need to
+	// to be able to get the normal from player.weapon_position, we need to
 	// calculate a new rotation based on...
 	// uhhhh actually I'm not sure
 	return Matrix::makeRotationMatrix(this->rotation).
-			multiplyVector(Vector::direction(0, 0, -1));
+			multiplyVector(Vector::direction(0, 0, -1)).unit();
 }
-
-#define MICROSECONDS 1000000.0
 
 Entity makeBullet(
 		Model* model, Vector position, Vector direction, Vector rotation) {
@@ -126,9 +124,10 @@ Entity makeExplosion(Model* model, Vector position) {
 
 void Player::fireBullet() {
 	Vector view_normal = this->bulletDirection();
+	bool did_collide = false;
 	Vector collision_point =
 			this->scene->level.collisionPoint(
-					this->weapon_position, view_normal);
+					this->weapon_position, view_normal, &did_collide);
 
 	// align top to point away from player
 	Vector bullet_rotation = this->rotation.add(

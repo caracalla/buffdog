@@ -52,6 +52,8 @@ void flushEntityBuffer(std::vector<Entity>& entities) {
 void Scene::step(std::chrono::microseconds frame_duration) {
 	for (auto& entity : this->entities) {
 		if (entity.active) {
+			entity.model_in_world = entity.buildWorldModel(*(entity.model));
+
 			if (entity.has_action) {
 				entity.action(&entity);
 			}
