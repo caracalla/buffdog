@@ -79,6 +79,7 @@ void Scene::readInput() {
 	if (next_key) {
 		switch(next_key) {
 			case x_key:
+			case mouse_1:
 				// rudimentary "gun" mechanics
 				this->player.fireBullet();
 				break;

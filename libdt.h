@@ -260,7 +260,10 @@ struct TriangleDT {
 				this->drawImpl(Vector{0.0, 0.0, 0.5}, false); // true);
 				this->drawImpl(Vector{0.8, 0.0, 0.0}, false);
 			} else {
-				this->drawImpl(Vector{0.0, 0.8, 0.0}, false);
+				// don't draw the bounding triangle or any of its children that touch
+				// bounding points, as they will be outside of the viewport
+				// (assuming BUILD_TRIANGLE_DEBUG is 0)
+				// this->drawImpl(Vector{0.0, 0.8, 0.0}, false);
 			}
 
 
@@ -273,8 +276,11 @@ struct TriangleDT {
 
 	void drawImpl(Vector color, bool filled) {
 		auto points = this->points();
+		auto circumcenter = this->circumcenter();
 
-		drawPoint(this->circumcenter(), device::color(1.0, 1.0, 1.0));
+		if (device::insideViewport(circumcenter.x, circumcenter.y)) {
+			drawPoint(circumcenter, device::color(1.0, 1.0, 1.0));
+		}
 
 		Triangle2D tri{
 				points[0],
@@ -441,7 +447,7 @@ void legalizeEdge(HalfEdge* half_edge) {
 		if (half_edge->opposite_point == i || opposite_edge->opposite_point == i) {
 			// I don't think it's actually possible for half_edge->opposite_point to be
 			// a bounding point, but whatever
-			spit("  should not flip SPECIAL 2");
+			// spit("  should not flip SPECIAL 2");
 			return;
 		}
 
@@ -462,7 +468,7 @@ void legalizeEdge(HalfEdge* half_edge) {
 			if (lines_intersect) {
 				definitely_flip = true;
 			} else {
-				spit("  should not flip SPECIAL 3");
+				// spit("  should not flip SPECIAL 3");
 				return;
 			}
 		}
@@ -507,7 +513,7 @@ void drawDT() {
 	dt_bounding_triangle.draw();
 
 	for (int i = 3; i < dt_points.size(); i++) {
-		drawPoint(dt_points[i], device::color(1.0, 1.0, 1.0));
+		drawPoint(dt_points[i], device::color(0.0, 1.0, 1.0));
 	}
 }
 
@@ -620,7 +626,7 @@ void TriangleDT::insertPoint(size_t point_index) {
 	legalizeEdge(t2->half_edge_1);
 	legalizeEdge(t3->half_edge_1);
 
-	spit("");
+	// spit("");
 }
 
 void legalizeEdgeImpl(HalfEdge* half_edge) {

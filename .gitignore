@@ -1,10 +1,13 @@
 *.swp
 *.dSYM/
+.vscode/
 
 
 buffdog
 spinner
 ray_tracer
+delaunay
+voronoi
 
 
 a.out

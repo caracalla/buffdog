@@ -20,8 +20,9 @@ typedef enum {
 	down,
 	left,
 	right,
-	x_key,  // also secretly the mousedown key
-	z_key
+	x_key,
+	z_key,
+	mouse_1
 } key_input;
 
 // x and y are adjusted by a sensitivity factor, see processInput definition

@@ -1,26 +1,37 @@
 # Buffdog
 
 ## TODO
-* tie velocity/movement to FPS
-* make the triangle drawing code less hideous
 * basic physics (collisions, angular momentum)
+* Voronoi shattering in 3D(see more on my [blog](http://caracal.la/01_intro.html))
 
-## Setup (non-Windows)
+## Setup (UNIX)
 1. Install SDL2
+    ```
+    git clone https://github.com/spurious/SDL-mirror.git SDL
+    cd SDL
+    mkdir build
+    cd build
+    ../configure
+    make
+    sudo make install
+    ```
 1. `make run`
 
 ## Setup (Windows)
 1. Install SDL2 as shown in [this guide](http://lazyfoo.net/tutorials/SDL/01_hello_SDL/windows/msvsnet2010u/index.php)
+    * TODO: find a less painful way to do this.  There must be a better way, but the SDL docs don't even bother telling you how to build SDL2 on Windows.  Typical.
 1. Open the project in Visual Studio (I used 2019)
+    * Currently, only the main `buffdog` project is configured to build on Windows.
 
 ## Targets
-* `buffdog` - Whatever I'm working on.  Currently, a real time rasterizer-cum-game engine.
-* `delaunay` - Interactive demonstration of Delaunay triangulation
+* `buffdog` - A real-time rasterizer, that is slowly becoming a game engine.  It currently runs on a software renderer I implemented (all SDL in terms of graphics is putting pixels where I tell it to).
+* `spinner` - My trusty spinning line, letting me know everything is working.
+* `delaunay` - A Delaunay Triangulation demonstration, which is a stepping stone to implementing 3D Voronoi shattering.
+* `voronoi` - A Voronoi diagram demonstration, the next step to shattering.
 
-### Legacy Targets (non-Windows only)
-* `spinner` - A simple spinning line, used to test that everything works.
-* `ray_tracer` - A rudimentary real time ray tracer.
-* `buffdog` - the rasterizer in the root directory, at a much earlier stage of development.
+### Legacy Targets (UNIX only)
+* `ray_tracer` - A rudimentary real-time ray tracer.
+* `buffdog` - The real-time rasterizer, at a much earlier stage of development.
 
 ## Resources and Inspirations
 * Gabriel Gambetta's [Computer Graphics from Scratch](https://www.gabrielgambetta.com/computer-graphics-from-scratch/introduction.html)
@@ -33,3 +44,7 @@
 ## Namesake
 
 https://www.youtube.com/user/buffcorrell
+
+## Debugging
+
+1. `lldb buffdog`

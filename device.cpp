@@ -174,27 +174,29 @@ namespace device {
 		}
 	}
 
-#define DEBUG_ALLOW_OOB 0
 #define DEBUG_CHECK_OOB 0
+#define DEBUG_FATAL_OOB 0
 #define DEBUG_LOG_OOB 0
 
 	void setPixel(int x, int y, int color) {
-#if DEBUG_ALLOW_OOB
+#if DEBUG_CHECK_OOB
 		if (x < 0 || y < 0 || x >= RES_X || y >= RES_Y) {
 			char message[1024];
 			snprintf(
 					message,
 					sizeof(message),
-					"trying to draw a pixel at x=%d and y=%d which is crazy illegal!!!\n",
+					"trying to draw a pixel at x=%d and y=%d which is crazy illegal!!! resolution is %d x %d\n",
 					x,
-					y);
+					y,
+					RES_X,
+					RES_Y);
 
-#if DEBUG_CHECK_OOB
+	#if DEBUG_FATAL_OOB
 			terminateFatal(message);
-#elif DEBUG_LOG_OOB
+	#elif DEBUG_LOG_OOB
 			printf("%s", message);
 			return;
-#else
+	#else
 			return;
 #endif
 		}
@@ -336,7 +338,7 @@ namespace device {
 					break;
 
 				case SDL_MOUSEBUTTONDOWN:
-					last_key = x_key;
+					last_key = mouse_1;
 					break;
 
 				case SDL_MOUSEMOTION:
