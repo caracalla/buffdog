@@ -2,7 +2,7 @@
 
 ## TODO
 * basic physics (collisions, angular momentum)
-* Voronoi shattering in 3D(see more on my [blog](http://caracal.la/01_intro.html))
+* Voronoi shattering in 3D (see more on my [blog](http://caracal.la/01_intro.html))
 
 ## Setup (UNIX)
 1. Install SDL2
@@ -15,16 +15,16 @@
     make
     sudo make install
     ```
-1. `make run`
+1. `cd` back into this directory and `make run`
 
 ## Setup (Windows)
 1. Install SDL2 as shown in [this guide](http://lazyfoo.net/tutorials/SDL/01_hello_SDL/windows/msvsnet2010u/index.php)
-    * TODO: find a less painful way to do this.  There must be a better way, but the SDL docs don't even bother telling you how to build SDL2 on Windows.  Typical.
+    * TODO: find a less painful way to do this.  There must be a better way, but the SDL docs don't seem to tell you how to build SDL2 on Windows.
 1. Open the project in Visual Studio (I used 2019)
     * Currently, only the main `buffdog` project is configured to build on Windows.
 
 ## Targets
-* `buffdog` - A real-time rasterizer, that is slowly becoming a game engine.  It currently runs on a software renderer I implemented (all SDL in terms of graphics is putting pixels where I tell it to).
+* `buffdog` - A real-time rasterizer, that is slowly becoming a game engine.  It currently runs on a software renderer I implemented (all SDL does in terms of graphics is put pixels where I tell it to).
 * `spinner` - My trusty spinning line, letting me know everything is working.
 * `delaunay` - A Delaunay Triangulation demonstration, which is a stepping stone to implementing 3D Voronoi shattering.
 * `voronoi` - A Voronoi diagram demonstration, the next step to shattering.
@@ -47,4 +47,5 @@ https://www.youtube.com/user/buffcorrell
 
 ## Debugging
 
+1. `make`
 1. `lldb buffdog`
