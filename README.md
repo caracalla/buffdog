@@ -24,7 +24,7 @@
     * Currently, only the main `buffdog` project is configured to build on Windows.
 
 ## Targets
-* `buffdog` - A real-time rasterizer, that is slowly becoming a game engine.  It currently runs on a software renderer I implemented (all SDL does in terms of graphics is put pixels where I tell it to).
+* `buffdog` - A real-time rasterizer, that is slowly becoming a game engine.  It currently runs on a custom software renderer (SDL is only used to create a window, fill individual pixels, and handle inputs).
 * `spinner` - My trusty spinning line, letting me know everything is working.
 * `delaunay` - A Delaunay Triangulation demonstration, which is a stepping stone to implementing 3D Voronoi shattering.
 * `voronoi` - A Voronoi diagram demonstration, the next step to shattering.
