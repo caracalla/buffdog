@@ -4,13 +4,14 @@
 #include <array>
 #include <vector>
 
-#include "device.h"
+#include "../device.h"
+#include "../matrix.h"
+#include "../vector.h"
+
 #include "entity.h"
-#include "matrix.h"
 #include "model.h"
 #include "scene.h"
 #include "triangle.h"
-#include "vector.h"
 
 #define NUM_FRUSTUM_PLANES 6
 // the max potential vertices for a triangle clipped against six planes is 9
@@ -441,7 +442,7 @@ struct Renderer {
 
 		// draw the background
 		// TODO: make this more interesting/dynamic
-		device::clearScreen(device::color(1.0, 1.0, 1.0));
+		device::clearScreen(device::getColorValue(1.0, 1.0, 1.0));
 
 		// move the lights into camera space
 		std::vector<Light> lights = scene.lights;

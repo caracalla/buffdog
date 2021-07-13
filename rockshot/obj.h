@@ -4,8 +4,9 @@
 #include <cstdlib>
 #include <utility>
 
+#include "../vector.h"
+
 #include "model.h"
-#include "vector.h"
 
 
 #define MAXCHAR 1024

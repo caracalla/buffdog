@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
-#include <random>
 #include <string>
 
 #ifdef _MSC_VER
@@ -12,6 +11,7 @@
 #endif
 
 #include "device.h"
+#include "util.h"
 
 
 // TODO: make this stuff configurable
@@ -52,20 +52,13 @@ key_input last_key;
 key_states_t key_states;
 mouse_input mouse_motion;
 
-std::mt19937 mt;
-
-void initRandom() {
-	std::random_device rd;
-	mt = std::mt19937(rd());
-}
-
 namespace device {
 	// ***************************************************************************
 	// device management
 	// ***************************************************************************
 
 	bool setUp() {
-		initRandom();
+		util::initRandom();
 		clearScreen(DEFAULT_BACKGROUND_COLOR);
 
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
@@ -374,7 +367,7 @@ namespace device {
 	// utility and other
 	// ***************************************************************************
 
-	uint32_t color(double red, double green, double blue) {
+	uint32_t getColorValue(double red, double green, double blue) {
 		#define clampToZero(value) (value >= 0.0 ? value : 0.0)
 
 		unsigned char red_value = 255 * clampToZero(red);
@@ -408,15 +401,5 @@ namespace device {
 				y > VIEWPORT_BUFFER &&
 				x < RES_X - VIEWPORT_BUFFER &&
 				y < RES_Y - VIEWPORT_BUFFER;
-	}
-
-	double randomDouble(double lower_bound, double upper_bound) {
-		std::uniform_real_distribution<double> dist(lower_bound, upper_bound);
-
-		return dist(mt);
-	}
-
-	int randomInt(int lower_bound, int upper_bound) {
-		return (int)randomDouble(lower_bound, upper_bound);
 	}
 }

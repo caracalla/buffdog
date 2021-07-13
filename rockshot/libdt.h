@@ -7,9 +7,10 @@
 #include <map>
 #include <unordered_set>
 
-#include "device.h"
+#include "../device.h"
+#include "../vector.h"
+
 #include "triangle.h"
-#include "vector.h"
 
 
 // The sentinel value, for example for half-edges belonging to the bounding
@@ -41,7 +42,7 @@ struct Circle {
 			int y = this->radius * sin(rad) + this->center.y;
 
 			if (device::insideViewport(x, y)) {
-				device::setPixel(x, y, device::color(0.0, 1.0, 0.0));
+				device::setPixel(x, y, device::getColorValue(0.0, 1.0, 0.0));
 			}
 		}
 	}
@@ -279,7 +280,7 @@ struct TriangleDT {
 		auto circumcenter = this->circumcenter();
 
 		if (device::insideViewport(circumcenter.x, circumcenter.y)) {
-			drawPoint(circumcenter, device::color(1.0, 1.0, 1.0));
+			drawPoint(circumcenter, device::getColorValue(1.0, 1.0, 1.0));
 		}
 
 		Triangle2D tri{
@@ -513,7 +514,7 @@ void drawDT() {
 	dt_bounding_triangle.draw();
 
 	for (int i = 3; i < dt_points.size(); i++) {
-		drawPoint(dt_points[i], device::color(0.0, 1.0, 1.0));
+		drawPoint(dt_points[i], device::getColorValue(0.0, 1.0, 1.0));
 	}
 }
 

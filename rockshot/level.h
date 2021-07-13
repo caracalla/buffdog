@@ -1,10 +1,11 @@
 #ifndef BUFFDOG_LEVEL
 #define BUFFDOG_LEVEL
 
+#include "../matrix.h"
+#include "../vector.h"
+
 #include "entity.h"
-#include "matrix.h"
 #include "model.h"
-#include "vector.h"
 
 
 struct Level : public Entity {

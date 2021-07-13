@@ -21,7 +21,7 @@ int main() {
 	while (device::running()) {
 		usleep(DELAY_US);
 
-		device::clearScreen(device::color(0.1, 0.1, 0.1));
+		device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));
 		spinner::draw(Vector{0.0, 1.0, 0.0});
 		device::updateScreen();
 		device::processInput();

@@ -1,3 +1,5 @@
+#include "../device.h"
+
 #include "scene.h"
 
 
@@ -62,8 +64,11 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 		}
 	}
 
+	// We're reading from device input in both of these functions. Ideally
+	// readInput() could convert the input into some kind of series of actions.
+	// I think quake does this.  This way, player could avoid including all of
+	// device.h
 	this->readInput();
-
 	this->player.move(frame_duration);
 
 	this->camera.position = this->player.position;

@@ -6,7 +6,7 @@
 
 
 // the color of the "sky" (for now)
-#define DEFAULT_BACKGROUND_COLOR device::color(0.1, 0.1, 0.1)
+#define DEFAULT_BACKGROUND_COLOR device::getColorValue(0.1, 0.1, 0.1)
 
 // easy debug printing
 #define spit(message) printf("%s\n", message)
@@ -94,7 +94,7 @@ namespace device {
 
 	// converts color values into a pixel color value
 	// red, green, and blue must be between 0.0 and 1.0
-	uint32_t color(double red, double green, double blue);
+	uint32_t getColorValue(double red, double green, double blue);
 
 	// get/set z buffer value for pixel
 	double& zBufferAt(size_t x, size_t y);
@@ -103,10 +103,6 @@ namespace device {
 	unsigned int getYRes();
 
 	bool insideViewport(int x, int y);
-
-	// [lower_bound, upper_bound)
-	double randomDouble(double lower_bound, double upper_bound);
-	int randomInt(int lower_bound, int upper_bound);
 }
 
 #endif

@@ -8,11 +8,13 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "../device.h"
+#include "../matrix.h"
+#include "../vector.h"
+
 #include "bmp.h"
-#include "device.h"
 #include "entity.h"
 #include "level.h"
-#include "matrix.h"
 #include "model.h"
 #include "obj.h"
 #include "ppm.h"
@@ -20,7 +22,6 @@
 #include "scene.h"
 #include "texture.h"
 #include "triangle.h"
-#include "vector.h"
 
 
 int fps = 0;

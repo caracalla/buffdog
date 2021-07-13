@@ -4,12 +4,12 @@
 #include <chrono>
 #include <vector>
 
+#include "../vector.h"
+
 #include "entity.h"
-#include "device.h"
 #include "level.h"
 #include "model.h"
 #include "player.h"
-#include "vector.h"
 
 
 // define viewport
@@ -73,7 +73,7 @@ struct Scene {
 	void readInput();
 
 	// int getBackgroundColor() {
-	// 	return device::color(backgroundColor.x, backgroundColor.y, backgroundColor.z);
+	// 	return device::getColorValue(backgroundColor.x, backgroundColor.y, backgroundColor.z);
 	// }
 };
 

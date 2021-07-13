@@ -1,3 +1,6 @@
+#include "../device.h"
+#include "../line.h"
+
 #include "triangle.h"
 
 
@@ -13,7 +16,7 @@ void drawLineFromPoints(Point start, Point end, int color) {
 }
 
 int colorFromVector(Vector vec) {
-	return device::color(vec.x, vec.y, vec.z);
+	return device::getColorValue(vec.x, vec.y, vec.z);
 }
 
 void drawPoint(Point point, int color) {

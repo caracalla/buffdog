@@ -4,9 +4,10 @@
 #include <chrono>
 #include <functional>
 
-#include "matrix.h"
+#include "../matrix.h"
+#include "../vector.h"
+
 #include "model.h"
-#include "vector.h"
 
 
 struct Entity;

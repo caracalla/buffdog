@@ -5,10 +5,10 @@
 #include <vector>
 #include <utility>
 
+#include "../vector.h"
+
 #include "texture.h"
-#include "device.h"
 #include "triangle.h"
-#include "vector.h"
 
 
 // Logic for drawing models

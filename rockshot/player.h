@@ -3,10 +3,10 @@
 
 #include <chrono>
 
-#include "device.h"
+#include "../vector.h"
+
 #include "entity.h"
 #include "model.h"
-#include "vector.h"
 
 
 struct Player : public Entity {

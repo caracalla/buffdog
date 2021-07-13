@@ -6,9 +6,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "device.h"
+#include "../vector.h"
+
 #include "texture.h"
-#include "vector.h"
 
 
 #define DATA_OFFSET_OFFSET 0x000A

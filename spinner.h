@@ -16,6 +16,6 @@ namespace spinner {
 		int x = ROUND(sin(theta) * 50) + x_mid;
 		int y = ROUND(cos(theta) * 50) + y_mid;
 
-		drawLine(x_mid, y_mid, x, y, device::color(color.x, color.y, color.z));
+		drawLine(x_mid, y_mid, x, y, device::getColorValue(color.x, color.y, color.z));
 	}
 }

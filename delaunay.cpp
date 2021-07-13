@@ -6,9 +6,8 @@
 #include <cmath>
 #include <vector>
 
-#include "libdt.h"
+#include "rockshot/libdt.h"
 #include "line.h"
-#include "spinner.h"
 
 
 #define DELAY_US 10000
@@ -31,7 +30,7 @@ int main() {
 	while (device::running()) {
 		usleep(DELAY_US);
 
-		// device::clearScreen(device::color(0.1, 0.1, 0.1));s
+		// device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));s
 
 		key_input key = device::get_next_key();
 
@@ -41,7 +40,7 @@ int main() {
 
 		mouse_input mouse = device::getMouseMotion();
 
-		device::clearScreen(device::color(0.1, 0.1, 0.1));
+		device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));
 		drawDT();
 
 		if (device::insideViewport(mouse.pos_x, mouse.pos_y)) {
@@ -90,7 +89,7 @@ int main() {
 
 		Point circumcenter = dt_bounding_triangle.circumcenter();
 		if (device::insideViewport(circumcenter.x, circumcenter.y)) {
-			drawPoint(circumcenter, device::color(1.0, 0.0, 1.0));
+			drawPoint(circumcenter, device::getColorValue(1.0, 0.0, 1.0));
 		}
 
 		device::updateScreen();
@@ -110,7 +109,7 @@ int main() {
 
 		mouse_input mouse = device::getMouseMotion();
 
-		device::clearScreen(device::color(0.1, 0.1, 0.1));
+		device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));
 		drawDT();
 
 		if (device::insideViewport(mouse.pos_x, mouse.pos_y)) {

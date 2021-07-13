@@ -3,9 +3,9 @@
 
 #include <cstdlib>
 
-#include "device.h"
+#include "../vector.h"
+
 #include "texture.h"
-#include "vector.h"
 
 #define MAXCHAR 1024
 

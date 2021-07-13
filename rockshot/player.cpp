@@ -1,4 +1,7 @@
-#include "matrix.h"
+#include "../device.h"
+#include "../matrix.h"
+#include "../util.h"
+
 #include "player.h"
 #include "scene.h"
 
@@ -172,9 +175,9 @@ void Player::fireBullet() {
 Entity makeSpewBullet(Model* model, Vector position, Vector direction) {
 	// fire at random within a circle
 	Vector random_jitter = Vector{
-			device::randomDouble(-1, 1),
-			device::randomDouble(-1, 1),
-			device::randomDouble(-1, 1)}.unit().scalarMultiply(SPEW_JITTER_AMOUNT);
+			util::randomDouble(-1, 1),
+			util::randomDouble(-1, 1),
+			util::randomDouble(-1, 1)}.unit().scalarMultiply(SPEW_JITTER_AMOUNT);
 
 	Vector initial_velocity = direction.add(random_jitter).
 			scalarMultiply(35 / MICROSECONDS);

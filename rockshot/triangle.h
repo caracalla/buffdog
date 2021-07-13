@@ -3,10 +3,11 @@
 
 #include <cmath>
 
-#include "device.h"
-#include "line.h"
+#include "../device.h"
+#include "../line.h"
+#include "../vector.h"
+
 #include "texture.h"
-#include "vector.h"
 
 
 // Logic for drawing 2D triangles

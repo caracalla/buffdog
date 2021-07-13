@@ -1,5 +1,5 @@
 P=buffdog
-OBJECTS=device.cpp line.cpp scene.cpp model.cpp triangle.cpp player.cpp
+OBJECTS=device.cpp line.cpp util.cpp
 CXXFLAGS=-g -Wall -std=c++17
 LDLIBS=-lm -lSDL2
 CC=clang++
@@ -18,7 +18,7 @@ spinner: $(OBJECTS)
 spin: clean
 	make spinner && ./spinner
 
-delaunay: $(OBJECTS)
+delaunay: $(OBJECTS) rockshot/triangle.cpp
 
 dt: clean
 	make delaunay && ./delaunay

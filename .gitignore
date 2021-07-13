@@ -1,6 +1,7 @@
 *.swp
 *.dSYM/
 .vscode/
+.DS_Store
 
 
 buffdog
