@@ -7,7 +7,9 @@
 #include <map>
 #include <unordered_set>
 
+#include "../circle.h"
 #include "../device.h"
+#include "../point.h"
 #include "../vector.h"
 
 #include "triangle.h"
@@ -28,25 +30,6 @@ double distanceBetweenPoints(Point p1, Point p2) {
 	int y_diff = p1.y - p2.y;
 	return sqrt(x_diff * x_diff + y_diff * y_diff);
 }
-
-
-struct Circle {
-	Point center;
-	double radius;
-
-	void draw() {
-		for (int i = 0; i < 360; i++) {
-			double rad = i * M_PI / 180;
-
-			int x = this->radius * cos(rad) + this->center.x;
-			int y = this->radius * sin(rad) + this->center.y;
-
-			if (device::insideViewport(x, y)) {
-				device::setPixel(x, y, device::getColorValue(0.0, 1.0, 0.0));
-			}
-		}
-	}
-};
 
 
 struct TriangleDT;
@@ -197,6 +180,8 @@ struct TriangleDT {
 		auto points = this->points();
 		// all points are equidistant from circumcenter
 		result.radius = distanceBetweenPoints(result.center, points[0]);
+
+		result.color = Vector{0.0, 1.0, 0.0};
 
 		return result;
 	}

@@ -80,13 +80,14 @@ namespace device {
 	// call before rendering on each frame
 	void processInput();
 
-	// get the last key pressed
+	// get the last key pressed (but not necessarily held down)
 	// TODO: handle multiple key presses, keyup and keydown events separately
-	key_input get_next_key();
+	key_input getNextKey();
 
 	mouse_input getMouseMotion();
 
-	key_states_t get_key_states();
+	// get which keys are being pressed (i.e. held down)
+	key_states_t getKeyStates();
 
 	// ***************************************************************************
 	// utility and other
@@ -103,6 +104,9 @@ namespace device {
 	unsigned int getYRes();
 
 	bool insideViewport(int x, int y);
+
+	// logs FPS once per second (but is called every frame, hence the "maybe")
+	void maybeLogFPS();
 }
 
 #endif

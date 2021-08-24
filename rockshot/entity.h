@@ -103,16 +103,16 @@ struct Entity {
 		// point_of_application = rotmat.multiplyVector(point_of_application);
 
 		Vector r = point_of_application.subtract(this->centroid());
-		printf("\nr: "); r.log();
+		// printf("\nr: "); r.log();
 		Vector new_torque = applied_force.crossProduct(r);
 
 		// shouldn't it be this? but this goes backwards?
 		// Vector new_torque = r.crossProduct(applied_force);
 
-		printf("torque: "); new_torque.log();
+		// printf("torque: "); new_torque.log();
 		// TODO: rotate each torque axis somehow?
 		Vector rotated_torque = rotmat.multiplyVector(new_torque);
-		printf("rotated torque: "); rotated_torque.log();
+		// printf("rotated torque: "); rotated_torque.log();
 		this->torque = this->torque.add(rotated_torque);
 
 		this->force = this->force.add(applied_force);
@@ -133,7 +133,7 @@ struct Entity {
 			// assume scale is roughly "radius"
 			double MoI = this->mass * this->scale * this->scale * 2 / 3;
 			Vector delta_av = this->torque.scalarMultiply(MoI).scalarMultiply(dt);
-			printf("delta_av: "); delta_av.log();
+			// printf("delta_av: "); delta_av.log();
 
 			this->angular_velocity = this->angular_velocity.add(delta_av);
 		}
@@ -146,7 +146,7 @@ struct Entity {
 		Vector delta_r = this->angular_velocity.scalarMultiply(dt);
 		// Matrix rotmat = Matrix::makeRotationMatrix(this->rotation);
 		// delta_r = rotmat.multiplyVector(delta_r);
-		printf("delta_r: "); delta_r.log();
+		// printf("delta_r: "); delta_r.log();
 		this->rotation = this->rotation.add(delta_r);
 
 		#define TWO_PI (M_PI * 2)

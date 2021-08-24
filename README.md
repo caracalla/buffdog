@@ -19,7 +19,7 @@
 
 ## Targets
 * `spinner` - My trusty spinning line, a basic sanity check, letting me know everything is working.
-* `buffdog` - Whatever I'm working on.  Right now, I'm messing around with 2D and 3D collision physics.
+* `buffdog` - Whatever I'm working on.  Right now, I'm messing around with 2D collision physics.
 * `rockshot` - A real-time rasterizer, which is slowly becoming a game engine.  It currently runs on a custom software renderer (SDL is only used to create a window, fill individual pixels, and handle inputs).
 * `delaunay` - A Delaunay Triangulation demonstration, which is a stepping stone to implementing 3D Voronoi shattering.
 * `voronoi` - A Voronoi diagram demonstration, the next step to shattering.

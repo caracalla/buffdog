@@ -79,7 +79,7 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 }
 
 void Scene::readInput() {
-	key_input next_key = device::get_next_key();
+	key_input next_key = device::getNextKey();
 
 	if (next_key) {
 		switch(next_key) {
@@ -94,7 +94,7 @@ void Scene::readInput() {
 		}
 	}
 
-	key_states_t key_states = device::get_key_states();
+	key_states_t key_states = device::getKeyStates();
 
 	if (key_states.spew) {
 		// continuously shoot bullets down the view normal with basic physics

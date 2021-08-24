@@ -32,7 +32,7 @@ int main() {
 
 		// device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));s
 
-		key_input key = device::get_next_key();
+		key_input key = device::getNextKey();
 
 		if (key == z_key) {
 			initDT();
@@ -102,7 +102,7 @@ int main() {
 		usleep(DELAY_US);
 
 		// press Z to reset the triangulation to a fresh state
-		key_input key = device::get_next_key();
+		key_input key = device::getNextKey();
 		if (key == z_key) {
 			initDT();
 		}

@@ -5,18 +5,13 @@
 
 #include "../device.h"
 #include "../line.h"
+#include "../point.h"
 #include "../vector.h"
 
 #include "texture.h"
 
 
 // Logic for drawing 2D triangles
-
-
-struct Point {
-	int x;
-	int y;
-};
 
 
 int colorFromVector(Vector vec);

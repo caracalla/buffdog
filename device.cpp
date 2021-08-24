@@ -22,6 +22,30 @@
 #define MOUSE_SENSITIVITY_FACTOR 1000
 
 
+// logic to log the number of C++ memory allocations are happening behind the
+// scenes
+#define LOG_MEMORY_ALLOCATIONS 0
+#if LOG_MEMORY_ALLOCATIONS
+int new_calls = 0;
+int delete_calls = 0;
+
+void* operator new(size_t size) {
+	new_calls += 1;
+	return malloc(size);
+}
+
+void operator delete(void* mem) {
+	delete_calls += 1;
+	free(mem);
+}
+
+void printMemoryAllocations() {
+	printf("new calls: %d, delete calls: %d\n", new_calls, delete_calls);
+	new_calls = 0;
+	delete_calls = 0;
+}
+#endif
+
 
 // the framebuffer
 typedef struct {
@@ -39,9 +63,9 @@ void zBufferReset() {
 	memset(zbuffer, 0, RES_X * RES_Y * sizeof(double));
 }
 
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *texture;
+SDL_Window* window;
+SDL_Renderer* renderer;
+SDL_Texture* texture;
 SDL_Event event;
 
 bool is_running = false;
@@ -51,6 +75,11 @@ key_input key_queue[64];
 key_input last_key;
 key_states_t key_states;
 mouse_input mouse_motion;
+
+// FPS logging stuff
+int fps = 0;
+std::chrono::steady_clock::time_point last_fps_print_time;
+
 
 namespace device {
 	// ***************************************************************************
@@ -66,7 +95,7 @@ namespace device {
 			return false;
 		}
 
-		SDL_Log("Initialization successful");
+		SDL_Log("SDL Initialization successful");
 
 		window = SDL_CreateWindow(
 				"buffdog",
@@ -136,6 +165,8 @@ namespace device {
 		}
 
 		SDL_Log("Device setup successful!");
+
+		last_fps_print_time = std::chrono::steady_clock::now();
 
 		return true;
 	}
@@ -212,6 +243,13 @@ namespace device {
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, texture, nullptr, nullptr);
 		SDL_RenderPresent(renderer);
+
+		maybeLogFPS();
+
+#if LOG_MEMORY_ALLOCATIONS
+		// will print once per frame, instead of per second like FPS
+		printMemoryAllocations();
+#endif
 	}
 
 	// ***************************************************************************
@@ -351,7 +389,7 @@ namespace device {
 		}
 	}
 
-	key_input get_next_key() {
+	key_input getNextKey() {
 		return last_key;
 	}
 
@@ -359,7 +397,7 @@ namespace device {
 		return mouse_motion;
 	}
 
-	key_states_t get_key_states() {
+	key_states_t getKeyStates() {
 		return key_states;
 	}
 
@@ -401,5 +439,18 @@ namespace device {
 				y > VIEWPORT_BUFFER &&
 				x < RES_X - VIEWPORT_BUFFER &&
 				y < RES_Y - VIEWPORT_BUFFER;
+	}
+
+	void maybeLogFPS() {
+		fps++;
+		auto now = std::chrono::steady_clock::now();
+		auto time_since_last_print = now - last_fps_print_time;
+
+		if (time_since_last_print >= std::chrono::seconds(1)) {
+			printf("FPS: %d\n", fps);
+
+			last_fps_print_time = now;
+			fps = 0;
+		}
 	}
 }

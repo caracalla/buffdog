@@ -5,7 +5,6 @@
 
 #include "device.h"
 
-
 struct Vector {
 	double x;
 	double y;

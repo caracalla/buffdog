@@ -24,30 +24,11 @@
 #include "triangle.h"
 
 
-int fps = 0;
-std::chrono::steady_clock::time_point last_print_time;
-
-void logFPS() {
-	fps++;
-	auto now = std::chrono::steady_clock::now();
-	auto time_since_last_print = now - last_print_time;
-
-	if (time_since_last_print >= std::chrono::seconds(1)) {
-		printf("FPS: %d\n", fps);
-
-		last_print_time = now;
-		fps = 0;
-	}
-}
-
-
-
 int main(int argc, char** argv) {
 	if (!device::setUp()) {
 		return 1;
 	}
 
-	last_print_time = std::chrono::steady_clock::now();
 	auto last_frame_time = std::chrono::steady_clock::now();
 
 	// add level geometry
@@ -118,8 +99,6 @@ int main(int argc, char** argv) {
 		last_frame_time = now;
 
 		scene.step(frame_duration);
-
-		logFPS();
 	}
 
 	device::tearDown();

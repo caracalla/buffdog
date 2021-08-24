@@ -30,7 +30,7 @@ void Player::move(std::chrono::microseconds frame_duration) {
 	}
 
 	// handle key inputs
-	key_states_t key_states = device::get_key_states();
+	key_states_t key_states = device::getKeyStates();
 
 	Vector translation = {0, 0, 0, 0};
 
