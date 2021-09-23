@@ -22,3 +22,8 @@ delaunay: $(OBJECTS) rockshot/triangle.cpp
 
 dt: clean
 	make delaunay && ./delaunay
+
+.PHONY: wad bsp
+
+wad: 
+	rm -f wad && $(CC) $(CXXFLAGS) -o wad util.cpp wad.cpp && ./wad
