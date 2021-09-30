@@ -245,6 +245,63 @@ struct Renderer {
 		return result;
 	}
 
+	// draw the axes as a helpful diagram in front of the player
+	void drawPointers(Camera& camera) {
+		Vector cameraDirection = Matrix::makeRotationMatrix(camera.rotation).
+				multiplyVector(Vector::direction(0, 0, -1)).unit();
+
+		// kOrigin
+		Vector offset = cameraDirection.scalarMultiply(2);
+		Vector position = camera.position.add(offset);
+
+		Vector x = position.add(Vector::direction(0.5, 0, 0));
+		Vector x1 = position.add(Vector::direction(0.45, 0.05, 0));
+		Vector x2 = position.add(Vector::direction(0.45, -0.05, 0));
+		Vector y = position.add(Vector::direction(0, 0.5, 0));
+		Vector y1 = position.add(Vector::direction(0, 0.45, 0.05));
+		Vector y2 = position.add(Vector::direction(0, 0.45, -0.05));
+		Vector z = position.add(Vector::direction(0, 0, 0.5));
+		Vector z1 = position.add(Vector::direction(0.05, 0, 0.45));
+		Vector z2 = position.add(Vector::direction(-0.05, 0, 0.45));
+
+		position = this->camera_matrix.multiplyVector(position);
+		x = this->camera_matrix.multiplyVector(x);
+		x1 = this->camera_matrix.multiplyVector(x1);
+		x2 = this->camera_matrix.multiplyVector(x2);
+		y = this->camera_matrix.multiplyVector(y);
+		y1 = this->camera_matrix.multiplyVector(y1);
+		y2 = this->camera_matrix.multiplyVector(y2);
+		z = this->camera_matrix.multiplyVector(z);
+		z1 = this->camera_matrix.multiplyVector(z1);
+		z2 = this->camera_matrix.multiplyVector(z2);
+
+		Point po = projectVertexToScreen(position, camera.viewport);
+
+		Point px = projectVertexToScreen(x, camera.viewport);
+		drawLine(po.x, po.y, px.x, px.y, device::getColorValue(1.0, 0.0, 0.0));
+		Point px1 = projectVertexToScreen(x1, camera.viewport);
+		Point px2 = projectVertexToScreen(x2, camera.viewport);
+		drawLine(px.x, px.y, px1.x, px1.y, device::getColorValue(1.0, 0.0, 0.0));
+		drawLine(px.x, px.y, px2.x, px2.y, device::getColorValue(1.0, 0.0, 0.0));
+		drawLine(px1.x, px1.y, px2.x, px2.y, device::getColorValue(1.0, 0.0, 0.0));
+
+		Point py = projectVertexToScreen(y, camera.viewport);
+		drawLine(po.x, po.y, py.x, py.y, device::getColorValue(0.0, 1.0, 0.0));
+		Point py1 = projectVertexToScreen(y1, camera.viewport);
+		Point py2 = projectVertexToScreen(y2, camera.viewport);
+		drawLine(py.x, py.y, py1.x, py1.y, device::getColorValue(0.0, 1.0, 0.0));
+		drawLine(py.x, py.y, py2.x, py2.y, device::getColorValue(0.0, 1.0, 0.0));
+		drawLine(py1.x, py1.y, py2.x, py2.y, device::getColorValue(0.0, 1.0, 0.0));
+
+		Point pz = projectVertexToScreen(z, camera.viewport);
+		drawLine(po.x, po.y, pz.x, pz.y, device::getColorValue(0.0, 0.0, 1.0));
+		Point pz1 = projectVertexToScreen(z1, camera.viewport);
+		Point pz2 = projectVertexToScreen(z2, camera.viewport);
+		drawLine(pz.x, pz.y, pz1.x, pz1.y, device::getColorValue(0.0, 0.0, 1.0));
+		drawLine(pz.x, pz.y, pz2.x, pz2.y, device::getColorValue(0.0, 0.0, 1.0));
+		drawLine(pz1.x, pz1.y, pz2.x, pz2.y, device::getColorValue(0.0, 0.0, 1.0));
+	}
+
 	void drawModel(Model item, Viewport& viewport, std::vector<Light>& lights) {
 		// bool is_vertex_visible[item.vertices.size()];
 		// Point projected_vertices[item.vertices.size()];
@@ -467,6 +524,8 @@ struct Renderer {
 						entity.model_in_world), scene.camera.viewport, lights);
 			}
 		}
+
+		drawPointers(scene.camera);
 	}
 };
 

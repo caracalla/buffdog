@@ -40,9 +40,9 @@ int main(int argc, char** argv) {
 	Level level;
 	level.model = &city;
 	level.scale = 12.0;
-	level.position = Vector::direction(0, 0, 0);
+	level.position = Vector::direction(-38, 0, -38);
 	level.rotation = Vector::direction(0, 0, 0);
-	level.player_start_position = Vector::point(38, 0, 38);
+	level.player_start_position = Vector::point(0, 0, 0); // Vector::point(-10, -10, -10);
 	level.player_start_rotation = Vector::direction(0, M_PI_2, 0);
 	level.init();
 
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 	Entity cube_ent{
 			&cube,
 			1.0,
-			Vector::direction(48, 2, 40),
+			Vector::direction(15, 2, 0),
 			Vector::direction(0, 0, 0)};
 
 	scene.addEntityWithAction(cube_ent, [](Entity* self) {

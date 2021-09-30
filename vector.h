@@ -39,11 +39,11 @@ struct Vector {
 	}
 
 	static Vector point(double x, double y, double z) {
-		return Vector{x, y, z, 1};
+		return Vector{x, y, z, 1.0};
 	}
 
 	static Vector direction(double x, double y, double z) {
-		return Vector{x, y, z, 0};
+		return Vector{x, y, z, 0.0};
 	}
 
 	static Vector color(double r, double g, double b) {
