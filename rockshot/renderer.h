@@ -277,29 +277,31 @@ struct Renderer {
 
 		Point po = projectVertexToScreen(position, camera.viewport);
 
+		// draw line from the "origin" along the x axis
 		Point px = projectVertexToScreen(x, camera.viewport);
-		drawLine(po.x, po.y, px.x, px.y, device::getColorValue(1.0, 0.0, 0.0));
+		drawLine(po, px, device::getColorValue(1.0, 0.0, 0.0));
+		// draw two little lines from the end of the line, to make an arrow
 		Point px1 = projectVertexToScreen(x1, camera.viewport);
 		Point px2 = projectVertexToScreen(x2, camera.viewport);
-		drawLine(px.x, px.y, px1.x, px1.y, device::getColorValue(1.0, 0.0, 0.0));
-		drawLine(px.x, px.y, px2.x, px2.y, device::getColorValue(1.0, 0.0, 0.0));
-		drawLine(px1.x, px1.y, px2.x, px2.y, device::getColorValue(1.0, 0.0, 0.0));
+		drawLine(px, px1, device::getColorValue(1.0, 0.0, 0.0));
+		drawLine(px, px2, device::getColorValue(1.0, 0.0, 0.0));
+		drawLine(px1, px2, device::getColorValue(1.0, 0.0, 0.0));
 
 		Point py = projectVertexToScreen(y, camera.viewport);
-		drawLine(po.x, po.y, py.x, py.y, device::getColorValue(0.0, 1.0, 0.0));
+		drawLine(po, py, device::getColorValue(0.0, 1.0, 0.0));
 		Point py1 = projectVertexToScreen(y1, camera.viewport);
 		Point py2 = projectVertexToScreen(y2, camera.viewport);
-		drawLine(py.x, py.y, py1.x, py1.y, device::getColorValue(0.0, 1.0, 0.0));
-		drawLine(py.x, py.y, py2.x, py2.y, device::getColorValue(0.0, 1.0, 0.0));
-		drawLine(py1.x, py1.y, py2.x, py2.y, device::getColorValue(0.0, 1.0, 0.0));
+		drawLine(py, py1, device::getColorValue(0.0, 1.0, 0.0));
+		drawLine(py, py2, device::getColorValue(0.0, 1.0, 0.0));
+		drawLine(py1, py2, device::getColorValue(0.0, 1.0, 0.0));
 
 		Point pz = projectVertexToScreen(z, camera.viewport);
-		drawLine(po.x, po.y, pz.x, pz.y, device::getColorValue(0.0, 0.0, 1.0));
+		drawLine(po, pz, device::getColorValue(0.0, 0.0, 1.0));
 		Point pz1 = projectVertexToScreen(z1, camera.viewport);
 		Point pz2 = projectVertexToScreen(z2, camera.viewport);
-		drawLine(pz.x, pz.y, pz1.x, pz1.y, device::getColorValue(0.0, 0.0, 1.0));
-		drawLine(pz.x, pz.y, pz2.x, pz2.y, device::getColorValue(0.0, 0.0, 1.0));
-		drawLine(pz1.x, pz1.y, pz2.x, pz2.y, device::getColorValue(0.0, 0.0, 1.0));
+		drawLine(pz, pz1, device::getColorValue(0.0, 0.0, 1.0));
+		drawLine(pz, pz2, device::getColorValue(0.0, 0.0, 1.0));
+		drawLine(pz1, pz2, device::getColorValue(0.0, 0.0, 1.0));
 	}
 
 	void drawModel(Model item, Viewport& viewport, std::vector<Light>& lights) {

@@ -1,6 +1,9 @@
 #ifndef BUFFDOG_POINT
 #define BUFFDOG_POINT
 
+#include <cmath>
+
+
 struct Point {
 	int x;
 	int y;

@@ -88,6 +88,7 @@ struct Vector {
 		return (this->x * this->x) + (this->y * this->y) + (this->z * this->z);
 	}
 
+	// square roots are expensive apparently
 	double length() const {
 		return sqrt(this->squaredLength());
 	}
@@ -119,6 +120,11 @@ struct Vector {
 		return result;
 	}
 
+	// direction + direction = direction
+	// direction - direction = direction
+	// point + direction = point
+	// point - point = direction
+	// point + point is INVALID
 	Vector add(Vector other) const {
 		Vector result;
 

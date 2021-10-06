@@ -8,13 +8,6 @@ int min(int a, int b) { return (a < b ? a : b); }
 int max(int a, int b) { return (a > b ? a : b); }
 
 
-
-
-
-void drawLineFromPoints(Point start, Point end, int color) {
-	drawLine(start.x, start.y, end.x, end.y, color);
-}
-
 int colorFromVector(Vector vec) {
 	return device::getColorValue(vec.x, vec.y, vec.z);
 }
@@ -132,9 +125,9 @@ Vector getBarycentricWeights(Point p0, Point p1, Point p2, int x, int y) {
 
 void Triangle2D::draw() {
 	int color = colorFromVector(this->color);
-	drawLineFromPoints(this->p0, this->p1, color);
-	drawLineFromPoints(this->p1, this->p2, color);
-	drawLineFromPoints(this->p2, this->p0, color);
+	drawLine(this->p0, this->p1, color);
+	drawLine(this->p1, this->p2, color);
+	drawLine(this->p2, this->p0, color);
 }
 
 void Triangle2D::fill() {

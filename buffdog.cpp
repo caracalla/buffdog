@@ -22,7 +22,7 @@ int colorFromVector(Vector vec) {
 void drawPointLine(Point start, Point end, Vector color) {
   int color_value = colorFromVector(color);
 
-  drawLine(start.x, start.y, end.x, end.y, color_value);
+  drawLine(start, end, color_value);
 }
 
 

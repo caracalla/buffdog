@@ -32,7 +32,7 @@ void drawHorizontalLine(int y, int x1, int x2, int color) {
 }
 
 // midpoint algorithm
-void drawLine(int x1, int y1, int x2, int y2, int color) {
+void drawLineImpl(int x1, int y1, int x2, int y2, int color) {
 	int dx = x2 - x1;
 	int dy = y2 - y1;
 	int decider;
@@ -143,4 +143,8 @@ void drawLine(int x1, int y1, int x2, int y2, int color) {
 			}
 		}
 	}
+}
+
+void drawLine(Point start, Point end, int color) {
+	drawLineImpl(start.x, start.y, end.x, end.y, color);
 }
