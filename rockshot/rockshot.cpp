@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	level.position = Vector::direction(-38, 0, -38);
 	level.rotation = Vector::direction(0, 0, 0);
 	level.player_start_position = Vector::point(0, 0, 0); // Vector::point(-10, -10, -10);
-	level.player_start_rotation = Vector::direction(0, M_PI_2, 0);
+	level.player_start_rotation = Vector::direction(0, M_PI_2 + M_PI_4, 0);
 	level.init();
 
 	spit("Level created successfully");

@@ -9,7 +9,7 @@
 #define DEFAULT_BACKGROUND_COLOR device::getColorValue(0.1, 0.1, 0.1)
 
 // easy debug printing
-#define spit(message) printf("%s\n", message)
+#define spit(message) device::logOncePerSecond("%s\n", message)
 
 #define terminateFatal(message) device::selfDestruct(message, __LINE__, __FILE__)
 
@@ -105,8 +105,11 @@ namespace device {
 
 	bool insideViewport(int x, int y);
 
-	// logs FPS once per second (but is called every frame, hence the "maybe")
-	void maybeLogFPS();
+	// logs FPS once per second
+	void logFPS();
+
+	// helpers for per-second debug logging, to avoid spamming every frame
+	void logOncePerSecond(const char* fmt, ...);
 }
 
 #endif

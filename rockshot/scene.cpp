@@ -58,7 +58,7 @@ void flushEntityBuffer(std::vector<Entity>& entities) {
 void Scene::step(std::chrono::microseconds frame_duration) {
 	for (auto& entity : this->entities) {
 		if (entity.active) {
-			entity.model_in_world = entity.buildWorldModel(*(entity.model));
+			entity.buildWorldModel();
 
 			if (entity.has_action) {
 				entity.action(&entity);
@@ -74,7 +74,7 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 	// device.h
 	this->readInput();
 	this->player.move(frame_duration);
-
+	// if desired, we could move the camera separately (for now it moves with the player, in first person view)
 	this->camera.moveFromUserInputs(frame_duration);
 
 	flushEntityBuffer(this->entities);

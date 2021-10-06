@@ -141,8 +141,8 @@ struct Vector {
 		return result;
 	}
 
-	void log() const {
-		printf("{%f, %f, %f, %f}\n", this->x, this->y, this->z, this->w);
+	void log(const char* identifier = "") const {
+		device::logOncePerSecond("vector %s: {%f, %f, %f, %f}\n", identifier, this->x, this->y, this->z, this->w);
 	}
 };
 

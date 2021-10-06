@@ -80,6 +80,29 @@ struct Model {
 		this->texture = texture;
 		this->has_texture = true;
 	}
+
+	// this is kind of useless for logging regular models, but it can be useful
+	// for world models
+	void log(const char* identifier = "model") {
+		Vector bbox_max;
+		Vector bbox_min;
+
+		for (auto& vertex : this->vertices) {
+			for (int i = 0; i < 3; i++) {
+				if (vertex.at(i) > bbox_max.at(i)) {
+					bbox_max.at(i) = vertex.at(i);
+				}
+
+				if (vertex.at(i) < bbox_min.at(i)) {
+					bbox_min.at(i) = vertex.at(i);
+				}
+			}
+		}
+
+		device::logOncePerSecond("model %s: \n", identifier);
+		bbox_max.log("    max");
+		bbox_min.log("    min");
+	}
 };
 
 Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, double ez);

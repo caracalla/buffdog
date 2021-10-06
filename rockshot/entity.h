@@ -21,7 +21,7 @@ typedef std::function<void(Entity*)> EntityAction;
 // this is basically just a wrapper around models for now
 struct Entity {
 	Model* model;
-	double scale;
+	double scale = 1.0; // dear god this ruined an entire morning
 	Vector position = Vector::point(0, 0, 0);
 	Vector rotation = Vector::direction(0, 0, 0); // represented as radians around each axis
 
@@ -54,11 +54,14 @@ struct Entity {
 		return this->model->initial_rotation.add(this->rotation);
 	}
 
-	Model buildWorldModel(Model model) {
+	// in other words... the vertex shader??
+	void buildWorldModel() {
 		Matrix worldMatrix = Matrix::makeWorldMatrix(
 				this->scale, this->rotation, this->position);
 
-		for (auto& vertex : model.vertices) {
+		this->model_in_world = *(this->model);
+
+		for (auto& vertex : model_in_world.vertices) {
 			// transform to world space
 			vertex = worldMatrix.multiplyVector(vertex);
 		}
@@ -66,16 +69,14 @@ struct Entity {
 		Matrix normalTransformationMatrix =
 				Matrix::makeRotationMatrix(this->rotation);
 
-		for (auto& normal : model.normals) {
+		for (auto& normal : model_in_world.normals) {
 			normal = normalTransformationMatrix.multiplyVector(normal);
 		}
 
-		for (auto& triangle : model.triangles) {
+		for (auto& triangle : model_in_world.triangles) {
 			triangle.normal =
 					normalTransformationMatrix.multiplyVector(triangle.normal);
 		}
-
-		return model;
 	}
 
 	Vector centroid() {
@@ -179,9 +180,10 @@ struct Entity {
 	// triangle itself this is probably slow and could be done better by
 	// subdividing the world (BSP?)
 	Vector collisionPoint(Vector ray_origin, Vector ray_direction, bool* did_collide) {
+		*did_collide = false;
+
 		// start with a default result representing a "collision" an arbitrary
 		// distance from the start
-		// TODO: tell the caller that no actual collision was detected
 		Vector result = ray_origin.add(
 				ray_direction.scalarMultiply(MAX_NO_COLLISION_DISTANCE));
 		double min_t = INFINITY;
@@ -223,9 +225,10 @@ struct Entity {
 					if (t < min_t) {
 						min_t = t;
 						result = plane_intersect;
-						triangle.ignore_texture = true;
-						triangle.color = Vector::direction(1.0, 0.0, 0.0);
-						// spit("collision found!");
+
+						// this will draw the triangle with the collision point red
+						// triangle.ignore_texture = true;
+						// triangle.color = Vector::direction(1.0, 0.0, 0.0);
 
 						*did_collide = true;
 					}

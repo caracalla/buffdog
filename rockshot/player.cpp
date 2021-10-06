@@ -8,7 +8,13 @@
 
 void Player::move(std::chrono::microseconds frame_duration) {
 	this->moveFromUserInputs(frame_duration);
-	// this->model_in_world = this->buildWorldModel(this->model);
+
+	// it looks weird if the player looks up, which causes rotation about the z axis
+	Vector old_rotation = this->rotation;
+	this->rotation = Vector::direction(0, this->rotation.y, 0);
+	this->buildWorldModel();
+	this->rotation = old_rotation;
+
 	this->weapon_position = this->position.add(Vector::direction(0, 1.2, 0));
 }
 

@@ -77,7 +77,7 @@ key_states_t key_states;
 mouse_input mouse_motion;
 
 // FPS logging stuff
-int fps = 0;
+int last_second_frame_count = 0;
 std::chrono::steady_clock::time_point last_fps_print_time;
 
 
@@ -244,7 +244,7 @@ namespace device {
 		SDL_RenderCopy(renderer, texture, nullptr, nullptr);
 		SDL_RenderPresent(renderer);
 
-		maybeLogFPS();
+		logFPS();
 
 #if LOG_MEMORY_ALLOCATIONS
 		// will print once per frame, instead of per second like FPS
@@ -441,16 +441,26 @@ namespace device {
 				y < RES_Y - VIEWPORT_BUFFER;
 	}
 
-	void maybeLogFPS() {
-		fps++;
+	void logFPS() {
+		last_second_frame_count++;
 		auto now = std::chrono::steady_clock::now();
 		auto time_since_last_print = now - last_fps_print_time;
 
 		if (time_since_last_print >= std::chrono::seconds(1)) {
-			printf("FPS: %d\n", fps);
+			printf("FPS: %d\n", last_second_frame_count);
 
 			last_fps_print_time = now;
-			fps = 0;
+			last_second_frame_count = 0;
 		}
 	}
+	void logOncePerSecond(const char* fmt, ...) {
+		// frame count is always reset to 0 when one second has elapsed
+		if (last_second_frame_count == 0) {
+			va_list args;
+			va_start(args, fmt);
+			vprintf(fmt, args);
+			va_end(args);
+		}
+	}
+
 }

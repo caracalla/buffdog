@@ -4,6 +4,8 @@ CXXFLAGS=-g -Wall -std=c++17
 LDLIBS=-lm -lSDL2
 CC=clang++
 
+.PHONY: wad bsp debug clean
+
 $(P): $(OBJECTS)
 
 run: clean $(P)
@@ -16,8 +18,6 @@ debug:
 clean:
 	rm -f $(P)
 	rm -rf *.dSYM
-
-.PHONY: wad bsp
 
 wad:
 	rm -f wad && $(CC) $(CXXFLAGS) -o wad ../util.cpp wad.cpp && ./wad

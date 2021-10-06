@@ -36,7 +36,7 @@ struct Level : public Entity {
 		// 	triangle.normal = normalTransformationMatrix.multiplyVector(triangle.normal);
 		// }
 
-		this->model_in_world = this->buildWorldModel(*(this->model));
+		this->buildWorldModel();
 	}
 };
 

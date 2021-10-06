@@ -510,11 +510,11 @@ struct Renderer {
 			}
 		}
 
-		// the level geometry is handled differently from the models
-		// drawModel(buildCameraModelFromWorldModel(
-		// 		scene.level.level_model), scene.camera.viewport, lights);
 		drawModel(buildCameraModelFromWorldModel(
 				scene.level.model_in_world), scene.camera.viewport, lights);
+
+		drawModel(buildCameraModelFromWorldModel(
+				scene.player.model_in_world), scene.camera.viewport, lights);
 
 		// move models into camera space and draw
 		for (auto& entity : scene.entities) {
