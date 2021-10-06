@@ -35,6 +35,13 @@ struct Player : public Entity {
 
 		return dud;
 	}
+
+	Model buildModel() {
+		Vector start = Vector::point(-this->width, 0, -this->width);
+		Vector end = Vector::point(this->width, this->height, this->width);
+
+		return buildHexahedron(start, end);
+	}
 };
 
 #endif

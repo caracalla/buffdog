@@ -31,10 +31,13 @@ void Model::setTriangleNormals() {
 #define MIN_COLOR_VAL 0.0
 
 Model buildCube() {
-	return buildHexahedron(-1, -1, -1, 1, 1, 1);
+	Vector start = Vector::point(-1, -1, -1);
+	Vector end = Vector::point(1, 1, 1);
+
+	return buildHexahedron(start, end);
 }
 
-Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, double ez) {
+Model buildHexahedron(Vector box_min, Vector box_max) {
 	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
@@ -45,14 +48,14 @@ Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, dou
 	Model item;
 
 	item.vertices = {
-			Vector::point(ex, ey, ez),   // 0
-			Vector::point(sx, ey, ez),   // 1
-			Vector::point(sx, sy, ez),   // 2
-			Vector::point(ex, sy, ez),   // 3
-			Vector::point(ex, ey, sz),   // 4
-			Vector::point(sx, ey, sz),   // 5
-			Vector::point(sx, sy, sz),   // 6
-			Vector::point(ex, sy, sz)};  // 7
+			Vector::point(box_max.x, box_max.y, box_max.z),   // 0
+			Vector::point(box_min.x, box_max.y, box_max.z),   // 1
+			Vector::point(box_min.x, box_min.y, box_max.z),   // 2
+			Vector::point(box_max.x, box_min.y, box_max.z),   // 3
+			Vector::point(box_max.x, box_max.y, box_min.z),   // 4
+			Vector::point(box_min.x, box_max.y, box_min.z),   // 5
+			Vector::point(box_min.x, box_min.y, box_min.z),   // 6
+			Vector::point(box_max.x, box_min.y, box_min.z)};  // 7
 
 	item.normals = {
 			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[3]),
@@ -69,36 +72,40 @@ Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, dou
 			std::make_pair(1.0, 1.0)};
 
 	item.triangles = {
+			// +z
 			Triangle3D{
 					Vertex{0, 0, 0, 1.0},
 					Vertex{1, 0, 2, 1.0},
 					Vertex{2, 0, 3, 1.0},
-					red},
+					blue},
 			Triangle3D{
 					Vertex{0, 0, 0, 1.0},
 					Vertex{2, 0, 3, 1.0},
 					Vertex{3, 0, 1, 1.0},
-					red},
+					blue},
+			// +x
 			Triangle3D{
 					Vertex{4, 1, 0, 1.0},
 					Vertex{0, 1, 2, 1.0},
 					Vertex{3, 1, 3, 1.0},
-					green},
+					red},
 			Triangle3D{
 					Vertex{4, 1, 0, 1.0},
 					Vertex{3, 1, 3, 1.0},
 					Vertex{7, 1, 1, 1.0},
-					green},
+					red},
+			// -x
 			Triangle3D{
 					Vertex{5, 2, 0, 1.0},
 					Vertex{4, 2, 2, 1.0},
 					Vertex{7, 2, 3, 1.0},
-					blue},
+					cyan},
 			Triangle3D{
 					Vertex{5, 2, 0, 1.0},
 					Vertex{7, 2, 3, 1.0},
 					Vertex{6, 2, 1, 1.0},
-					blue},
+					cyan},
+			// -z
 			Triangle3D{
 					Vertex{1, 3, 0, 1.0},
 					Vertex{5, 3, 2, 1.0},
@@ -109,26 +116,28 @@ Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, dou
 					Vertex{6, 3, 3, 1.0},
 					Vertex{2, 3, 1, 1.0},
 					yellow},
+			// +y
 			Triangle3D{
 					Vertex{4, 4, 0, 1.0},
 					Vertex{5, 4, 2, 1.0},
 					Vertex{1, 4, 3, 1.0},
-					purple},
+					green},
 			Triangle3D{
 					Vertex{4, 4, 0, 1.0},
 					Vertex{1, 4, 3, 1.0},
 					Vertex{0, 4, 1, 1.0},
-					purple},
+					green},
+			// -y
 			Triangle3D{
 					Vertex{2, 5, 0, 1.0},
 					Vertex{6, 5, 2, 1.0},
 					Vertex{7, 5, 3, 1.0},
-					cyan},
+					purple},
 			Triangle3D{
 					Vertex{2, 5, 0, 1.0},
 					Vertex{7, 5, 3, 1.0},
 					Vertex{3, 5, 1, 1.0},
-					cyan},
+					purple},
 	};
 
 	item.setTriangleNormals();

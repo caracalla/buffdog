@@ -31,31 +31,38 @@ int main(int argc, char** argv) {
 
 	auto last_frame_time = std::chrono::steady_clock::now();
 
-	// add level geometry
-	Model city = parseOBJFile("models/city.obj");
-	PPMTexture city_texture = PPMTexture::load("textures/city.ppm");
-	city.setTexture(&city_texture);
-	city.setTriangleNormals();
+	// // add level geometry
+	// Model city = parseOBJFile("models/city.obj");
+	// PPMTexture city_texture = PPMTexture::load("textures/city.ppm");
+	// city.setTexture(&city_texture);
+	// city.setTriangleNormals();
 
+	// Level level;
+	// level.model = &city;
+	// level.scale = 12.0;
+	// level.position = Vector::direction(-38, 0, -38);
+	// level.rotation = Vector::direction(0, 0, 0);
+	// level.player_start_position = Vector::point(0, 0, 0);
+	// level.player_start_rotation = Vector::direction(0, M_PI_2 + M_PI_4, 0);
+	// level.init();
+
+	int floor_size = 20;
+	Vector floor_start = Vector::point(-floor_size, -5, -floor_size);
+	Vector floor_end = Vector::point(floor_size, 0, floor_size);
+	Model floor = buildHexahedron(floor_start, floor_end);
 	Level level;
-	level.model = &city;
-	level.scale = 12.0;
-	level.position = Vector::direction(-38, 0, -38);
+	level.model = &floor;
+	level.scale = 1.0;
+	level.position = Vector::direction(0, 0, 0);
 	level.rotation = Vector::direction(0, 0, 0);
-	level.player_start_position = Vector::point(0, 0, 0); // Vector::point(-10, -10, -10);
-	level.player_start_rotation = Vector::direction(0, M_PI_2 + M_PI_4, 0);
+	level.player_start_position = Vector::point(0, 0, 0);
+	level.player_start_rotation = Vector::direction(0, 0, 0);
 	level.init();
 
 	spit("Level created successfully");
 
 	Player player;
-	Model player_model = buildHexahedron(
-			-player.width,
-			0,
-			-player.width,
-			player.width,
-			player.height,
-			player.width);
+	Model player_model = player.buildModel();
 	player.model = &player_model;
 	player.bullet_model = buildTetrahedron();
 	player.explosion_model = subdivide(subdivide(buildIcosahedron()));

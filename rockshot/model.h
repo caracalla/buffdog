@@ -105,11 +105,11 @@ struct Model {
 	}
 };
 
-Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, double ez);
+// technically, this creates a rectangular cuboid (don't tell anyone)
+Model buildHexahedron(Vector box_min, Vector box_max);
+Model buildCube();
 Model buildTetrahedron();
 Model buildIcosahedron();
 Model subdivide(Model model);
-
-Model buildCube();
 
 #endif
