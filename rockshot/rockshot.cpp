@@ -49,6 +49,14 @@ int main(int argc, char** argv) {
 	spit("Level created successfully");
 
 	Player player;
+	Model player_model = buildHexahedron(
+			-player.width,
+			0,
+			-player.width,
+			player.width,
+			player.height,
+			player.width);
+	player.model = &player_model;
 	player.bullet_model = buildTetrahedron();
 	player.explosion_model = subdivide(subdivide(buildIcosahedron()));
 

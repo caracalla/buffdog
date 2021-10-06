@@ -13,6 +13,10 @@ void Scene::init(Level level, Player player) {
 	this->player.rotation = this->level.player_start_rotation;
 
 	// set up camera
+	this->camera.position = this->player.position;
+	this->camera.position.y += this->player.eye_height;
+	this->camera.rotation = this->player.rotation;
+
 	this->camera.viewport.width = 4;
 	this->camera.viewport.height = 3;
 	this->camera.viewport.distance = -2;
@@ -71,9 +75,7 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 	this->readInput();
 	this->player.move(frame_duration);
 
-	this->camera.position = this->player.position;
-	this->camera.position.y += this->player.eye_height;
-	this->camera.rotation = this->player.rotation;
+	this->camera.moveFromUserInputs(frame_duration);
 
 	flushEntityBuffer(this->entities);
 }

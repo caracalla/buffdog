@@ -82,9 +82,11 @@ struct Model {
 	}
 };
 
-Model buildCube();
+Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, double ez);
 Model buildTetrahedron();
 Model buildIcosahedron();
 Model subdivide(Model model);
+
+Model buildCube();
 
 #endif

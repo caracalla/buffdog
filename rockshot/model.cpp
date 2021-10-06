@@ -31,6 +31,10 @@ void Model::setTriangleNormals() {
 #define MIN_COLOR_VAL 0.0
 
 Model buildCube() {
+	return buildHexahedron(-1, -1, -1, 1, 1, 1);
+}
+
+Model buildHexahedron(double sx, double sy, double sz, double ex, double ey, double ez) {
 	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
@@ -41,14 +45,14 @@ Model buildCube() {
 	Model item;
 
 	item.vertices = {
-			Vector::point( 1,  1,  1),   // 0
-			Vector::point(-1,  1,  1),   // 1
-			Vector::point(-1, -1,  1),   // 2
-			Vector::point( 1, -1,  1),   // 3
-			Vector::point( 1,  1, -1),   // 4
-			Vector::point(-1,  1, -1),   // 5
-			Vector::point(-1, -1, -1),   // 6
-			Vector::point( 1, -1, -1)};  // 7
+			Vector::point(ex, ey, ez),   // 0
+			Vector::point(sx, ey, ez),   // 1
+			Vector::point(sx, sy, ez),   // 2
+			Vector::point(ex, sy, ez),   // 3
+			Vector::point(ex, ey, sz),   // 4
+			Vector::point(sx, ey, sz),   // 5
+			Vector::point(sx, sy, sz),   // 6
+			Vector::point(ex, sy, sz)};  // 7
 
 	item.normals = {
 			triangleNormal(item.vertices[0], item.vertices[1], item.vertices[3]),

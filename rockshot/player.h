@@ -11,12 +11,10 @@
 
 struct Player : public Entity {
 	double height = 1.7;
+	double width = 0.25; // distance from y axis along x or z in either direction
 	double eye_height = 1.5; // distance from base
 
 	Vector weapon_position; // relative to base
-
-	// in meters per microsecond
-	double velocity_value = 0;
 
 	Model bullet_model;
 	Model explosion_model;

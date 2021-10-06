@@ -10,6 +10,9 @@
 #include "model.h"
 
 
+#define MICROSECONDS 1000000.0
+
+
 struct Entity;
 struct Scene;
 
@@ -22,7 +25,9 @@ struct Entity {
 	Vector position = Vector::point(0, 0, 0);
 	Vector rotation = Vector::direction(0, 0, 0); // represented as radians around each axis
 
-	// physics
+	double velocity_value = 0; // in meters per microsecond (really just speed)
+
+	// physics??
 	Vector velocity = Vector::direction(0, 0, 0);
 	Vector angular_velocity = Vector::direction(0, 0, 0);
 	Vector force = Vector::direction(0, 0, 0);
@@ -87,7 +92,6 @@ struct Entity {
 	}
 
 	// PHYSICS
-	#define MICROSECONDS 1000000.0
 
 	// parameter value should be in meters per second
 	void applyForce(Vector applied_force, Vector point_of_application) {
@@ -230,6 +234,91 @@ struct Entity {
 		}
 
 		return result;
+	}
+
+
+	// walking speed of 2 meters per second
+	#define MAX_WALKING_VELOCITY (2 / MICROSECONDS)
+	#define WALKING_VELOCITY_INCREMENT (MAX_WALKING_VELOCITY * 0.1)
+	#define SPRINTING_VELOCITY_FACTOR 5
+
+
+	// player movement isn't handled like a generic Entity with applyPhysics
+	// because that would be really hard to get feeling right
+	void moveFromUserInputs(std::chrono::microseconds frame_duration) {
+		// handle mouse movement
+		mouse_input mouse_motion = device::getMouseMotion();
+
+		this->rotation.x += mouse_motion.y;
+		this->rotation.y += mouse_motion.x;
+
+		if (this->rotation.x < -M_PI_2) {
+			this->rotation.x = -M_PI_2;
+		} else if (this->rotation.x > M_PI_2) {
+			this->rotation.x = M_PI_2;
+		}
+
+		// handle key inputs
+		key_states_t key_states = device::getKeyStates();
+
+		Vector translation = {0, 0, 0, 0};
+
+		if (key_states.forward ||
+				key_states.reverse ||
+				key_states.left ||
+				key_states.right ||
+				key_states.yup ||
+				key_states.ydown) {
+			double max_velocity = MAX_WALKING_VELOCITY;
+
+			if (key_states.sprint) {
+				max_velocity *= SPRINTING_VELOCITY_FACTOR;
+			}
+
+			if (this->velocity_value > max_velocity) {
+				this->velocity_value = max_velocity;
+			}
+
+			if (this->velocity_value <= max_velocity) {
+				this->velocity_value += WALKING_VELOCITY_INCREMENT;
+			} else {
+				this->velocity_value -= WALKING_VELOCITY_INCREMENT;
+			}
+
+			if (key_states.forward) {
+				translation.z -= 1;
+			}
+			if (key_states.reverse) {
+				translation.z += 1;
+			}
+			if (key_states.left) {
+				translation.x -= 1;
+			}
+			if (key_states.right) {
+				translation.x += 1;
+			}
+			if (key_states.yup) {
+				translation.y += 1;
+			}
+			if (key_states.ydown) {
+				translation.y -= 1;
+			}
+		} else {
+			this->velocity_value -= WALKING_VELOCITY_INCREMENT;
+
+			if (this->velocity_value < 0) {
+				this->velocity_value = 0;
+			}
+		}
+
+		double meters_moved = this->velocity_value * frame_duration.count();
+
+		Vector movement = translation.unit().scalarMultiply(meters_moved);
+
+		// the direction of motion is determined only by the rotation about the y axis
+		Matrix rotationAboutY = Matrix::makeRotationMatrix(
+				Vector::direction(0, this->rotation.y, 0));
+		this->position = this->position.add(rotationAboutY.multiplyVector(movement));
 	}
 };
 
