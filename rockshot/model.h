@@ -62,6 +62,8 @@ struct Model {
 
 	Texture* texture;
 	bool has_texture = false;
+
+	// hack for explosions
 	bool compute_lighting = true;
 
 	// this should be a vector indicating how the model should be rotated
