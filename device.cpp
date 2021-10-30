@@ -1,4 +1,6 @@
 #include <chrono>
+
+#define _USE_MATH_DEFINES // M_PI et al
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
@@ -18,8 +20,11 @@
 #define RES_X 640
 #define RES_Y 480
 
-// TODO: figure out what this should be for windows
+#ifdef _MSC_VER
+#define MOUSE_SENSITIVITY_FACTOR 100
+#else
 #define MOUSE_SENSITIVITY_FACTOR 1000
+#endif
 
 
 // logic to log the number of C++ memory allocations are happening behind the
@@ -316,6 +321,11 @@ namespace device {
 
 						case SDL_SCANCODE_Z:
 							last_key = z_key;
+							break;
+
+						case SDL_SCANCODE_ESCAPE:
+							spit("quitting");
+							is_running = false;
 							break;
 
 						default:

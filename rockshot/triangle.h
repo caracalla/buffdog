@@ -1,6 +1,7 @@
 #ifndef BUFFDOG_TRIANGLE
 #define BUFFDOG_TRIANGLE
 
+#define _USE_MATH_DEFINES // M_PI et al
 #include <cmath>
 
 #include "../device.h"

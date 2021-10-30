@@ -2,14 +2,14 @@
 *.dSYM/
 .vscode/
 .DS_Store
-
+.vs/
+Debug/
 
 buffdog
 spinner
 ray_tracer
 delaunay
 voronoi
-# rockshot
 wad
 bsp
 

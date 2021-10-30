@@ -1,7 +1,3 @@
-// usleep
-#define _BSD_SOURCE
-#include <unistd.h>
-
 #include <cctype>
 #include <chrono>
 #define _USE_MATH_DEFINES // M_PI et al

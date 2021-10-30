@@ -1,7 +1,3 @@
-// usleep
-#define _BSD_SOURCE
-#include <unistd.h>
-
 #include <cctype>
 #include <chrono>
 #define _USE_MATH_DEFINES // M_PI et al
@@ -80,7 +76,7 @@ int main(int argc, char** argv) {
 
 	// add spinning cube
 	Model cube = buildCube();
-	BMPTexture crate_texture = BMPTexture::load("textures/crate.bmp");
+	BMPTexture crate_texture = BMPTexture::load("rockshot/textures/crate.bmp");
 	cube.setTexture(&crate_texture);
 
 	Entity cube_ent{

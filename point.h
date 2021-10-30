@@ -1,6 +1,7 @@
 #ifndef BUFFDOG_POINT
 #define BUFFDOG_POINT
 
+#define _USE_MATH_DEFINES // M_PI et al
 #include <cmath>
 
 

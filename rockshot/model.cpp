@@ -206,8 +206,8 @@ Model buildTetrahedron() {
 
 // generate a random color between red and yellow
 Vector randomExplosionColor() {
-	double max_color = util::randomDouble(1.0, 0.5);
-	return Vector::color(max_color, util::randomDouble(max_color, 0.0), 0.0);
+	double max_color = util::randomDouble(0.5, 1.0);
+	return Vector::color(max_color, util::randomDouble(0.0, max_color), 0.0);
 }
 
 Model buildIcosahedron() {

@@ -1,6 +1,7 @@
 #ifndef BUFFDOG_VEC4
 #define BUFFDOG_VEC4
 
+#define _USE_MATH_DEFINES // M_PI et al
 #include <cmath>
 
 #include "device.h"

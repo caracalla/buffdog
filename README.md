@@ -3,6 +3,7 @@
 ## TODO
 * Voronoi shattering in 3D (see more on my [blog](http://caracal.la/01_intro.html))
 * Port rendering to Vulkan
+* Move logging stuff to a `logging.h` or something
 
 ## Setup (UNIX)
 1. Install SDL2
