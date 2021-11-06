@@ -1,2 +1,0 @@
-C:\Users\james\source\repos\buffdog\Debug\buffdog.exe
-C:\Users\james\source\repos\buffdog\Debug\buffdog.pdb
