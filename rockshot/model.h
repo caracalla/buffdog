@@ -1,8 +1,6 @@
 #ifndef BUFFDOG_MODEL
 #define BUFFDOG_MODEL
 
-#define _USE_MATH_DEFINES // M_PI et al
-#include <cmath>
 #include <vector>
 #include <utility>
 

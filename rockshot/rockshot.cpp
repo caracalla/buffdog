@@ -1,7 +1,5 @@
 #include <cctype>
 #include <chrono>
-#define _USE_MATH_DEFINES // M_PI et al
-#include <cmath>
 #include <cstdlib>
 
 #include "../device.h"
@@ -20,6 +18,20 @@
 #include "triangle.h"
 
 
+// ugh
+#ifdef _MSC_VER
+const char* city_model_file = "rockshot/models/city.obj";
+const char* city_texture_file = "rockshot/textures/city.ppm";
+const char* crate_texture_file = "rockshot/textures/crate.bmp";
+#else
+const char* city_model_file = "models/city.obj";
+const char* city_texture_file = "textures/city.ppm";
+const char* crate_texture_file = "textures/crate.bmp";
+#endif
+
+
+
+
 int main(int argc, char** argv) {
 	if (!device::setUp()) {
 		return 1;
@@ -28,8 +40,8 @@ int main(int argc, char** argv) {
 	auto last_frame_time = std::chrono::steady_clock::now();
 
 	// // add level geometry
-	// Model city = parseOBJFile("models/city.obj");
-	// PPMTexture city_texture = PPMTexture::load("textures/city.ppm");
+	// Model city = parseOBJFile(city_model_file);
+	// PPMTexture city_texture = PPMTexture::load(city_texture_file);
 	// city.setTexture(&city_texture);
 	// city.setTriangleNormals();
 
@@ -39,7 +51,7 @@ int main(int argc, char** argv) {
 	// level.position = Vector::direction(-38, 0, -38);
 	// level.rotation = Vector::direction(0, 0, 0);
 	// level.player_start_position = Vector::point(0, 0, 0);
-	// level.player_start_rotation = Vector::direction(0, M_PI_2 + M_PI_4, 0);
+	// level.player_start_rotation = Vector::direction(0, kHalfPi + kQuarterPi, 0);
 	// level.init();
 
 	int floor_size = 20;
@@ -76,7 +88,7 @@ int main(int argc, char** argv) {
 
 	// add spinning cube
 	Model cube_model = buildCube();
-	BMPTexture crate_texture = BMPTexture::load("rockshot/textures/crate.bmp");
+	BMPTexture crate_texture = BMPTexture::load(crate_texture_file);
 	cube_model.setTexture(&crate_texture);
 
 	Entity cube_entity;

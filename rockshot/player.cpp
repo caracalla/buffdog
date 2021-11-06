@@ -59,7 +59,7 @@ void Player::fireBullet() {
 
 	// align top to point away from player
 	Vector bullet_rotation = this->rotation.add(
-			Vector::direction(-(M_PI + M_PI_2), 0, 0));
+			Vector::direction(-(kPi + kHalfPi), 0, 0));
 
 	this->scene->addEntityWithAction(
 			makeBullet(

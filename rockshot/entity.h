@@ -154,13 +154,11 @@ struct Entity {
 		// printf("delta_r: "); delta_r.log();
 		this->rotation = this->rotation.add(delta_r);
 
-		#define TWO_PI (M_PI * 2)
-
 		for (int i = 0; i < 3; i++) {
-			if (this->rotation.at(i) > TWO_PI) {
-				this->rotation.at(i) -= TWO_PI;
-			} else if (this->rotation.at(i) < -TWO_PI) {
-				this->rotation.at(i) += TWO_PI;
+			if (this->rotation.at(i) > kTau) {
+				this->rotation.at(i) -= kTau;
+			} else if (this->rotation.at(i) < -kTau) {
+				this->rotation.at(i) += kTau;
 			}
 		}
 
@@ -255,10 +253,10 @@ struct Entity {
 		this->rotation.x += mouse_motion.y;
 		this->rotation.y += mouse_motion.x;
 
-		if (this->rotation.x < -M_PI_2) {
-			this->rotation.x = -M_PI_2;
-		} else if (this->rotation.x > M_PI_2) {
-			this->rotation.x = M_PI_2;
+		if (this->rotation.x < -kHalfPi) {
+			this->rotation.x = -kHalfPi;
+		} else if (this->rotation.x > kHalfPi) {
+			this->rotation.x = kHalfPi;
 		}
 
 		// handle key inputs

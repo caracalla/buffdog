@@ -217,10 +217,10 @@ Model buildIcosahedron() {
 	double radius = 1;
 
 	// distance between two vertices
-	double edge_length = radius / sin(2 * M_PI / 5);
+	double edge_length = radius / sin(2 * kPi / 5);
 
 	// the distance from the center of the pentagon to a vertex
-	double pentagon_spoke_length = edge_length / (2 * sin(M_PI / 5));
+	double pentagon_spoke_length = edge_length / (2 * sin(kPi / 5));
 
 	// angle between pentagon and a line between v0 t0 v1
 	double alpha = acos(sqrt(0.5 + sqrt(5) / 10));
@@ -230,11 +230,11 @@ Model buildIcosahedron() {
 
 	double v1_z = pentagon_spoke_length;
 
-	double v2_x = edge_length * cos(M_PI / 5);
-	double v2_z = v1_z - edge_length * sin(M_PI / 5);
+	double v2_x = edge_length * cos(kPi / 5);
+	double v2_z = v1_z - edge_length * sin(kPi / 5);
 
 	double v3_x = edge_length / 2;
-	double v3_z = -edge_length * cos(M_PI / 5) / (2 * sin(M_PI / 5));
+	double v3_z = -edge_length * cos(kPi / 5) / (2 * sin(kPi / 5));
 
 	item.vertices = {
 			// first vertex is top

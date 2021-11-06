@@ -1,8 +1,6 @@
 #ifndef BUFFDOG_BMP
 #define BUFFDOG_BMP
 
-#define _USE_MATH_DEFINES // M_PI et al
-#include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

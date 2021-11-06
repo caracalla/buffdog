@@ -5,8 +5,10 @@
 #include <cstdio>
 
 
-#define M_PI 3.14159265359
-#define M_PI_2 M_PI / 2
+constexpr double kPi = 3.14159265358979323846264338327950288;
+constexpr double kHalfPi = kPi / 2;
+constexpr double kQuarterPi = kHalfPi / 2;
+constexpr double kTau = kPi * 2;
 
 // the color of the "sky" (for now)
 #define DEFAULT_BACKGROUND_COLOR device::getColorValue(0.1, 0.1, 0.1)

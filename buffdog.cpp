@@ -1,7 +1,5 @@
 #include <cctype>
 #include <chrono>
-#define _USE_MATH_DEFINES // M_PI et al
-#include <cmath>
 #include <cstdlib>
 
 #include "circle.h"
