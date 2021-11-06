@@ -75,17 +75,15 @@ int main(int argc, char** argv) {
 	spit("Renderer created successfully");
 
 	// add spinning cube
-	Model cube = buildCube();
+	Model cube_model = buildCube();
 	BMPTexture crate_texture = BMPTexture::load("rockshot/textures/crate.bmp");
-	cube.setTexture(&crate_texture);
+	cube_model.setTexture(&crate_texture);
 
-	Entity cube_ent{
-			&cube,
-			1.0,
-			Vector::direction(15, 2, 0),
-			Vector::direction(0, 0, 0)};
+	Entity cube_entity;
+	cube_entity.model = &cube_model;
+	cube_entity.position = Vector::point(15, 2, 0);
 
-	scene.addEntityWithAction(cube_ent, [](Entity* self) {
+	scene.addEntityWithAction(cube_entity, [](Entity* self) {
 		self->rotation.x += 0.005;
 		self->rotation.y += 0.007;
 		self->rotation.z += 0.009;

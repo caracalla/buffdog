@@ -27,8 +27,6 @@ struct Viewport {
 // rotation is about x and y world axes
 struct Camera : public Entity{
 	Viewport viewport;
-	// Vector position;
-	// Vector rotation; // only rotation about x and y axes matters
 };
 
 
@@ -71,10 +69,6 @@ struct Scene {
 	// TODO: make input handling a device responsibility
 	//       the player and other entities should read input from device
 	void readInput();
-
-	// int getBackgroundColor() {
-	// 	return device::getColorValue(backgroundColor.x, backgroundColor.y, backgroundColor.z);
-	// }
 };
 
 #endif
