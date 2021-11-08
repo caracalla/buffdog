@@ -246,33 +246,33 @@ struct Entity {
 
 	// player movement isn't handled like a generic Entity with applyPhysics
 	// because that would be really hard to get feeling right
-	void moveFromUserInputs(std::chrono::microseconds frame_duration) {
-		// handle mouse movement
-		mouse_input mouse_motion = device::getMouseMotion();
+	void moveFromUserInputs(std::chrono::microseconds frame_duration, InputState* input_state) {
+		// flipped, as horizontal mouse motion ("side to side") controls rotation
+		// about the y axis, and vice versa
+		this->rotation.x += input_state->mouse.motion_y;
+		this->rotation.y += input_state->mouse.motion_x;
 
-		this->rotation.x += mouse_motion.y;
-		this->rotation.y += mouse_motion.x;
-
+		// clamp rotation about the x axis within a semicircle in front of player
 		if (this->rotation.x < -kHalfPi) {
 			this->rotation.x = -kHalfPi;
 		} else if (this->rotation.x > kHalfPi) {
 			this->rotation.x = kHalfPi;
 		}
 
-		// handle key inputs
-		key_states_t key_states = device::getKeyStates();
+		// handle button inputs
+		buttons_state& buttons = input_state->buttons;
 
 		Vector translation = {0, 0, 0, 0};
 
-		if (key_states.forward ||
-				key_states.reverse ||
-				key_states.left ||
-				key_states.right ||
-				key_states.yup ||
-				key_states.ydown) {
+		if (buttons.forward ||
+				buttons.reverse ||
+				buttons.left ||
+				buttons.right ||
+				buttons.rise ||
+				buttons.descend) {
 			double max_velocity = MAX_WALKING_VELOCITY;
 
-			if (key_states.sprint) {
+			if (buttons.sprint) {
 				max_velocity *= SPRINTING_VELOCITY_FACTOR;
 			}
 
@@ -286,25 +286,27 @@ struct Entity {
 				this->velocity_value -= WALKING_VELOCITY_INCREMENT;
 			}
 
-			if (key_states.forward) {
+			if (buttons.forward) {
 				translation.z -= 1;
 			}
-			if (key_states.reverse) {
+			if (buttons.reverse) {
 				translation.z += 1;
 			}
-			if (key_states.left) {
+			if (buttons.left) {
 				translation.x -= 1;
 			}
-			if (key_states.right) {
+			if (buttons.right) {
 				translation.x += 1;
 			}
-			if (key_states.yup) {
+			if (buttons.rise) {
 				translation.y += 1;
 			}
-			if (key_states.ydown) {
+			if (buttons.descend) {
 				translation.y -= 1;
 			}
-		} else {
+		} else if (this->velocity_value > 0) {
+			// this isn't going to work when gravity is added
+			// smoothly slow down when no longer moving
 			this->velocity_value -= WALKING_VELOCITY_INCREMENT;
 
 			if (this->velocity_value < 0) {

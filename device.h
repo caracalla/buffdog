@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "input.h"
+
 
 constexpr double kPi = 3.14159265358979323846264338327950288;
 constexpr double kHalfPi = kPi / 2;
@@ -30,24 +32,6 @@ typedef enum {
 	mouse_1
 } key_input;
 
-// x and y are adjusted by a sensitivity factor, see processInput definition
-typedef struct {
-	double x;
-	double y;
-	int pos_x;
-	int pos_y;
-} mouse_input;
-
-typedef struct {
-	bool forward;
-	bool reverse;
-	bool left;
-	bool right;
-	bool yup;
-	bool ydown;
-	bool sprint;
-	bool spew;
-} key_states_t;
 
 namespace device {
 	// ***************************************************************************
@@ -78,21 +62,18 @@ namespace device {
 	void updateScreen();
 
 	// ***************************************************************************
-	// IO
+	// input
 	// ***************************************************************************
 
-	// must be called, otherwise there is no way to quit
+	// must be called, otherwise there is no way to quit the program.
 	// call before rendering on each frame
 	void processInput();
+
+	InputState* getInputState();
 
 	// get the last key pressed (but not necessarily held down)
 	// TODO: handle multiple key presses, keyup and keydown events separately
 	key_input getNextKey();
-
-	mouse_input getMouseMotion();
-
-	// get which keys are being pressed (i.e. held down)
-	key_states_t getKeyStates();
 
 	// ***************************************************************************
 	// utility and other

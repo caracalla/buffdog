@@ -1,5 +1,4 @@
 #include <chrono>
-
 #include <cstdlib>
 #include <cstdio>
 #include <string>
@@ -76,8 +75,8 @@ bool is_running = false;
 // IO info storage
 key_input key_queue[64];
 key_input last_key;
-key_states_t key_states;
-mouse_input mouse_motion;
+
+InputState input_state;
 
 // FPS logging stuff
 int last_second_frame_count = 0;
@@ -261,8 +260,9 @@ namespace device {
 
 	void processInput() {
 		last_key = no_key;
-		mouse_motion.x = 0;
-		mouse_motion.y = 0;
+
+		input_state.mouse.motion_x = 0;
+		input_state.mouse.motion_y = 0;
 
 		while (SDL_PollEvent(&event)) {
 			switch(event.type) {
@@ -276,41 +276,40 @@ namespace device {
 						case SDL_SCANCODE_UP:
 						case SDL_SCANCODE_W:
 							last_key = up;
-							key_states.forward = true;
+							input_state.buttons.forward = true;
 							break;
 
 						case SDL_SCANCODE_DOWN:
 						case SDL_SCANCODE_S:
 							last_key = down;
-							key_states.reverse = true;
+							input_state.buttons.reverse = true;
 							break;
 
 						case SDL_SCANCODE_LEFT:
 						case SDL_SCANCODE_A:
 							last_key = left;
-							key_states.left = true;
+							input_state.buttons.left = true;
 							break;
 
 						case SDL_SCANCODE_RIGHT:
 						case SDL_SCANCODE_D:
 							last_key = right;
-							key_states.right = true;
+							input_state.buttons.right = true;
 							break;
 
 						case SDL_SCANCODE_Q:
-							key_states.yup = true;
+							input_state.buttons.rise = true;
 							break;
 
 						case SDL_SCANCODE_E:
-							key_states.ydown = true;
+							input_state.buttons.descend = true;
 							break;
 
 						case SDL_SCANCODE_LSHIFT:
-							key_states.sprint = true;
+							input_state.buttons.sprint = true;
 							break;
 
 						case SDL_SCANCODE_T:
-							key_states.spew = true;
 							break;
 
 						case SDL_SCANCODE_X:
@@ -336,38 +335,37 @@ namespace device {
 					switch(event.key.keysym.scancode) {
 						case SDL_SCANCODE_UP:
 						case SDL_SCANCODE_W:
-							key_states.forward = false;
+							input_state.buttons.forward = false;
 							break;
 
 						case SDL_SCANCODE_DOWN:
 						case SDL_SCANCODE_S:
-							key_states.reverse = false;
+							input_state.buttons.reverse = false;
 							break;
 
 						case SDL_SCANCODE_LEFT:
 						case SDL_SCANCODE_A:
-							key_states.left = false;
+							input_state.buttons.left = false;
 							break;
 
 						case SDL_SCANCODE_RIGHT:
 						case SDL_SCANCODE_D:
-							key_states.right = false;
+							input_state.buttons.right = false;
 							break;
 
 						case SDL_SCANCODE_Q:
-							key_states.yup = false;
+							input_state.buttons.rise = false;
 							break;
 
 						case SDL_SCANCODE_E:
-							key_states.ydown = false;
+							input_state.buttons.descend = false;
 							break;
 
 						case SDL_SCANCODE_LSHIFT:
-							key_states.sprint = false;
+							input_state.buttons.sprint = false;
 							break;
 
 						case SDL_SCANCODE_T:
-							key_states.spew = false;
 							break;
 
 						default:
@@ -378,35 +376,33 @@ namespace device {
 
 				case SDL_MOUSEBUTTONDOWN:
 					last_key = mouse_1;
+					input_state.buttons.action1 = true;
+					break;
+
+				case SDL_MOUSEBUTTONUP:
+					input_state.buttons.action1 = false;
 					break;
 
 				case SDL_MOUSEMOTION:
-					mouse_motion.x = (double)event.motion.xrel / MOUSE_SENSITIVITY_FACTOR;
-					mouse_motion.y = (double)event.motion.yrel / MOUSE_SENSITIVITY_FACTOR;
+					input_state.mouse.motion_x = (double)event.motion.xrel / MOUSE_SENSITIVITY_FACTOR;
+					input_state.mouse.motion_y = (double)event.motion.yrel / MOUSE_SENSITIVITY_FACTOR;
 
-					// printf("x pos: %d\n", event.motion.x);
-
-					mouse_motion.pos_x = event.motion.x;
-					mouse_motion.pos_y = event.motion.y;
+					input_state.mouse.pos_x = event.motion.x;
+					input_state.mouse.pos_y = event.motion.y;
 					break;
 
 				default:
-					// noop;
 				break;
 			}
 		}
 	}
 
+	InputState* getInputState() {
+		return &input_state;
+	}
+
 	key_input getNextKey() {
 		return last_key;
-	}
-
-	mouse_input getMouseMotion() {
-		return mouse_motion;
-	}
-
-	key_states_t getKeyStates() {
-		return key_states;
 	}
 
 	// ***************************************************************************

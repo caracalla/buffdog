@@ -65,10 +65,6 @@ struct Scene {
 	void addEntityWithAction(Entity entity, EntityAction action);
 
 	void step(std::chrono::microseconds frame_duration);
-
-	// TODO: make input handling a device responsibility
-	//       the player and other entities should read input from device
-	void readInput();
 };
 
 #endif

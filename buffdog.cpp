@@ -71,18 +71,19 @@ struct Entity {
   }
 
   void update(std::chrono::microseconds frame_duration) {
-    key_states_t key_states = device::getKeyStates();
+    InputState* input_state = device::getInputState();
+    buttons_state& buttons = input_state->buttons;
 
-    if (key_states.forward) {
+    if (buttons.forward) {
 			this->velocity.y += VELOCITY_INCREMENT;
 		}
-		if (key_states.reverse) {
+		if (buttons.reverse) {
 			this->velocity.y -= VELOCITY_INCREMENT;
 		}
-		if (key_states.left) {
+		if (buttons.left) {
 			this->velocity.x -= VELOCITY_INCREMENT;
 		}
-		if (key_states.right) {
+		if (buttons.right) {
 			this->velocity.x += VELOCITY_INCREMENT;
 		}
 

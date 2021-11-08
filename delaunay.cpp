@@ -30,7 +30,7 @@ int main() {
 	while (device::running()) {
 		usleep(DELAY_US);
 
-		// device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));s
+		// device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));
 
 		key_input key = device::getNextKey();
 
@@ -107,7 +107,7 @@ int main() {
 			initDT();
 		}
 
-		mouse_input mouse = device::getMouseMotion();
+		mouse_state& mouse = device::getInputState()->mouse;
 
 		device::clearScreen(device::getColorValue(0.1, 0.1, 0.1));
 		drawDT();

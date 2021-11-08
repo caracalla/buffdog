@@ -1,4 +1,3 @@
-#include "../device.h"
 #include "../matrix.h"
 #include "../util.h"
 
@@ -6,16 +5,26 @@
 #include "scene.h"
 
 
-void Player::move(std::chrono::microseconds frame_duration) {
-	this->moveFromUserInputs(frame_duration);
+void Player::move(std::chrono::microseconds frame_duration, InputState* input_state) {
+	this->moveFromUserInputs(frame_duration, input_state);
 
-	// it looks weird if the player looks up, which causes rotation about the z axis
+	// the world model looks weird if the player looks up, which causes rotation
+	// about the z axis
 	Vector old_rotation = this->rotation;
 	this->rotation = Vector::direction(0, this->rotation.y, 0);
 	this->buildWorldModel();
 	this->rotation = old_rotation;
 
+	// move the weapon down a bit, so it's not right in the middle of the field
+	// of view (this really only works when looking straight ahead)
 	this->weapon_position = this->position.add(Vector::direction(0, 1.2, 0));
+
+	if (this->weapon_cooldown_remaining.count() > 0) {
+		this->weapon_cooldown_remaining -= frame_duration;
+	} else if (input_state->buttons.action1) {
+		this->fireBullet();
+		this->weapon_cooldown_remaining = std::chrono::microseconds(200000);
+	}
 }
 
 Vector Player::bulletDirection() {

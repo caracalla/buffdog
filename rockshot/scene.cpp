@@ -72,34 +72,10 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 	// readInput() could convert the input into some kind of series of actions.
 	// I think quake does this.  This way, player could avoid including all of
 	// device.h
-	this->readInput();
-	this->player.move(frame_duration);
+	InputState* input_state = device::getInputState();
+	this->player.move(frame_duration, input_state);
 	// if desired, we could move the camera separately (for now it moves with the player, in first person view)
-	this->camera.moveFromUserInputs(frame_duration);
+	this->camera.moveFromUserInputs(frame_duration, input_state);
 
 	flushEntityBuffer(this->entities);
-}
-
-void Scene::readInput() {
-	key_input next_key = device::getNextKey();
-
-	if (next_key) {
-		switch(next_key) {
-			case x_key:
-			case mouse_1:
-				// rudimentary "gun" mechanics
-				this->player.fireBullet();
-				break;
-
-			default:
-				break;
-		}
-	}
-
-	key_states_t key_states = device::getKeyStates();
-
-	if (key_states.spew) {
-		// continuously shoot bullets down the view normal with basic physics
-		this->player.fireSpewBullet();
-	}
 }

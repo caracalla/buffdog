@@ -3,6 +3,7 @@
 
 #include <chrono>
 
+#include "../input.h"
 #include "../vector.h"
 
 #include "entity.h"
@@ -19,7 +20,9 @@ struct Player : public Entity {
 	Model bullet_model;
 	Model explosion_model;
 
-	void move(std::chrono::microseconds frame_duration);
+	std::chrono::microseconds weapon_cooldown_remaining = std::chrono::microseconds(0);
+
+	void move(std::chrono::microseconds frame_duration, InputState* input_state);
 
 	Vector bulletDirection();
 
