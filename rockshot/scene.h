@@ -61,8 +61,8 @@ struct Scene {
 	void init(Level level, Player player);
 
 	// Entity handling
-	void addEntity(Entity entity);
-	void addEntityWithAction(Entity entity, EntityAction action);
+	void addEntity(Entity&& entity);
+	void addEntityWithAction(Entity&& entity, EntityAction action);
 
 	void step(std::chrono::microseconds frame_duration);
 };

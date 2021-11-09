@@ -110,6 +110,7 @@
   <ItemGroup>
     <ClCompile Include="device.cpp" />
     <ClCompile Include="line.cpp" />
+    <ClCompile Include="rockshot\entity.cpp" />
     <ClCompile Include="rockshot\model.cpp" />
     <ClCompile Include="rockshot\player.cpp" />
     <ClCompile Include="rockshot\rockshot.cpp" />

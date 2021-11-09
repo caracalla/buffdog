@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 	cube_entity.model = &cube_model;
 	cube_entity.position = Vector::point(15, 2, 0);
 
-	scene.addEntityWithAction(cube_entity, [](Entity* self) {
+	scene.addEntityWithAction(std::move(cube_entity), [](Entity* self) {
 		self->rotation.x += 0.005;
 		self->rotation.y += 0.007;
 		self->rotation.z += 0.009;

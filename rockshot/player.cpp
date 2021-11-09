@@ -4,6 +4,7 @@
 #include "player.h"
 #include "scene.h"
 
+constexpr std::chrono::microseconds kWeaponCooldown = std::chrono::microseconds(50000);
 
 void Player::move(std::chrono::microseconds frame_duration, InputState* input_state) {
 	this->moveFromUserInputs(frame_duration, input_state);
@@ -23,7 +24,7 @@ void Player::move(std::chrono::microseconds frame_duration, InputState* input_st
 		this->weapon_cooldown_remaining -= frame_duration;
 	} else if (input_state->buttons.action1) {
 		this->fireBullet();
-		this->weapon_cooldown_remaining = std::chrono::microseconds(200000);
+		this->weapon_cooldown_remaining = kWeaponCooldown;
 	}
 }
 
