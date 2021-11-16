@@ -518,6 +518,9 @@ struct Renderer {
 		drawModel(buildCameraModelFromWorldModel(
 				scene.player.model_in_world), scene.camera.viewport, lights);
 
+		drawModel(buildCameraModelFromWorldModel(
+				scene.player.weapon.model_in_world), scene.camera.viewport, lights);
+
 		// move models into camera space and draw
 		for (auto& entity : scene.entities) {
 			if (entity.active) {

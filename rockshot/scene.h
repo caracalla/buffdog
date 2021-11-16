@@ -25,7 +25,7 @@ struct Viewport {
 // camera is always at final render origin
 // position is distance from world origin
 // rotation is about x and y world axes
-struct Camera : public Entity{
+struct Camera : public Entity {
 	Viewport viewport;
 };
 

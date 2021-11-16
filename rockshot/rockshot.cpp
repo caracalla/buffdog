@@ -54,6 +54,17 @@ int main(int argc, char** argv) {
 	// level.player_start_rotation = Vector::direction(0, kHalfPi + kQuarterPi, 0);
 	// level.init();
 
+	Player player;
+	Model player_model = player.buildModel();
+	player.model = &player_model;
+	player.weapon.player_local_position = Vector::direction(0.25, 0, 0);
+	player.weapon.bullet = buildTetrahedron();
+	player.weapon.explosion = subdivide(subdivide(buildIcosahedron()));
+	Model weapon_model = player.weapon.buildModel();
+	player.weapon.model = &weapon_model;
+
+	spit("Player created successfully");
+
 	int floor_size = 20;
 	Vector floor_start = Vector::point(-floor_size, -5, -floor_size);
 	Vector floor_end = Vector::point(floor_size, 0, floor_size);
@@ -61,21 +72,14 @@ int main(int argc, char** argv) {
 	Level level;
 	level.model = &floor;
 	level.scale = 1.0;
-	level.position = Vector::direction(0, 0, 0);
+	level.position = Vector::point(0, 0, 0);
 	level.rotation = Vector::direction(0, 0, 0);
-	level.player_start_position = Vector::point(0, 0, 0);
+	// player's position is where their eyes are
+	level.player_start_position = Vector::point(0, player.eye_height, 0);
 	level.player_start_rotation = Vector::direction(0, 0, 0);
 	level.init();
 
 	spit("Level created successfully");
-
-	Player player;
-	Model player_model = player.buildModel();
-	player.model = &player_model;
-	player.bullet_model = buildTetrahedron();
-	player.explosion_model = subdivide(subdivide(buildIcosahedron()));
-
-	spit("Player created successfully");
 
 	Scene scene;
 	scene.init(std::move(level), std::move(player));

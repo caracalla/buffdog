@@ -7,6 +7,7 @@ void Scene::init(Level level, Player player) {
 	this->level = level;
 	this->player = player;
 	this->player.scene = this;
+	this->player.weapon.scene = this;
 
 	// set up player in level
 	this->player.position = this->level.player_start_position;
@@ -14,7 +15,6 @@ void Scene::init(Level level, Player player) {
 
 	// set up camera
 	this->camera.position = this->player.position;
-	this->camera.position.y += this->player.eye_height;
 	this->camera.rotation = this->player.rotation;
 
 	this->camera.viewport.width = 4;
@@ -74,6 +74,7 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 	// device.h
 	InputState* input_state = device::getInputState();
 	this->player.move(frame_duration, input_state);
+
 	// if desired, we could move the camera separately (for now it moves with the player, in first person view)
 	this->camera.moveFromUserInputs(frame_duration, input_state);
 
