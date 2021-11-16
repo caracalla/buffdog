@@ -1,5 +1,5 @@
 P=rockshot
-OBJECTS=../device.cpp ../line.cpp ../util.cpp model.cpp player.cpp scene.cpp triangle.cpp
+OBJECTS=../device.cpp ../line.cpp ../util.cpp model.cpp player.cpp scene.cpp triangle.cpp entity.cpp
 CXXFLAGS=-g -Wall -std=c++17
 LDLIBS=-lm -lSDL2
 CC=clang++

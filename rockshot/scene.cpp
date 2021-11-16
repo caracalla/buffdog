@@ -34,16 +34,16 @@ void Scene::init(Level level, Player player) {
 // the step is over
 std::vector<Entity> temp_entity_buffer;
 
-void Scene::addEntity(Entity entity) {
+void Scene::addEntity(Entity&& entity) {
 	entity.scene = this;
 	temp_entity_buffer.push_back(entity);
 }
 
-void Scene::addEntityWithAction(Entity entity, EntityAction action) {
+void Scene::addEntityWithAction(Entity&& entity, EntityAction action) {
 	entity.action = action;
 	entity.has_action = true;
 
-	this->addEntity(entity);
+	this->addEntity(std::move(entity));
 }
 
 void flushEntityBuffer(std::vector<Entity>& entities) {
