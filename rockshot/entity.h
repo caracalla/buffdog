@@ -51,6 +51,8 @@ struct Entity {
 
 	// a copy of the model with transformations applied, used for physics
 	Model model_in_world;
+	// values > 1 make more translucent
+	int translucency = 1;
 
 	Vector actualRotation() {
 		return this->model->initial_rotation.add(this->rotation);

@@ -71,6 +71,8 @@ struct Model {
 	// "neutral" when it's lying on its side, or when the tip is pointing up?
 	Vector initial_rotation;
 
+	int translucency = 0;
+
 	// TODO: does precomputing triangle normals make sense?
 	// maybe not, but it's hard to do otherwise sadly
 	void setTriangleNormals();

@@ -304,7 +304,11 @@ struct Renderer {
 		drawLine(pz1, pz2, device::getColorValue(0.0, 0.0, 1.0));
 	}
 
-	void drawModel(Model item, Viewport& viewport, std::vector<Light>& lights) {
+	void drawModel(
+			Model item,
+			Viewport& viewport,
+			std::vector<Light>& lights,
+			int translucency) {
 		// bool is_vertex_visible[item.vertices.size()];
 		// Point projected_vertices[item.vertices.size()];
 		bool is_vertex_visible[TEMP_ARRAY_SIZE];
@@ -368,7 +372,8 @@ struct Renderer {
 						item.uvs[triangle.v1.uv].second,
 						item.uvs[triangle.v2.uv].first,
 						item.uvs[triangle.v2.uv].second,
-						texture};
+						texture,
+						translucency};
 
 				// tri.draw();
 #if USE_BARYCENTRIC
@@ -435,7 +440,8 @@ struct Renderer {
 							poly.v_values[i],
 							poly.u_values[i + 1],
 							poly.v_values[i + 1],
-							texture};
+							texture,
+							translucency};
 
 					// new_triangle.draw();
 					#if USE_BARYCENTRIC
@@ -512,21 +518,35 @@ struct Renderer {
 			}
 		}
 
-		drawModel(buildCameraModelFromWorldModel(
-				scene.level.model_in_world), scene.camera.viewport, lights);
+		// draw level
+		drawModel(
+				buildCameraModelFromWorldModel(scene.level.model_in_world),
+						scene.camera.viewport,
+						lights,
+						scene.level.translucency);
 
-		drawModel(buildCameraModelFromWorldModel(
-				scene.player.model_in_world), scene.camera.viewport, lights);
+		// draw player
+		drawModel(
+				buildCameraModelFromWorldModel(scene.player.model_in_world),
+						scene.camera.viewport,
+						lights,
+						scene.player.translucency);
 
-		drawModel(buildCameraModelFromWorldModel(
-				scene.player.weapon.model_in_world), scene.camera.viewport, lights);
+		// draw player's weapon
+		drawModel(
+				buildCameraModelFromWorldModel(scene.player.weapon.model_in_world),
+						scene.camera.viewport,
+						lights,
+						scene.player.weapon.translucency);
 
-		// move models into camera space and draw
+		// draw entities
 		for (auto& entity : scene.entities) {
 			if (entity.active) {
-				// drawModel(buildCameraModel(entity), scene.camera.viewport, lights);
-				drawModel(buildCameraModelFromWorldModel(
-						entity.model_in_world), scene.camera.viewport, lights);
+				drawModel(
+						buildCameraModelFromWorldModel(entity.model_in_world),
+								scene.camera.viewport,
+								lights,
+								entity.translucency);
 			}
 		}
 

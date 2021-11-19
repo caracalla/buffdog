@@ -62,6 +62,7 @@ int main(int argc, char** argv) {
 	player.weapon.explosion = subdivide(subdivide(buildIcosahedron()));
 	Model weapon_model = player.weapon.buildModel();
 	player.weapon.model = &weapon_model;
+	player.weapon.translucency = 2;
 
 	spit("Player created successfully");
 
@@ -103,6 +104,18 @@ int main(int argc, char** argv) {
 		self->rotation.x += 0.005;
 		self->rotation.y += 0.007;
 		self->rotation.z += 0.009;
+
+		key_input key = device::getNextKey();
+
+		if (key == z_key) {
+			self->translucency += 1;
+			printf("translucency is now %d\n", self->translucency);
+		}
+
+		if (key == x_key) {
+			self->translucency -= 1;
+			printf("translucency is now %d\n", self->translucency);
+		}
 	});
 
 	spit("Spinning crate created successfully");

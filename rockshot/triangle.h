@@ -45,6 +45,7 @@ struct Triangle2D {
 	double u2;
 	double v2;
 	Texture* texture;
+	int translucency = 0;
 
 	// draws a wireframe triangle using its color value
 	void draw();
@@ -59,6 +60,19 @@ struct Triangle2D {
 	// draws a triangle using its texture and lighting intensities using a
 	// barycentric bounding box approach
 	void fillBarycentric();
+
+	void drawShadedLine(
+			int y,
+			int x1,
+			int x2,
+			double h1,
+			double h2,
+			double inv_z1,
+			double inv_z2,
+			double inv_u1,
+			double inv_v1,
+			double inv_u2,
+			double inv_v2);
 };
 
 #endif

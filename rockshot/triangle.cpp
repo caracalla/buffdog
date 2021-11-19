@@ -20,10 +20,10 @@ void drawPoint(Point point, int color) {
 	}
 }
 
-void drawShadedLine(
-		double y,
-		double x1,
-		double x2,
+void Triangle2D::drawShadedLine(
+		int y,
+		int x1,
+		int x2,
 		double h1,
 		double h2,
 		double inv_z1,
@@ -31,9 +31,7 @@ void drawShadedLine(
 		double inv_u1,
 		double inv_v1,
 		double inv_u2,
-		double inv_v2,
-		Vector color,
-		Texture* texture) {
+		double inv_v2) {
 	int start_x;
 	int end_x;
 
@@ -86,20 +84,22 @@ void drawShadedLine(
 	}
 
 	for (int x = start_x; x < end_x; x++) {
-		double& z_buffer_value = device::zBufferAt(x, y);
+		if (!this->translucency || (x + y) % this->translucency == 0) {
+			double& z_buffer_value = device::zBufferAt(x, y);
 
-		if (inv_z < z_buffer_value) {
-			uint32_t final_color;
+			if (inv_z < z_buffer_value) {
+				uint32_t final_color;
 
-			if (texture) {
-				Vector vec_color = texture->vectorColorFromUV(inv_u / inv_z, inv_v / inv_z);
-				final_color = colorFromVector(vec_color.scalarMultiply(h));
-			} else {
-				final_color = colorFromVector(color.scalarMultiply(h));
+				if (this->texture) {
+					Vector vec_color = this->texture->vectorColorFromUV(inv_u / inv_z, inv_v / inv_z);
+					final_color = colorFromVector(vec_color.scalarMultiply(h));
+				} else {
+					final_color = colorFromVector(this->color.scalarMultiply(h));
+				}
+				device::setPixel(x, y, final_color);
+
+				z_buffer_value = inv_z;
 			}
-			device::setPixel(x, y, final_color);
-
-			z_buffer_value = inv_z;
 		}
 
 		h += a;
@@ -242,7 +242,7 @@ void Triangle2D::fillShaded() {
 	double dy02 = this->p2.y - this->p0.y;
 
 	if (dy02 == 0) {
-		drawShadedLine(
+		this->drawShadedLine(
 				this->p1.y,
 				this->p0.x,
 				this->p1.x,
@@ -253,11 +253,9 @@ void Triangle2D::fillShaded() {
 				inv_u0,
 				inv_v0,
 				inv_u1,
-				inv_v1,
-				this->color,
-				this->texture);
+				inv_v1);
 
-		drawShadedLine(
+		this->drawShadedLine(
 				this->p2.y,
 				this->p1.x,
 				this->p2.x,
@@ -268,9 +266,7 @@ void Triangle2D::fillShaded() {
 				inv_u1,
 				inv_v1,
 				inv_u2,
-				inv_v2,
-				this->color,
-				this->texture);
+				inv_v2);
 		return;
 	}
 
@@ -302,7 +298,7 @@ void Triangle2D::fillShaded() {
 
 	if (dy01 == 0) {
 		// the bottom part is flat horizontally
-		drawShadedLine(
+		this->drawShadedLine(
 				this->p1.y,
 				this->p0.x,
 				this->p1.x,
@@ -313,9 +309,7 @@ void Triangle2D::fillShaded() {
 				inv_u0,
 				inv_v0,
 				inv_u1,
-				inv_v1,
-				this->color,
-				this->texture);
+				inv_v1);
 
 	} else {
 		double m01 = (this->p1.x - this->p0.x) / dy01;
@@ -325,7 +319,7 @@ void Triangle2D::fillShaded() {
 		double vq01 = (inv_v1 - inv_v0) / dy01;
 
 		for (int y = this->p0.y; y < this->p1.y; y++) {
-			drawShadedLine(y, x01, x02, h01, h02, z01, z02, u01, v01, u02, v02, this->color, this->texture);
+			this->drawShadedLine(y, x01, x02, h01, h02, z01, z02, u01, v01, u02, v02);
 
 			x01 += m01;
 			x02 += m02;
@@ -347,7 +341,7 @@ void Triangle2D::fillShaded() {
 
 	if (dy12 == 0) {
 		// the top part is flat horizontally
-		drawShadedLine(
+		this->drawShadedLine(
 				this->p2.y,
 				this->p1.x,
 				this->p2.x,
@@ -358,9 +352,7 @@ void Triangle2D::fillShaded() {
 				inv_u1,
 				inv_v1,
 				inv_u2,
-				inv_v2,
-				this->color,
-				this->texture);
+				inv_v2);
 	} else {
 		double m12 = (this->p2.x - this->p1.x) / dy12;
 		double a12 = (this->h2 - this->h1) / dy12;
@@ -369,7 +361,7 @@ void Triangle2D::fillShaded() {
 		double vq12 = (inv_v2 - inv_v1) / dy12;
 
 		for (int y = this->p1.y; y <= this->p2.y; y++) {
-			drawShadedLine(y, x12, x02, h12, h02, z12, z02, u12, v12, u02, v02, this->color, this->texture);
+			this->drawShadedLine(y, x12, x02, h12, h02, z12, z02, u12, v12, u02, v02);
 
 			x12 += m12;
 			x02 += m02;
