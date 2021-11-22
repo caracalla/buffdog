@@ -7,12 +7,13 @@
 #include <map>
 #include <unordered_set>
 
-#include "../circle.h"
-#include "../device.h"
-#include "../point.h"
-#include "../vector.h"
+#include "circle.h"
+#include "device.h"
+#include "point.h"
+#include "util.h"
+#include "vector.h"
 
-#include "triangle.h"
+#include "rockshot/triangle.h"
 
 
 // The sentinel value, for example for half-edges belonging to the bounding
@@ -45,9 +46,11 @@ struct HalfEdge {
 	// the point in the half-edge's triangle opposite this half-edge
 	size_t opposite_point = NULL_INDEX;
 
-	// the half edge for the same points, but going in the opposite direction
-	// will be on a different triangle
+	// the half edge for the same points, but going in the opposite direction;
+	// it will be on a different triangle
 	HalfEdge* opposite_half_edge = nullptr;
+	// the point at which the next half-edge for this triangle begins
+	// (it will terminate at opposite_point of this half-edge)
 	HalfEdge* next_half_edge = nullptr;
 
 	bool is_bounding = false;
@@ -88,6 +91,10 @@ struct TriangleDT {
 		spit("\n");
 	}
 
+	bool isLeaf() const {
+		return this->child_triangles.size() == 0;
+	}
+
 	// implemented below, since points are stored in a global vector
 	std::array<Point, 3> points();
 
@@ -116,14 +123,14 @@ struct TriangleDT {
 		return edge == this->half_edge_1 || edge == this->half_edge_2 || edge == this->half_edge_3;
 	}
 
-	bool hasBoundingEdge() {
+	bool hasBoundingEdge() const {
 		return
 				this->half_edge_1->is_bounding ||
 				this->half_edge_2->is_bounding ||
 				this->half_edge_3->is_bounding;
 	}
 
-	bool touchesBoundingPoint() {
+	bool touchesBoundingPoint() const {
 		if (this->hasBoundingEdge()) {
 			// bounding edges touch bounding points
 			return true;
@@ -147,7 +154,7 @@ struct TriangleDT {
 		Point p3 = points[2];
 
 		// | a b | * | x | = | g |
-		// | c d |   | y | = | h |
+		// | c d |   | y |   | h |
 
 		int a = (p2.x * 2) - (p1.x * 2);
 		int b = (p2.y * 2) - (p1.y * 2);
@@ -164,7 +171,7 @@ struct TriangleDT {
 		double inverse_d = determinant * a;
 
 		// | x | = | i_a i_b | * | g |
-		// | y | = | i_c i_d |   | h |
+		// | y |   | i_c i_d |   | h |
 
 		int x = inverse_a * g + inverse_b * h;
 		int y = inverse_c * g + inverse_d * h;
@@ -198,7 +205,7 @@ struct TriangleDT {
 		}
 
 		// this triangle contains the point, and it's a leaf, so it's our winner
-		if (this->child_triangles.size() == 0) {
+		if (this->isLeaf()) {
 			return this;
 		}
 
@@ -217,17 +224,18 @@ struct TriangleDT {
 
 		// however, since we want to avoid points that are right on the edge between
 		// two triangles, TriangleDT::contains() isn't exact, so it might be possible
-		// to pass for one triangle and not for another (I think), so returning
-		// nullptr here should just tell us to give up on this point
+		// to pass for the parent triangle and not for one of its children (I think),
+		// so returning nullptr here should just tell us to give up on this point
 		return nullptr;
 	}
 
 	void insertPoint(size_t point_index);
 
 	std::unordered_set<TriangleDT*> leafTriangles() {
+		// since a triangle can be the child of multiple parents, we use a set
 		std::unordered_set<TriangleDT*> leaf_triangles;
 
-		if (this->child_triangles.size() == 0) {
+		if (this->isLeaf()) {
 			leaf_triangles.emplace(this);
 		} else {
 			for (auto child_triangle : this->child_triangles) {
@@ -241,9 +249,9 @@ struct TriangleDT {
 
 	void draw() {
 		// only draw leaf triangles
-		if (this->child_triangles.size() == 0) {
+		if (this->isLeaf()) {
 			if (!this->touchesBoundingPoint()) {
-				this->drawImpl(Vector{0.0, 0.0, 0.5}, false); // true);
+				// this->drawImpl(Vector{0.0, 0.0, 0.5}, false); // true);
 				this->drawImpl(Vector{0.8, 0.0, 0.0}, false);
 			} else {
 				// don't draw the bounding triangle or any of its children that touch
@@ -251,8 +259,6 @@ struct TriangleDT {
 				// (assuming BUILD_TRIANGLE_DEBUG is 0)
 				// this->drawImpl(Vector{0.0, 0.8, 0.0}, false);
 			}
-
-
 		} else {
 			for (auto child_triangle : this->child_triangles) {
 				child_triangle->draw();
@@ -299,15 +305,15 @@ std::vector<Point> generateDTPoints(int count) {
 	int xres = device::getXRes();
 	int yres = device::getYRes();
 
-	// the first three points will always be the bounding triangle
-#define BUILD_TRIANGLE_DEBUG 0
-
-#if BUILD_TRIANGLE_DEBUG
 	int min_x = xres / 16;
 	int min_y = yres / 16;
 	int max_x = xres - min_x;
 	int max_y = yres - min_y;
 
+	// the first three points will always be the bounding triangle
+#define BUILD_TRIANGLE_DEBUG 1
+
+#if BUILD_TRIANGLE_DEBUG
 	Point bounding1{max_x, min_y};
 	Point bounding2{min_x, max_y};
 	Point bounding3{min_x, min_y};
@@ -328,9 +334,9 @@ std::vector<Point> generateDTPoints(int count) {
 	// uncomment to just make a triangulation right away
 	// for (int i = 0; i < count; i++) {
 	// 	Point point{
-	// 			device::randomInt(min_x, max_x),
-	// 			device::randomInt(min_y, max_y)};
-	//
+	// 			util::randomInt(min_x, max_x),
+	// 			util::randomInt(min_y, max_y)};
+	
 	// 	result.push_back(point);
 	// }
 
@@ -384,23 +390,23 @@ std::map<TriangleDT*, HalfEdge*> edges_to_legalize;
 void legalizeEdgeImpl(HalfEdge* half_edge);
 
 bool linesIntersect(Point start1, Point end1, Point start2, Point end2) {
-	double x_s1 = start1.x;
-	double y_s1 = start1.y;
+	int x_s1 = start1.x;
+	int y_s1 = start1.y;
 
-	double x_e1 = end1.x;
-	double y_e1 = end1.y;
+	int x_e1 = end1.x;
+	int y_e1 = end1.y;
 
-	double x_s2 = start2.x;
-	double y_s2 = start2.y;
+	int x_s2 = start2.x;
+	int y_s2 = start2.y;
 
-	double x_e2 = end2.x;
-	double y_e2 = end2.y;
+	int x_e2 = end2.x;
+	int y_e2 = end2.y;
 
 	// we only care if the intersection point is between start1 and end1
-	double t_numerator = (x_s1 - x_s2) * (y_s2 - y_e2) - (y_s1 - y_s2) * (x_s2 - x_e2);
-	double t_denominator = (x_s1 - x_e1) * (y_s2 - y_e2) - (y_s1 - y_e1) * (x_s2 - x_e2);
+	int t_numerator = (x_s1 - x_s2) * (y_s2 - y_e2) - (y_s1 - y_s2) * (x_s2 - x_e2);
+	int t_denominator = (x_s1 - x_e1) * (y_s2 - y_e2) - (y_s1 - y_e1) * (x_s2 - x_e2);
 
-	double t = t_numerator / t_denominator;
+	float t = (float)t_numerator / t_denominator;
 
 	return t >= 0.0 && t <= 1.0;
 }
@@ -409,7 +415,7 @@ void legalizeEdge(HalfEdge* half_edge) {
 	HalfEdge* opposite_edge = half_edge->opposite_half_edge;
 
 	// special cases for triangles touching bounding points:
-	// 1. half_edge, opposite_edge, or any edges for either of their trianges are bounding edges -> always legal
+	// 1. half_edge, opposite_edge, or any edges for either of those half-edges' trianges are bounding edges -> always legal
 	// 2. neither point of half_edge is a bounding point, but one of its opposite points is -> always legal?
 	// 3. one of the two points of half_edge is a bounding point:
 	//   * hypothetical flipped edge intersects with half_edge -> never legal
@@ -419,8 +425,7 @@ void legalizeEdge(HalfEdge* half_edge) {
 	// edges, it's legal
 	if (
 			half_edge->parent_triangle->hasBoundingEdge() ||
-			opposite_edge->parent_triangle->hasBoundingEdge()
-	) {
+			opposite_edge->parent_triangle->hasBoundingEdge()) {
 		// spit("  should not flip SPECIAL 1");
 		return;
 	}
@@ -607,12 +612,10 @@ void TriangleDT::insertPoint(size_t point_index) {
 	t3->half_edge_3->next_half_edge = t3->half_edge_1;
 	t3->half_edge_3->opposite_half_edge = t2->half_edge_2;
 
-	// call legalize edges on original three edges (in new triangles)
+	// legalize the each of the original triangle edges that the new triangles inherited
 	legalizeEdge(t1->half_edge_1);
 	legalizeEdge(t2->half_edge_1);
 	legalizeEdge(t3->half_edge_1);
-
-	// spit("");
 }
 
 void legalizeEdgeImpl(HalfEdge* half_edge) {
@@ -651,7 +654,7 @@ void legalizeEdgeImpl(HalfEdge* half_edge) {
 	t2->half_edge_2 = hnn;
 	t2->half_edge_3 = on;
 
-	// populate new half-edges
+	// populate new half-edge for t1
 	new_half_edge_1->parent_triangle = t1;
 	new_half_edge_1->start_point = half_edge->opposite_point;
 	new_half_edge_1->end_point = opposite_edge->opposite_point;
@@ -666,6 +669,7 @@ void legalizeEdgeImpl(HalfEdge* half_edge) {
 	hn->opposite_point = new_half_edge_1->end_point;
 	hn->parent_triangle = t1;
 
+	// populate new half-edge for t2
 	new_half_edge_2->parent_triangle = t2;
 	new_half_edge_2->start_point = opposite_edge->opposite_point;
 	new_half_edge_2->end_point = half_edge->opposite_point;
@@ -683,6 +687,18 @@ void legalizeEdgeImpl(HalfEdge* half_edge) {
 	// lastly, legalize the next two edges from oppposite_edge
 	legalizeEdge(on);
 	legalizeEdge(onn);
+}
+
+std::vector<TriangleDT*> leafTriangles() {
+	std::vector<TriangleDT*> result;
+
+	for (auto& triangle : dt_triangles) {
+		if (triangle.isLeaf() && !triangle.hasBoundingEdge()) {
+			result.push_back(&triangle);
+		}
+	}
+
+	return result;
 }
 
 #endif

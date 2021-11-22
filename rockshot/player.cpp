@@ -98,6 +98,10 @@ void Weapon::fireBullet() {
 							[](Entity* self) {
 								self->scale += 0.05;
 
+								if (self->scale > 0.8) {
+									self->translucency += 1;
+								}
+
 								if (self->scale > 1.0) {
 									self->has_action = false;
 									self->active = false;

@@ -6,7 +6,7 @@
 #include <cmath>
 #include <vector>
 
-#include "rockshot/libdt.h"
+#include "libdt.h"
 #include "line.h"
 
 
@@ -116,21 +116,20 @@ int main() {
 			// convert mouse coordinates to origin at bottom left
 			Point mouse_pos = Point{mouse.pos_x, yres - mouse.pos_y};
 
-			TriangleDT* leaf_triangle =
-					dt_bounding_triangle.findLeafContainingPoint(mouse_pos);
-
+			// if the cursor is inside of an inner triangle, draw it filled green
+			TriangleDT* leaf_triangle = dt_bounding_triangle.findLeafContainingPoint(mouse_pos);
 			if (leaf_triangle && !leaf_triangle->touchesBoundingPoint()) {
-				Vector tri_color{0.0, 0.8, 0.0};
-
-				leaf_triangle->drawImpl(tri_color, true);
+				leaf_triangle->drawImpl(Vector::color(0.0, 0.8, 0.0), true);
 			}
 
-			Vector mouse_color{1.0, 0.0, 1.0};
-			drawPoint(mouse_pos, colorFromVector(mouse_color));
+			drawPoint(mouse_pos, colorFromVector(Vector::color(1.0, 0.0, 1.0)));
 
 			if (key == mouse_1) {
 				addPointToDT(mouse_pos);
 			}
+
+			std::vector<TriangleDT*> leaves = leafTriangles();
+			device::logOncePerSecond("number of leaf triangles: %d\n", leaves.size());
 		}
 
 		device::updateScreen();
