@@ -1,9 +1,6 @@
 # Buffdog
 
-## TODO
-* Voronoi shattering in 3D (see more on my [blog](http://caracal.la/01_intro.html))
-* Port rendering to Vulkan
-* Move logging stuff to a `logging.h` or something
+A collection of modules for drawing on the screen.  The primary purpose of this project is to learn about 3D rendering methods, physics simulation, and whatever else I'm working on.  A secondary goal is to have minimal dependencies.  Currently, the only external dependency is [SDL2](https://www.libsdl.org/), which is used to handle keyboard and mouse input, and to draw the final rendered image to the screen every frame (every pixel in that image is updated by my code however, not SDL or OpenGL).
 
 ## Setup (UNIX)
 1. Install SDL2
@@ -23,7 +20,7 @@
 * `buffdog` - Whatever I'm working on.  Right now, I'm messing around with 2D collision physics.
 * `rockshot` - A real-time rasterizer, which is slowly becoming a game engine.  It currently runs on a custom software renderer (SDL is only used to create a window, fill individual pixels, and handle inputs).
 * `delaunay` - A Delaunay Triangulation demonstration, which is a stepping stone to implementing 3D Voronoi shattering.
-* `voronoi` - A Voronoi diagram demonstration, the next step to shattering.
+* `voronoi` - A Voronoi diagram demonstration, the next step to shattering (WIP)
 
 ## Resources and Inspirations
 * Gabriel Gambetta's [Computer Graphics from Scratch](https://www.gabrielgambetta.com/computer-graphics-from-scratch/introduction.html)
@@ -32,6 +29,11 @@
 * [The Quake source code](https://github.com/caracalla/quake)
 * [small3dlib](https://gitlab.com/drummyfish/small3dlib)
 * Dmitry Sokolov's [tinyrenderer](https://github.com/ssloy/tinyrenderer/wiki/Lesson-0-getting-started)
+
+## TODO
+* Voronoi shattering in 3D (see more on my [blog](http://caracal.la/01_intro.html))
+* Port rendering to Vulkan
+* Move logging stuff to a `logging.h` or something
 
 ## Namesake
 
