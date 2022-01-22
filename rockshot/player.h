@@ -48,8 +48,9 @@ struct Player : public Entity {
 	void move(std::chrono::microseconds frame_duration, InputState* input_state);
 
 	Model buildModel() {
-		Vector start = Vector::point(-this->width, -this->eye_height, -this->width);
-		Vector end = Vector::point(this->width, this->height - this->eye_height, this->width);
+		// the center of the model's bottom plane is its "origin"
+		Vector start = Vector::point(-this->width, 0.0, -this->width);
+		Vector end = Vector::point(this->width, this->height, this->width);
 
 		return Model::buildHexahedron(start, end);
 	}

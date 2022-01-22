@@ -9,9 +9,14 @@ constexpr std::chrono::microseconds kWeaponCooldown = std::chrono::microseconds(
 void Player::move(std::chrono::microseconds frame_duration, InputState* input_state) {
 	this->moveFromUserInputs(frame_duration, input_state);
 
-	// move the weapon to its proper position
+	// want to prevent weirdness where the weapon rotates about the player's base
+	// position, instead of about the player's eye position
+	Vector player_eye_pos = this->weapon.player_local_position;
+	player_eye_pos.y -= this->eye_height;
 	this->weapon.position = Matrix::makeRotationMatrix(this->rotation).
-			multiplyVector(this->weapon.player_local_position).add(this->position);
+			multiplyVector(player_eye_pos).add(this->position);
+	this->weapon.position.y += this->eye_height;
+
 	this->weapon.rotation = this->rotation;
 
 	// the world model looks weird if the player looks up, which causes rotation

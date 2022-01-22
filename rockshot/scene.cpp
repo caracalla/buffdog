@@ -15,6 +15,7 @@ void Scene::init(Level level, Player player) {
 
 	// set up camera
 	this->camera.position = this->player.position;
+	this->camera.position.y += this->player.eye_height;
 	this->camera.rotation = this->player.rotation;
 
 	this->camera.viewport.width = 4;

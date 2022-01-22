@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 	Player player;
 	Model player_model = player.buildModel();
 	player.model = &player_model;
-	player.weapon.player_local_position = Vector::direction(0.25, 0, 0);
+	player.weapon.player_local_position = Vector::direction(0.25, player.eye_height, 0);
 	player.weapon.bullet = Model::buildTetrahedron();
 	player.weapon.explosion = Model::buildExplosionModel();
 	Model weapon_model = player.weapon.buildModel();
@@ -61,8 +61,8 @@ int main(int argc, char** argv) {
 	level.position = Vector::origin();
 	level.rotation = Vector::direction(0, 0, 0);
 
-	// player's position is where their eyes are
-	level.player_start_position = Vector::point(0, player.eye_height, 0);
+	// the player's local "origin" is at the center of the base of the model
+	level.player_start_position = Vector::origin();
 	level.player_start_rotation = Vector::direction(0, 0, 0);
 	level.init();
 
