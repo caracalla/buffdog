@@ -14,8 +14,9 @@
 
 
 // TODO: make this stuff configurable
-#define RES_X 640
-#define RES_Y 480
+// fixed 4:3 aspect ratio for now (see also Scene::init())
+#define RES_X 1024
+#define RES_Y RES_X / 4 * 3
 
 #ifdef _MSC_VER
 #define MOUSE_SENSITIVITY_FACTOR 100

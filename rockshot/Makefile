@@ -16,8 +16,7 @@ debug:
 	lldb $(P)
 
 clean:
-	rm -f $(P)
-	rm -rf *.dSYM
+	rm -f $(P) && rm -rf *.dSYM && rm -rf
 
 wad:
 	rm -f wad && $(CC) $(CXXFLAGS) -o wad ../util.cpp wad.cpp && ./wad

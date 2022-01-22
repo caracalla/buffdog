@@ -104,13 +104,14 @@ struct Model {
 		bbox_max.log("    max");
 		bbox_min.log("    min");
 	}
+
+	// convenience functions for basic primitives
+	static Model buildHexahedron(Vector box_min, Vector box_max); // technically, this creates a rectangular cuboid (don't tell anyone)
+	static Model buildCube();
+	static Model buildTetrahedron();
+	static Model buildIcosahedron();
+	static Model buildExplosionModel();
 };
 
-// technically, this creates a rectangular cuboid (don't tell anyone)
-Model buildHexahedron(Vector box_min, Vector box_max);
-Model buildCube();
-Model buildTetrahedron();
-Model buildIcosahedron();
-Model subdivide(Model model);
 
 #endif

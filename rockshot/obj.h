@@ -17,7 +17,7 @@ Vector readVector(char* str, size_t index, bool is_point) {
 	char num[MAXCHAR];
 
 	if (is_point) {
-		result = Vector::point(0, 0, 0);
+		result = Vector::origin();
 	} else {
 		result = Vector::direction(0, 0, 0);
 	}

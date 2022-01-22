@@ -16,13 +16,13 @@ struct Entity;
 struct Scene;
 
 
-typedef std::function<void(Entity*)> EntityAction;
+typedef std::function<void(Entity*, std::chrono::microseconds frame_duration)> EntityAction;
 
 
 struct Entity {
 	Model* model;
 	double scale = 1.0; // dear god this ruined an entire morning
-	Vector position = Vector::point(0, 0, 0);
+	Vector position = Vector::origin();
 	Vector rotation = Vector::direction(0, 0, 0); // represented as radians around each axis
 
 	double velocity_value = 0; // in meters per microsecond (really just speed)

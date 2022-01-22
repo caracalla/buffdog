@@ -26,9 +26,6 @@
 #define USE_BARYCENTRIC 0
 
 
-// position of the camera after all transforms is always at the origin
-const Vector kOrigin = {0, 0, 0, 1};
-
 
 // a container to represent the vertices of a clipped triangle
 struct ClippedPolygon {
@@ -222,7 +219,8 @@ struct Renderer {
 	}
 
 	bool isBackFace(Vector triangle_normal, Vector vertex) {
-		Vector vertex_to_camera = kOrigin.subtract(vertex);
+		// position of the camera after all transforms is always at the origin
+		Vector vertex_to_camera = Vector::origin().subtract(vertex);
 
 		return vertex_to_camera.dotProduct(triangle_normal) <= 0;
 	}
@@ -250,7 +248,6 @@ struct Renderer {
 		Vector cameraDirection = Matrix::makeRotationMatrix(camera.rotation).
 				multiplyVector(Vector::direction(0, 0, -1)).unit();
 
-		// kOrigin
 		Vector offset = cameraDirection.scalarMultiply(2);
 		Vector position = camera.position.add(offset);
 

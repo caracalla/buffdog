@@ -19,6 +19,10 @@ void Scene::init(Level level, Player player) {
 
 	this->camera.viewport.width = 4;
 	this->camera.viewport.height = 3;
+	// I'd like to free up the aspect ratio, but trying to do so causes wonky
+	// behavior.  I think that's because of how I set up the frustum planes in
+	// Renderer::create().
+	// this->camera.viewport.height = 4 * device::getYRes() / device::getXRes();
 	this->camera.viewport.distance = -2;
 	this->camera.viewport.near_plane_distance = -0.1;
 	this->camera.viewport.far_plane_distance = -100;
@@ -61,7 +65,7 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 			entity.buildWorldModel();
 
 			if (entity.has_action) {
-				entity.action(&entity);
+				entity.action(&entity, frame_duration);
 			}
 
 			entity.applyPhysics(frame_duration);

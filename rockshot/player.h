@@ -33,7 +33,7 @@ struct Weapon : public Entity {
 		Vector start = Vector::point(-this->x_len, -this->y_len, -this->z_len);
 		Vector end = Vector::point(this->x_len, this->y_len, this->z_len);
 
-		return buildHexahedron(start, end);
+		return Model::buildHexahedron(start, end);
 	}
 };
 
@@ -51,7 +51,7 @@ struct Player : public Entity {
 		Vector start = Vector::point(-this->width, -this->eye_height, -this->width);
 		Vector end = Vector::point(this->width, this->height - this->eye_height, this->width);
 
-		return buildHexahedron(start, end);
+		return Model::buildHexahedron(start, end);
 	}
 };
 

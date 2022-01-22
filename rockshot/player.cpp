@@ -79,7 +79,7 @@ void Weapon::fireBullet() {
 					this->position,
 					this->bulletDirection(),
 					bullet_rotation),
-			[collision_point, view_normal](Entity* self) {
+			[collision_point, view_normal](Entity* self, std::chrono::microseconds frame_duration) {
 				double distance =
 						collision_point.subtract(self->position).dotProduct(view_normal);
 
@@ -95,14 +95,17 @@ void Weapon::fireBullet() {
 
 					self->scene->addEntityWithAction(
 							makeExplosion(&self->scene->player.weapon.explosion, collision_point),
-							[](Entity* self) {
-								self->scale += 0.05;
+							[](Entity* self, std::chrono::microseconds frame_duration) {
+								// self->scale += 0.05;
+								self->scale += frame_duration.count() / MICROSECONDS * 5;
 
-								if (self->scale > 0.8) {
-									self->translucency += 1;
+								if (self->scale > 1.5) {
+									self->translucency = static_cast<int>((self->scale - 1.4) * 10);
 								}
 
-								if (self->scale > 1.0) {
+								// printf("scale: %f, translucency: %d\n", self->scale, self->translucency);
+
+								if (self->scale > 2.0) {
 									self->has_action = false;
 									self->active = false;
 								}

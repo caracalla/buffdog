@@ -43,6 +43,10 @@ struct Vector {
 		return Vector{x, y, z, 1.0};
 	}
 
+	static Vector origin() {
+		return Vector{0.0, 0.0, 0.0, 1.0};
+	}
+
 	static Vector direction(double x, double y, double z) {
 		return Vector{x, y, z, 0.0};
 	}

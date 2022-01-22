@@ -30,14 +30,14 @@ void Model::setTriangleNormals() {
 #define MAX_COLOR_VAL 0.9
 #define MIN_COLOR_VAL 0.0
 
-Model buildCube() {
+Model Model::buildCube() {
 	Vector start = Vector::point(-1, -1, -1);
 	Vector end = Vector::point(1, 1, 1);
 
 	return buildHexahedron(start, end);
 }
 
-Model buildHexahedron(Vector box_min, Vector box_max) {
+Model Model::buildHexahedron(Vector box_min, Vector box_max) {
 	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
@@ -145,7 +145,7 @@ Model buildHexahedron(Vector box_min, Vector box_max) {
 	return item;
 }
 
-Model buildTetrahedron() {
+Model Model::buildTetrahedron() {
 	Vector red = Vector::color(MAX_COLOR_VAL, MIN_COLOR_VAL, MIN_COLOR_VAL);
 	Vector blue = Vector::color(MIN_COLOR_VAL, MIN_COLOR_VAL, MAX_COLOR_VAL);
 	Vector green = Vector::color(MIN_COLOR_VAL, MAX_COLOR_VAL, MIN_COLOR_VAL);
@@ -210,7 +210,7 @@ Vector randomExplosionColor() {
 	return Vector::color(max_color, util::randomDouble(0.0, max_color), 0.0);
 }
 
-Model buildIcosahedron() {
+Model Model::buildIcosahedron() {
 	Model item;
 
 	// distance between vertex to center of icosahedron
@@ -461,4 +461,8 @@ Model subdivide(Model model) {
 	model.setTriangleNormals();
 
 	return model;
+}
+
+Model Model::buildExplosionModel() {
+	return subdivide(subdivide(buildIcosahedron()));
 }

@@ -39,27 +39,12 @@ int main(int argc, char** argv) {
 
 	auto last_frame_time = std::chrono::steady_clock::now();
 
-	// // add level geometry
-	// Model city = parseOBJFile(city_model_file);
-	// PPMTexture city_texture = PPMTexture::load(city_texture_file);
-	// city.setTexture(&city_texture);
-	// city.setTriangleNormals();
-
-	// Level level;
-	// level.model = &city;
-	// level.scale = 12.0;
-	// level.position = Vector::direction(-38, 0, -38);
-	// level.rotation = Vector::direction(0, 0, 0);
-	// level.player_start_position = Vector::point(0, 0, 0);
-	// level.player_start_rotation = Vector::direction(0, kHalfPi + kQuarterPi, 0);
-	// level.init();
-
 	Player player;
 	Model player_model = player.buildModel();
 	player.model = &player_model;
 	player.weapon.player_local_position = Vector::direction(0.25, 0, 0);
-	player.weapon.bullet = buildTetrahedron();
-	player.weapon.explosion = subdivide(subdivide(buildIcosahedron()));
+	player.weapon.bullet = Model::buildTetrahedron();
+	player.weapon.explosion = Model::buildExplosionModel();
 	Model weapon_model = player.weapon.buildModel();
 	player.weapon.model = &weapon_model;
 	player.weapon.translucency = 2;
@@ -69,12 +54,13 @@ int main(int argc, char** argv) {
 	int floor_size = 20;
 	Vector floor_start = Vector::point(-floor_size, -5, -floor_size);
 	Vector floor_end = Vector::point(floor_size, 0, floor_size);
-	Model floor = buildHexahedron(floor_start, floor_end);
+	Model floor = Model::buildHexahedron(floor_start, floor_end);
 	Level level;
 	level.model = &floor;
 	level.scale = 1.0;
-	level.position = Vector::point(0, 0, 0);
+	level.position = Vector::origin();
 	level.rotation = Vector::direction(0, 0, 0);
+
 	// player's position is where their eyes are
 	level.player_start_position = Vector::point(0, player.eye_height, 0);
 	level.player_start_rotation = Vector::direction(0, 0, 0);
@@ -92,7 +78,7 @@ int main(int argc, char** argv) {
 	spit("Renderer created successfully");
 
 	// add spinning cube
-	Model cube_model = buildCube();
+	Model cube_model = Model::buildCube();
 	BMPTexture crate_texture = BMPTexture::load(crate_texture_file);
 	cube_model.setTexture(&crate_texture);
 
@@ -100,7 +86,7 @@ int main(int argc, char** argv) {
 	cube_entity.model = &cube_model;
 	cube_entity.position = Vector::point(15, 2, 0);
 
-	scene.addEntityWithAction(std::move(cube_entity), [](Entity* self) {
+	scene.addEntityWithAction(std::move(cube_entity), [](Entity* self, std::chrono::microseconds frame_duration) {
 		self->rotation.x += 0.005;
 		self->rotation.y += 0.007;
 		self->rotation.z += 0.009;
