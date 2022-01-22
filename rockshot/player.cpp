@@ -67,12 +67,25 @@ Entity makeExplosion(Model* model, Vector position) {
 	return explosion;
 }
 
+Vector getExplosionPoint(Vector ray_origin, Vector ray_direction, bool* did_collide) {
+	#define MAX_NO_COLLISION_DISTANCE 50
+
+	*did_collide = false;
+
+	// start with a default result representing a "collision" an arbitrary
+	// distance from the start
+	return ray_origin.add(
+		ray_direction.scalarMultiply(MAX_NO_COLLISION_DISTANCE));
+}
+
 void Weapon::fireBullet() {
 	Vector view_normal = this->bulletDirection();
 	bool did_collide = false;
-	Vector collision_point =
-			this->scene->level.collisionPoint(
-					this->position, view_normal, &did_collide);
+	// Vector collision_point =
+	// 		this->collisionEntity.collisionPoint(
+	// 				this->position, view_normal, &did_collide);
+
+	Vector collision_point = getExplosionPoint(this->position, view_normal, &did_collide);
 
 	// align top to point away from player
 	Vector bullet_rotation = this->rotation.add(

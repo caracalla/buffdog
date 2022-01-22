@@ -7,7 +7,6 @@
 #include "../vector.h"
 
 #include "entity.h"
-#include "level.h"
 #include "model.h"
 #include "player.h"
 
@@ -53,12 +52,11 @@ struct Light {
 
 struct Scene {
 	Camera camera;
-	Level level;
 	Player player;
 	std::vector<Entity> entities;
 	std::vector<Light> lights;
 
-	void init(Level level, Player player);
+	void init(Player player);
 
 	// Entity handling
 	void addEntity(Entity&& entity);

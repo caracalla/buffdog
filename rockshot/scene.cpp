@@ -3,15 +3,10 @@
 #include "scene.h"
 
 
-void Scene::init(Level level, Player player) {
-	this->level = level;
+void Scene::init(Player player) {
 	this->player = player;
 	this->player.scene = this;
 	this->player.weapon.scene = this;
-
-	// set up player in level
-	this->player.position = this->level.player_start_position;
-	this->player.rotation = this->level.player_start_rotation;
 
 	// set up camera
 	this->camera.position = this->player.position;

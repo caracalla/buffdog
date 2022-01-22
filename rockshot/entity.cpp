@@ -174,7 +174,7 @@ Vector Entity::collisionPoint(Vector ray_origin, Vector ray_direction, bool* did
 #define WALKING_VELOCITY_INCREMENT (MAX_WALKING_VELOCITY * 0.1)
 #define SPRINTING_VELOCITY_FACTOR 5
 
-void Entity:: moveFromUserInputs(
+void Entity::moveFromUserInputs(
 		std::chrono::microseconds frame_duration,
 		InputState* input_state) {
 	// flipped, as horizontal mouse motion ("side to side") controls rotation

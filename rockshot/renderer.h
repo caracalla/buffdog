@@ -515,13 +515,6 @@ struct Renderer {
 			}
 		}
 
-		// draw level
-		drawModel(
-				buildCameraModelFromWorldModel(scene.level.model_in_world),
-						scene.camera.viewport,
-						lights,
-						scene.level.translucency);
-
 		// draw player
 		drawModel(
 				buildCameraModelFromWorldModel(scene.player.model_in_world),
