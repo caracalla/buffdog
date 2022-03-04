@@ -16,7 +16,7 @@ struct Weapon : public Entity {
 	// shoulder fired, and a minigun might be hip fired
 	Vector player_local_position;
 
-	Model bullet;
+	Model rocket;
 	Model explosion;
 
 	// technically these are half-lengths
@@ -26,8 +26,8 @@ struct Weapon : public Entity {
 
 	std::chrono::microseconds cooldown_remaining = std::chrono::microseconds(0);
 
-	Vector bulletDirection();
-	void fireBullet();
+	Vector rocketDirection();
+	void fireRocket();
 
 	Model buildModel() {
 		Vector start = Vector::point(-this->x_len, -this->y_len, -this->z_len);

@@ -38,38 +38,25 @@ const char* basic_level_file = "assets/basic.level";
 #include <sstream>
 #include <string>
 
-struct Fighter {
-	Vector pos = Vector::origin();
-	Vector rot = Vector::direction(0.0, 0.0, 0.0);
-
-	struct Dimensions {
-		float height = 0.0;
-		float width = 0.0;
-		float eye_height = 0.0;
-	};
-
-	Dimensions dimensions;
-
-	static Model buildModel(Dimensions dims) {
-		// the model will have its bottom centered at the origin
-		Vector start = Vector::point(-dims.width, -dims.eye_height, -dims.width);
-		Vector end = Vector::point(dims.width, dims.height - dims.eye_height, dims.width);
-
-		return Model::buildHexahedron(start, end);
-	}
-};
+// struct Fighter {
+// 	Vector pos = Vector::origin();
+// 	Vector rot = Vector::direction(0.0, 0.0, 0.0);
+// };
 
 struct Platform {
-	Vector start_pos = Vector::origin();;
-	Vector end_pos = Vector::origin();;
+	Vector start_pos = Vector::origin();
+	Vector end_pos = Vector::origin();
 	Model model;
 };
 
 struct LevelData {
-	std::vector<Fighter> fighters;
+	std::vector<Entity> fighters;
 	std::vector<Platform> platforms;
 	bool valid = false;
 
+	float fighter_height;
+	float fighter_width;
+	float fighter_eye_height;
 	Model fighter_model; // fighters share the same model for now
 };
 
@@ -77,11 +64,17 @@ void logLevelLoadError(const char* message, std::string line) {
 	printf("%s: %s\n", message, line.c_str());
 }
 
+Model buildFighterModel(float height, float width, float eye_height) {
+		// the model will have its bottom centered at the origin
+		Vector start = Vector::point(-width, 0, -width);
+		Vector end = Vector::point(width, height, width);
+
+		return Model::buildHexahedron(start, end);
+	}
+
 LevelData loadLevelFromFile(const char* filename) {
 	std::ifstream level_file(filename);
 	LevelData level_data;
-
-	Fighter::Dimensions fighter_dimensions;
 
 	bool got_fighter_dimensions = false;
 
@@ -103,7 +96,7 @@ LevelData loadLevelFromFile(const char* filename) {
 
 		if (first_char == 'i') {
 			// shared fighter info
-			if (!(line_stream >> fighter_dimensions.height >> fighter_dimensions.width >> fighter_dimensions.eye_height)) {
+			if (!(line_stream >> level_data.fighter_height >> level_data.fighter_width >> level_data.fighter_eye_height)) {
 				logLevelLoadError("fighter shared info improperly formatted!", line);
 				return level_data;
 			}
@@ -116,19 +109,17 @@ LevelData loadLevelFromFile(const char* filename) {
 				return level_data;
 			}
 
-			Fighter fighter;
+			Entity fighter;
 
-			if (!(line_stream >> fighter.pos.x >> fighter.pos.y >> fighter.pos.z)) {
+			if (!(line_stream >> fighter.position.x >> fighter.position.y >> fighter.position.z)) {
 				logLevelLoadError("fighter position improperly formatted!", line);
 				return level_data;
 			}
 
-			if (!(line_stream >> fighter.rot.x >> fighter.rot.y >> fighter.rot.z)) {
+			if (!(line_stream >> fighter.rotation.x >> fighter.rotation.y >> fighter.rotation.z)) {
 				logLevelLoadError("fighter rotation improperly formatted!", line);
 				return level_data;
 			}
-
-			fighter.dimensions = fighter_dimensions;
 
 			level_data.fighters.push_back(fighter);
 		} else if (first_char == 'p') {
@@ -157,7 +148,10 @@ LevelData loadLevelFromFile(const char* filename) {
 	} else if (level_data.platforms.size() < 1) {
 		printf("no platforms found in level %s!\n", filename);
 	} else {
-		level_data.fighter_model = Fighter::buildModel(fighter_dimensions);
+		level_data.fighter_model = buildFighterModel(
+				level_data.fighter_height,
+				level_data.fighter_width,
+				level_data.fighter_eye_height);
 		level_data.valid = true;
 	}
 
@@ -183,16 +177,30 @@ int main(int argc, char** argv) {
 	// for now, player is the first fighter in the level
 	// later, others will be enemies
 	Player player;
-	player.position = basic_level.fighters[0].pos;
-	player.rotation = basic_level.fighters[0].rot;
+	player.setName("player");
+	player.start_pos = basic_level.fighters[0].position;
+	player.position = basic_level.fighters[0].position;
+	player.rotation = basic_level.fighters[0].rotation;
 	player.model = &basic_level.fighter_model;
 
+	player.height = basic_level.fighter_height;
+	player.width = basic_level.fighter_width;
+	player.eye_height = basic_level.fighter_eye_height;
+
 	player.weapon.player_local_position = Vector::direction(0.25, player.eye_height, 0);
-	player.weapon.bullet = Model::buildTetrahedron();
+	player.weapon.rocket = Model::buildTetrahedron();
 	player.weapon.explosion = Model::buildExplosionModel();
 	Model weapon_model = player.weapon.buildModel();
 	player.weapon.model = &weapon_model;
 	player.weapon.translucency = 2;
+	player.weapon.setName("weapon");
+
+	player.collision.type = Collision::Type::sphere;
+	float player_radius = player.height / 2;
+	player.collision.sphere.radius = player_radius;
+	player.collision.sphere.center_pos = player.position;
+	// sphere center is midway up player
+	player.collision.sphere.center_pos.y += player_radius;
 
 	spit("Player created successfully");
 
@@ -208,7 +216,8 @@ int main(int argc, char** argv) {
 
 	Entity cube_entity;
 	cube_entity.model = &cube_model;
-	cube_entity.position = Vector::point(15, 2, 0);
+	cube_entity.position = Vector::point(-3, 2, -10);
+	cube_entity.setName("spinning cube");
 
 	scene.addEntityWithAction(std::move(cube_entity), [](Entity* self, std::chrono::microseconds frame_duration) {
 		self->rotation.x += 0.005;
@@ -244,6 +253,11 @@ int main(int argc, char** argv) {
 		// end positions convey where it actually is.  This sucks, fix it.
 		platform_entity.position = Vector::origin();
 		platform_entity.rotation = Vector::direction(0.0, 0.0, 0.0);
+		platform_entity.collision.type = Collision::Type::aabb;
+		platform_entity.collision.box.min_pos = platform.start_pos;
+		platform_entity.collision.box.max_pos = platform.end_pos;
+		platform_entity.is_static = true;
+		platform_entity.setName("platform");
 		scene.addEntity(std::move(platform_entity));
 	}
 

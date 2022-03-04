@@ -236,8 +236,7 @@ void Entity::moveFromUserInputs(
 		if (buttons.descend) {
 			translation.y -= 1;
 		}
-	}
-	else if (this->velocity_value > 0) {
+	} else if (this->velocity_value > 0) {
 		// this isn't going to work when gravity is added
 		// smoothly slow down when no longer moving
 		this->velocity_value -= WALKING_VELOCITY_INCREMENT;
@@ -247,9 +246,43 @@ void Entity::moveFromUserInputs(
 		}
 	}
 
-	double meters_moved = this->velocity_value * frame_duration.count();
+	constexpr double gravity = 9.8 / MICROSECONDS / MICROSECONDS;
+	int microseconds_elapsed = frame_duration.count();
+	constexpr double initial_jump_speed = 5.0 / MICROSECONDS;
+
+	double y_meters_moved = 0.0;
+
+	if (this->in_midair) {
+		// currently falling
+		this->y_speed -= gravity * microseconds_elapsed;
+		y_meters_moved = this->y_speed * microseconds_elapsed;
+
+		if (this->position.y < -50.0) {
+			this->position = this->start_pos;
+			this->y_speed = 0.0;
+		}
+	} else {
+		// make sure to reset y speed, or you get a really fun bug
+		this->y_speed = 0.0;
+		y_meters_moved = 0.0;
+
+		if (buttons.jump) {
+			// jumping only allowed if not in midair
+			this->in_midair = true;
+
+			this->y_speed = initial_jump_speed;
+
+			if (buttons.sprint) {
+				// super jump
+				this->y_speed *= 2;
+			}
+		}
+	}
+
+	double meters_moved = this->velocity_value * microseconds_elapsed;
 
 	Vector movement = translation.unit().scalarMultiply(meters_moved);
+	movement.y += y_meters_moved;
 
 	// the direction of motion is determined only by the rotation about the y axis
 	Matrix rotationAboutY = Matrix::makeRotationMatrix(

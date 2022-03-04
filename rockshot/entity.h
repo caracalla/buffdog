@@ -7,6 +7,7 @@
 #include "../vector.h"
 
 #include "model.h"
+#include "collision.h"
 
 
 #define MICROSECONDS 1000000.0
@@ -22,10 +23,12 @@ typedef std::function<void(Entity*, std::chrono::microseconds frame_duration)> E
 struct Entity {
 	Model* model;
 	double scale = 1.0; // dear god this ruined an entire morning
+	Vector start_pos = Vector::origin();
 	Vector position = Vector::origin();
 	Vector rotation = Vector::direction(0, 0, 0); // represented as radians around each axis
 
 	double velocity_value = 0; // in meters per microsecond (really just speed)
+	double y_speed = 0;
 
 	// physics??
 	Vector velocity = Vector::direction(0, 0, 0);
@@ -42,6 +45,7 @@ struct Entity {
 	// are not applied
 	// is this still necessary?
 	bool active = true;
+	bool is_static = false; // non-moving items
 
 	// newly created entities should always be added to the scene through
 	// addEntity() or addEntityWithAction(), which will set scene and action
@@ -53,6 +57,25 @@ struct Entity {
 	Model model_in_world;
 	// values > 1 make more translucent
 	int translucency = 1;
+
+	Collision collision;
+	bool in_midair = false;
+
+	char name[16];
+
+	void setName(const char* name) {
+		int i = 0;
+
+		for (; i < 15; i++) {
+			if (name[i] == '\0') {
+				break;
+			}
+
+			this->name[i] = name[i];
+		}
+
+		this->name[i] = '\0';
+	}
 
 	Vector actualRotation() {
 		return this->model->initial_rotation.add(this->rotation);

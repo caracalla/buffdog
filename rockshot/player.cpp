@@ -8,6 +8,48 @@ constexpr std::chrono::microseconds kWeaponCooldown = std::chrono::microseconds(
 
 void Player::move(std::chrono::microseconds frame_duration, InputState* input_state) {
 	this->moveFromUserInputs(frame_duration, input_state);
+	Sphere& sphere = this->collision.sphere;
+	sphere.center_pos = this->position;
+	// y pos has to be adjusted to the center of the player, since player pos is foot bottom
+	sphere.center_pos.y += sphere.radius;
+
+	bool on_ground = false;
+
+	for (auto& entity : this->scene->entities) {
+		// only want static entities
+		if (!entity.active || !entity.is_static) {
+			continue;
+		}
+
+		Vector collision_point;
+		bool did_collide = Collision::sphereVsAABB(
+						sphere,
+						entity.collision.box,
+						collision_point);
+
+		if (did_collide) {
+			// find point closest to sphere center on AABB
+			// direction = closest - AABB center
+			// new_pos = direction.unit() * radius + old_pos
+			Vector collision_direction = sphere.center_pos.subtract(collision_point).unit();
+
+			// move the collision sphere (and the player sphere.radius away from the collision point)
+			sphere.center_pos = collision_point.add(collision_direction.scalarMultiply(sphere.radius));
+			this->position = sphere.center_pos;
+			this->position.y -= sphere.radius;
+
+			if (collision_direction.y > 0.5) {
+				on_ground = true;
+			}
+		}
+	}
+
+	// we're now falling, if we weren't already
+	if (!on_ground) {
+		this->in_midair = true;
+	} else {
+		this->in_midair = false;
+	}
 
 	// want to prevent weirdness where the weapon rotates about the player's base
 	// position, instead of about the player's eye position
@@ -31,31 +73,33 @@ void Player::move(std::chrono::microseconds frame_duration, InputState* input_st
 	if (this->weapon.cooldown_remaining.count() > 0) {
 		this->weapon.cooldown_remaining -= frame_duration;
 	} else if (input_state->buttons.action1) {
-		this->weapon.fireBullet();
+		this->weapon.fireRocket();
 		this->weapon.cooldown_remaining = kWeaponCooldown;
 	}
 }
 
-Vector Weapon::bulletDirection() {
+Vector Weapon::rocketDirection() {
 	// the camera is always pointing down the z axis in the negative direction
 	// by default
 	return Matrix::makeRotationMatrix(this->rotation).
 			multiplyVector(Vector::direction(0, 0, -1)).unit();
 }
 
-Entity makeBullet(
+Entity makeRocket(
 		Model* model, Vector position, Vector direction, Vector rotation) {
-	Entity bullet;
-	bullet.model = model;
-	bullet.scale = 0.2;
-	bullet.position = position;
-	bullet.rotation = rotation;
-	// problem: bullets don't take into account the player's existing velocity,
-	// so if the player is moving, the newly fired bullet moves strangely
-	bullet.velocity = direction.scalarMultiply(20 / MICROSECONDS);
-	bullet.mass = 0.0; // shouldn't be affected by gravity
+	Entity rocket;
+	rocket.model = model;
+	rocket.scale = 0.2;
+	rocket.position = position;
+	rocket.rotation = rotation;
+	// problem: rockets don't take into account the player's existing velocity,
+	// so if the player is moving, the newly fired rocket moves strangely
+	rocket.velocity = direction.scalarMultiply(20 / MICROSECONDS);
+	rocket.mass = 0.0; // shouldn't be affected by gravity
 
-	return bullet;
+	rocket.setName("rocket");
+
+	return rocket;
 }
 
 Entity makeExplosion(Model* model, Vector position) {
@@ -64,42 +108,51 @@ Entity makeExplosion(Model* model, Vector position) {
 	explosion.scale = 0.1;
 	explosion.position = position;
 
+	explosion.setName("explosion");
+
 	return explosion;
 }
 
-Vector getExplosionPoint(Vector ray_origin, Vector ray_direction, bool* did_collide) {
-	#define MAX_NO_COLLISION_DISTANCE 50
-
-	*did_collide = false;
-
-	// start with a default result representing a "collision" an arbitrary
-	// distance from the start
-	return ray_origin.add(
-		ray_direction.scalarMultiply(MAX_NO_COLLISION_DISTANCE));
-}
-
-void Weapon::fireBullet() {
-	Vector view_normal = this->bulletDirection();
-	bool did_collide = false;
-	// Vector collision_point =
-	// 		this->collisionEntity.collisionPoint(
-	// 				this->position, view_normal, &did_collide);
-
-	Vector collision_point = getExplosionPoint(this->position, view_normal, &did_collide);
+void Weapon::fireRocket() {
+	Vector rocket_direction = this->rocketDirection();
 
 	// align top to point away from player
-	Vector bullet_rotation = this->rotation.add(
+	Vector rocket_rotation = this->rotation.add(
 			Vector::direction(-(kPi + kHalfPi), 0, 0));
 
+	// by default, the "collision point" is just some distance away, in midair
+	constexpr float MAX_NO_COLLISION_DISTANCE = 50.0;
+	Vector collision_point = this->position.add(
+		rocket_direction.scalarMultiply(MAX_NO_COLLISION_DISTANCE));
+
+	float min_tmin = FLT_MAX;
+
+	for (auto& entity : this->scene->entities) {
+		Vector possible_collision_point;
+		float tmin;
+
+		bool did_collide = Collision::rayVsAABB(
+				this->position,
+				rocket_direction,
+				entity.collision.box,
+				tmin,
+				possible_collision_point);
+		
+		if (did_collide && tmin < min_tmin) {
+			collision_point = possible_collision_point;
+			min_tmin = tmin;
+		}
+	}
+
 	this->scene->addEntityWithAction(
-			makeBullet(
-					&this->bullet,
+			makeRocket(
+					&this->rocket,
 					this->position,
-					this->bulletDirection(),
-					bullet_rotation),
-			[collision_point, view_normal](Entity* self, std::chrono::microseconds frame_duration) {
+					rocket_direction,
+					rocket_rotation),
+			[collision_point, rocket_direction](Entity* self, std::chrono::microseconds frame_duration) {
 				double distance =
-						collision_point.subtract(self->position).dotProduct(view_normal);
+						collision_point.subtract(self->position).dotProduct(rocket_direction);
 
 				if (distance <= 0) {
 					// it's hit, stop processing this entity's action
@@ -109,7 +162,7 @@ void Weapon::fireBullet() {
 
 					// TODO:
 					// after spawning the "explosion" entity,
-					// remove self (the bullet) from entity vector
+					// remove self (the rocket) from entity vector
 
 					self->scene->addEntityWithAction(
 							makeExplosion(&self->scene->player.weapon.explosion, collision_point),

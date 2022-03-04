@@ -76,7 +76,10 @@ void Scene::step(std::chrono::microseconds frame_duration) {
 	this->player.move(frame_duration, input_state);
 
 	// if desired, we could move the camera separately (for now it moves with the player, in first person view)
-	this->camera.moveFromUserInputs(frame_duration, input_state);
+	// this->camera.moveFromUserInputs(frame_duration, input_state);
+	this->camera.position = this->player.position;
+	this->camera.position.y += this->player.eye_height;
+	this->camera.rotation = this->player.rotation;
 
 	flushEntityBuffer(this->entities);
 }

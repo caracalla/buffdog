@@ -321,6 +321,10 @@ namespace device {
 							last_key = z_key;
 							break;
 
+						case SDL_SCANCODE_SPACE:
+							input_state.buttons.jump = true;
+							break;
+
 						case SDL_SCANCODE_ESCAPE:
 							spit("quitting");
 							is_running = false;
@@ -367,6 +371,10 @@ namespace device {
 							break;
 
 						case SDL_SCANCODE_T:
+							break;
+
+						case SDL_SCANCODE_SPACE:
+							input_state.buttons.jump = false;
 							break;
 
 						default:

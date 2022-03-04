@@ -16,6 +16,7 @@ struct buttons_state {
 	bool rise;
 	bool descend;
 	bool sprint;
+	bool jump;
 	bool action1; // m1
 	bool action2;
 	bool action3;

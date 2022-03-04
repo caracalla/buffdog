@@ -155,6 +155,10 @@ struct Vector {
 	void log(const char* identifier = "") const {
 		device::logOncePerSecond("vector %s: {%f, %f, %f, %f}\n", identifier, this->x, this->y, this->z, this->w);
 	}
+
+	void logMore(const char* identifier = "") const {
+		printf("vector %s: {%f, %f, %f, %f}\n", identifier, this->x, this->y, this->z, this->w);
+	}
 };
 
 #endif
